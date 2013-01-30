@@ -14,6 +14,10 @@ my $IS_WIN32 = $^O eq 'MSWin32';
 # maintenance easy, and should be OK since perl should be pretty functional
 # before these tests are run.
 
+# the third column has Win32 specific alternative output; this appears to be
+# collapsing of foo/../bar type structures since Win32 has no symlinks and
+# doesn't need to keep the '..' part. -- xdg, 2013-01-30
+
 my @tests = (
     # [ Function          ,            Expected          ,         Win32-different ]
 
@@ -99,7 +103,6 @@ my @win32_tests = (
     [ "path('.\\c')",                  'c' ],
     [ "path('a/..','../b')",           '../b' ],
     [ "path('A:', 'foo')",             'A:/foo' ],
-    [ "path('')",                      '' ],
     [ "path('a:')",                    'A:' ],
     [ "path('A:f')",                   'A:f' ],
     [ "path('A:/')",                   'A:' ],
@@ -123,6 +126,9 @@ my @win32_tests = (
     [ "path('/../')",                  '/' ],
     [ "path('d1/../foo')",             'foo' ],
 );
+
+# XXX not sure how to adapt this sanely for use with Path::Tiny testing, so
+# I'll punt for now
 
 ##
 ### FakeWin32 subclass (see below) just sets CWD to C:\one\two and getdcwd('D') to D:\alpha\beta
@@ -162,56 +168,6 @@ my @win32_tests = (
 ##[ "FakeWin32->rel2abs('temp','//prague_main/work')",        '\\\\prague_main\\work\\temp'     ],
 ##[ "FakeWin32->rel2abs('../','//prague_main/work')",         '\\\\prague_main\\work'           ],
 ##[ "FakeWin32->rel2abs('D:foo.txt')",                        'D:\\alpha\\beta\\foo.txt'        ],
-##
-##[ "Cygwin->case_tolerant()",         '1'  ],
-##[ "Cygwin->catfile('a','b','c')",         'a/b/c'  ],
-##[ "Cygwin->catfile('a','b','./c')",       'a/b/c'  ],
-##[ "Cygwin->catfile('./a','b','c')",       'a/b/c'  ],
-##[ "Cygwin->catfile('c')",                 'c' ],
-##[ "Cygwin->catfile('./c')",               'c' ],
-##
-##[ "Cygwin->catdir()",                     ''          ],
-##[ "Cygwin->catdir('/')",                  '/'         ],
-##[ "Cygwin->catdir('','d1','d2','d3','')", '/d1/d2/d3' ],
-##[ "Cygwin->catdir('d1','d2','d3','')",    'd1/d2/d3'  ],
-##[ "Cygwin->catdir('','d1','d2','d3')",    '/d1/d2/d3' ],
-##[ "Cygwin->catdir('d1','d2','d3')",       'd1/d2/d3'  ],
-##[ "Cygwin->catdir('/','d2/d3')",     '/d2/d3'  ],
-##
-##[ "Cygwin->canonpath('///../../..//./././a//b/.././c/././')",   '/a/b/../c' ],
-##[ "Cygwin->canonpath('')",                       ''               ],
-##[ "Cygwin->canonpath('a/../../b/c')",            'a/../../b/c'    ],
-##[ "Cygwin->canonpath('/.')",                     '/'              ],
-##[ "Cygwin->canonpath('/./')",                    '/'              ],
-##[ "Cygwin->canonpath('/a/./')",                  '/a'             ],
-##[ "Cygwin->canonpath('/a/.')",                   '/a'             ],
-##[ "Cygwin->canonpath('/../../')",                '/'              ],
-##[ "Cygwin->canonpath('/../..')",                 '/'              ],
-##
-##[  "Cygwin->abs2rel('/t1/t2/t3','/t1/t2/t3')",          '.'                  ],
-##[  "Cygwin->abs2rel('/t1/t2/t4','/t1/t2/t3')",          '../t4'              ],
-##[  "Cygwin->abs2rel('/t1/t2','/t1/t2/t3')",             '..'                 ],
-##[  "Cygwin->abs2rel('/t1/t2/t3/t4','/t1/t2/t3')",       't4'                 ],
-##[  "Cygwin->abs2rel('/t4/t5/t6','/t1/t2/t3')",          '../../../t4/t5/t6'  ],
-###[ "Cygwin->abs2rel('../t4','/t1/t2/t3')",              '../t4'              ],
-##[  "Cygwin->abs2rel('/','/t1/t2/t3')",                  '../../..'           ],
-##[  "Cygwin->abs2rel('///','/t1/t2/t3')",                '../../..'           ],
-##[  "Cygwin->abs2rel('/.','/t1/t2/t3')",                 '../../..'           ],
-##[  "Cygwin->abs2rel('/./','/t1/t2/t3')",                '../../..'           ],
-###[ "Cygwin->abs2rel('../t4','/t1/t2/t3')",              '../t4'              ],
-##[  "Cygwin->abs2rel('/t1/t2/t3', '/')",                 't1/t2/t3'           ],
-##[  "Cygwin->abs2rel('/t1/t2/t3', '/t1')",               't2/t3'              ],
-##[  "Cygwin->abs2rel('t1/t2/t3', 't1')",                 't2/t3'              ],
-##[  "Cygwin->abs2rel('t1/t2/t3', 't4')",                 '../t1/t2/t3'        ],
-##
-##[ "Cygwin->rel2abs('t4','/t1/t2/t3')",             '/t1/t2/t3/t4'    ],
-##[ "Cygwin->rel2abs('t4/t5','/t1/t2/t3')",          '/t1/t2/t3/t4/t5' ],
-##[ "Cygwin->rel2abs('.','/t1/t2/t3')",              '/t1/t2/t3'       ],
-##[ "Cygwin->rel2abs('..','/t1/t2/t3')",             '/t1/t2/t3/..'    ],
-##[ "Cygwin->rel2abs('../t4','/t1/t2/t3')",          '/t1/t2/t3/../t4' ],
-##[ "Cygwin->rel2abs('/t1','/t1/t2/t3')",            '/t1'             ],
-##[ "Cygwin->rel2abs('//t1/t2/t3','/foo')",          '//t1/t2/t3'      ],
-##
 
 ##
 ##can_ok('File::Spec::Win32', '_cwd');
@@ -227,18 +183,18 @@ my @win32_tests = (
 ##    # in the limited scope of the rel2abs() method.
 ##    if ($Cwd::VERSION && $Cwd::VERSION gt '2.17') {  # Avoid a 'used only once' warning
 ##  local $^W;
-##	*rel2abs = sub {
-##	    my $self = shift;
-##	    local $^W;
-##	    local *Cwd::getdcwd = sub {
-##	      return 'D:\alpha\beta' if $_[0] eq 'D:';
-##	      return 'C:\one\two'    if $_[0] eq 'C:';
-##	      return;
-##	    };
-##	    *Cwd::getdcwd = *Cwd::getdcwd; # Avoid a 'used only once' warning
-##	    return $self->SUPER::rel2abs(@_);
-##	};
-##	*rel2abs = *rel2abs; # Avoid a 'used only once' warning
+##      *rel2abs = sub {
+##          my $self = shift;
+##          local $^W;
+##          local *Cwd::getdcwd = sub {
+##            return 'D:\alpha\beta' if $_[0] eq 'D:';
+##            return 'C:\one\two'    if $_[0] eq 'C:';
+##            return;
+##          };
+##          *Cwd::getdcwd = *Cwd::getdcwd; # Avoid a 'used only once' warning
+##          return $self->SUPER::rel2abs(@_);
+##      };
+##      *rel2abs = *rel2abs; # Avoid a 'used only once' warning
 ##    }
 ##}
 
@@ -251,13 +207,11 @@ for ( @tests, $IS_WIN32 ? @win32_tests : () ) {
     $function =~ s#\\#\\\\#g;
     my $got = join ',', eval $function;
 
-    SKIP: {
-        if ($@) {
-            is( $@, '', $function );
-        }
-        else {
-            is( $got, $expected, $function );
-        }
+    if ($@) {
+        is( $@, '', $function );
+    }
+    else {
+        is( $got, $expected, $function );
     }
 }
 
