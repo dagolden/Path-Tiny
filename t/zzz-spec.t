@@ -1,3 +1,4 @@
+
 use 5.008001;
 use strict;
 use warnings;
@@ -29,8 +30,6 @@ my @tests = (
     [ "path('','d1','d2','d3')",                     'd1/d2/d3' ],
     [ "path('d1','d2','d3')",                        'd1/d2/d3' ],
     [ "path('/','d2/d3')",                           '/d2/d3' ],
-    [ "path('///../../..//./././a//b/.././c/././')", '/a/b/../c', '/a/c' ],
-    [ "path('a/../../b/c')",                         'a/../../b/c', '../b/c' ],
     [ "path('/.')",                                  '/' ],
     [ "path('/./')",                                 '/' ],
     [ "path('/a/./')",                               '/a' ],
@@ -56,47 +55,53 @@ my @tests = (
     [ "path('t4')->absolute('/t1/t2/t3')",           '/t1/t2/t3/t4' ],
     [ "path('t4/t5')->absolute('/t1/t2/t3')",        '/t1/t2/t3/t4/t5' ],
     [ "path('.')->absolute('/t1/t2/t3')",            '/t1/t2/t3' ],
-    [ "path('..')->absolute('/t1/t2/t3')",           '/t1/t2/t3/..', '/t1/t2' ],
-    [ "path('../t4')->absolute('/t1/t2/t3')",        '/t1/t2/t3/../t4', '/t1/t2/t4' ],
     [ "path('/t1')->absolute('/t1/t2/t3')",          '/t1' ],
+    [ "path('///../../..//./././a//b/.././c/././')", '/a/b/../c',       '/a/c' ],
+    [ "path('a/../../b/c')",                         'a/../../b/c',     '../b/c' ],
+    [ "path('..')->absolute('/t1/t2/t3')",           '/t1/t2/t3/..',    '/t1/t2' ],
+    [ "path('../t4')->absolute('/t1/t2/t3')",        '/t1/t2/t3/../t4', '/t1/t2/t4' ],
+);
 
-##[ "Win32->catdir()",                        ''                   ],
-##[ "Win32->catdir('')",                      '\\'                 ],
-##[ "Win32->catdir('/')",                     '\\'                 ],
-##[ "Win32->catdir('/', '../')",              '\\'                 ],
-##[ "Win32->catdir('/', '..\\')",             '\\'                 ],
-##[ "Win32->catdir('\\', '../')",             '\\'                 ],
-##[ "Win32->catdir('\\', '..\\')",            '\\'                 ],
-##[ "Win32->catdir('//d1','d2')",             '\\\\d1\\d2'         ],
-##[ "Win32->catdir('\\d1\\','d2')",           '\\d1\\d2'         ],
-##[ "Win32->catdir('\\d1','d2')",             '\\d1\\d2'         ],
-##[ "Win32->catdir('\\d1','\\d2')",           '\\d1\\d2'         ],
-##[ "Win32->catdir('\\d1','\\d2\\')",         '\\d1\\d2'         ],
-##[ "Win32->catdir('','/d1','d2')",           '\\d1\\d2'         ],
-##[ "Win32->catdir('','','/d1','d2')",        '\\d1\\d2'         ],
-##[ "Win32->catdir('','//d1','d2')",          '\\d1\\d2'         ],
-##[ "Win32->catdir('','','//d1','d2')",       '\\d1\\d2'         ],
-##[ "Win32->catdir('','d1','','d2','')",      '\\d1\\d2'           ],
-##[ "Win32->catdir('','d1','d2','d3','')",    '\\d1\\d2\\d3'       ],
-##[ "Win32->catdir('d1','d2','d3','')",       'd1\\d2\\d3'         ],
-##[ "Win32->catdir('','d1','d2','d3')",       '\\d1\\d2\\d3'       ],
-##[ "Win32->catdir('d1','d2','d3')",          'd1\\d2\\d3'         ],
-##[ "Win32->catdir('A:/d1','d2','d3')",       'A:\\d1\\d2\\d3'     ],
-##[ "Win32->catdir('A:/d1','d2','d3','')",    'A:\\d1\\d2\\d3'     ],
-###[ "Win32->catdir('A:/d1','B:/d2','d3','')", 'A:\\d1\\d2\\d3'     ],
-##[ "Win32->catdir('A:/d1','B:/d2','d3','')", 'A:\\d1\\B:\\d2\\d3' ],
-##[ "Win32->catdir('A:/')",                   'A:\\'               ],
-##[ "Win32->catdir('\\', 'foo')",             '\\foo'              ],
-##[ "Win32->catdir('','','..')",              '\\'                 ],
-##[ "Win32->catdir('A:', 'foo')",             'A:\\foo'            ],
-##
-##[ "Win32->catfile('a','b','c')",        'a\\b\\c' ],
-##[ "Win32->catfile('a','b','.\\c')",      'a\\b\\c'  ],
-##[ "Win32->catfile('.\\a','b','c')",      'a\\b\\c'  ],
-##[ "Win32->catfile('c')",                'c' ],
-##[ "Win32->catfile('.\\c')",              'c' ],
-##[ "Win32->catfile('a/..','../b')",       '..\\b' ],
-##[ "Win32->catfile('A:', 'foo')",         'A:\\foo'            ],
+my @win32_tests = (
+    [ "path()",                     '.' ],
+    [ "path('')",                   '.' ],
+    [ "path('/')",                  '/' ],
+    [ "path('/', '../')",           '/' ],
+    [ "path('/', '..\\')",          '/' ],
+    [ "path('\\', '../')",          '/' ],
+    [ "path('\\', '..\\')",         '/' ],
+    [ "path('//d1','d2')",          '//d1/d2' ],
+    [ "path('\\d1\\','d2')",        '/d1/d2' ],
+    [ "path('\\d1','d2')",          '/d1/d2' ],
+    [ "path('\\d1','\\d2')",        '/d1/d2' ],
+    [ "path('\\d1','\\d2\\')",      '/d1/d2' ],
+    [ "path('','/d1','d2')",        'd1/d2' ],
+    [ "path('','','/d1','d2')",     'd1/d2' ],
+    [ "path('','//d1','d2')",       'd1/d2' ],
+    [ "path('','','//d1','d2')",    'd1/d2' ],
+    [ "path('','d1','','d2','')",   'd1/d2' ],
+    [ "path('','d1','d2','d3','')", 'd1/d2/d3' ],
+    [ "path('d1','d2','d3','')",    'd1/d2/d3' ],
+    [ "path('','d1','d2','d3')",    'd1/d2/d3' ],
+    [ "path('d1','d2','d3')",       'd1/d2/d3' ],
+    [ "path('A:/d1','d2','d3')",    'A:/d1/d2/d3' ],
+    [ "path('A:/d1','d2','d3','')", 'A:/d1/d2/d3' ],
+    #[ "path('A:/d1','B:/d2','d3','')", 'A:/d1/d2/d3'     ],
+    [ "path('A:/d1','B:/d2','d3','')", 'A:/d1/B:/d2/d3' ],
+    [ "path('A:/')",                   'A:' ],
+    [ "path('\\', 'foo')",             '/foo' ],
+    [ "path('','','..')",              '..' ],
+    [ "path('A:', 'foo')",             'A:/foo' ],
+
+    [ "path('a','b','c')",    'a/b/c' ],
+    [ "path('a','b','.\\c')", 'a/b/c' ],
+    [ "path('.\\a','b','c')", 'a/b/c' ],
+    [ "path('c')",            'c' ],
+    [ "path('.\\c')",         'c' ],
+    [ "path('a/..','../b')",  '../b' ],
+    [ "path('A:', 'foo')",    'A:/foo' ],
+);
+
 ##
 ##
 ##[ "Win32->canonpath('')",               ''                    ],
@@ -211,7 +216,6 @@ my @tests = (
 ##[ "Cygwin->rel2abs('/t1','/t1/t2/t3')",            '/t1'             ],
 ##[ "Cygwin->rel2abs('//t1/t2/t3','/foo')",          '//t1/t2/t3'      ],
 ##
-);
 
 ##
 ##can_ok('File::Spec::Win32', '_cwd');
@@ -226,7 +230,7 @@ my @tests = (
 ##    # Some funky stuff to override Cwd::getdcwd() for testing purposes,
 ##    # in the limited scope of the rel2abs() method.
 ##    if ($Cwd::VERSION && $Cwd::VERSION gt '2.17') {  # Avoid a 'used only once' warning
-##	local $^W;
+##  local $^W;
 ##	*rel2abs = sub {
 ##	    my $self = shift;
 ##	    local $^W;
@@ -244,8 +248,8 @@ my @tests = (
 
 # Tries a named function with the given args and compares the result against
 # an expected result. Works with functions that return scalars or arrays.
-for (@tests) {
-    my ( $function, $expected, $win32case) = @$_;
+for (@tests, $IS_WIN32 ? @win32_tests : ()) {
+    my ( $function, $expected, $win32case ) = @$_;
     $expected = $win32case if $IS_WIN32 && $win32case;
 
     $function =~ s#\\#\\\\#g;
