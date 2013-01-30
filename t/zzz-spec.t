@@ -92,42 +92,38 @@ my @win32_tests = (
     [ "path('\\', 'foo')",             '/foo' ],
     [ "path('','','..')",              '..' ],
     [ "path('A:', 'foo')",             'A:/foo' ],
-
-    [ "path('a','b','c')",    'a/b/c' ],
-    [ "path('a','b','.\\c')", 'a/b/c' ],
-    [ "path('.\\a','b','c')", 'a/b/c' ],
-    [ "path('c')",            'c' ],
-    [ "path('.\\c')",         'c' ],
-    [ "path('a/..','../b')",  '../b' ],
-    [ "path('A:', 'foo')",    'A:/foo' ],
+    [ "path('a','b','c')",             'a/b/c' ],
+    [ "path('a','b','.\\c')",          'a/b/c' ],
+    [ "path('.\\a','b','c')",          'a/b/c' ],
+    [ "path('c')",                     'c' ],
+    [ "path('.\\c')",                  'c' ],
+    [ "path('a/..','../b')",           '../b' ],
+    [ "path('A:', 'foo')",             'A:/foo' ],
+    [ "path('')",                      '' ],
+    [ "path('a:')",                    'A:' ],
+    [ "path('A:f')",                   'A:f' ],
+    [ "path('A:/')",                   'A:' ],
+    [ "path('a\\..\\..\\b\\c')",       '../b/c' ],
+    [ "path('//a\\b//c')",             '//a/b/c' ],
+    [ "path('/a/..../c')",             '/a/..../c' ],
+    [ "path('//a/b\\c')",              '//a/b/c' ],
+    [ "path('////')",                  '/' ],
+    [ "path('//')",                    '/' ],
+    [ "path('/.')",                    '/' ],
+    [ "path('//a/b/../../c')",         '//a/b/c' ],
+    [ "path('//a/b/c/../d')",          '//a/b/d' ],
+    [ "path('//a/b/c/../../d')",       '//a/b/d' ],
+    [ "path('//a/b/c/.../d')",         '//a/b/d' ],
+    [ "path('/a/b/c/../../d')",        '/a/d' ],
+    [ "path('/a/b/c/.../d')",          '/a/d' ],
+    [ "path('\\../temp\\')",           '/temp' ],
+    [ "path('\\../')",                 '/' ],
+    [ "path('\\..\\')",                '/' ],
+    [ "path('/../')",                  '/' ],
+    [ "path('/../')",                  '/' ],
+    [ "path('d1/../foo')",             'foo' ],
 );
 
-##
-##
-##[ "Win32->canonpath('')",               ''                    ],
-##[ "Win32->canonpath('a:')",             'A:'                  ],
-##[ "Win32->canonpath('A:f')",            'A:f'                 ],
-##[ "Win32->canonpath('A:/')",            'A:\\'                ],
-### rt.perl.org 27052
-##[ "Win32->canonpath('a\\..\\..\\b\\c')", '..\\b\\c'           ],
-##[ "Win32->canonpath('//a\\b//c')",      '\\\\a\\b\\c'         ],
-##[ "Win32->canonpath('/a/..../c')",      '\\a\\....\\c'        ],
-##[ "Win32->canonpath('//a/b\\c')",       '\\\\a\\b\\c'         ],
-##[ "Win32->canonpath('////')",           '\\'                  ],
-##[ "Win32->canonpath('//')",             '\\'                  ],
-##[ "Win32->canonpath('/.')",             '\\'                  ],
-##[ "Win32->canonpath('//a/b/../../c')",  '\\\\a\\b\\c'         ],
-##[ "Win32->canonpath('//a/b/c/../d')",   '\\\\a\\b\\d'         ],
-##[ "Win32->canonpath('//a/b/c/../../d')",'\\\\a\\b\\d'         ],
-##[ "Win32->canonpath('//a/b/c/.../d')",  '\\\\a\\b\\d'         ],
-##[ "Win32->canonpath('/a/b/c/../../d')", '\\a\\d'              ],
-##[ "Win32->canonpath('/a/b/c/.../d')",   '\\a\\d'              ],
-##[ "Win32->canonpath('\\../temp\\')",    '\\temp'              ],
-##[ "Win32->canonpath('\\../')",          '\\'                  ],
-##[ "Win32->canonpath('\\..\\')",         '\\'                  ],
-##[ "Win32->canonpath('/../')",           '\\'                  ],
-##[ "Win32->canonpath('/..\\')",          '\\'                  ],
-##[ "Win32->canonpath('d1/../foo')",      'foo'                 ],
 ##
 ### FakeWin32 subclass (see below) just sets CWD to C:\one\two and getdcwd('D') to D:\alpha\beta
 ##
@@ -248,7 +244,7 @@ my @win32_tests = (
 
 # Tries a named function with the given args and compares the result against
 # an expected result. Works with functions that return scalars or arrays.
-for (@tests, $IS_WIN32 ? @win32_tests : ()) {
+for ( @tests, $IS_WIN32 ? @win32_tests : () ) {
     my ( $function, $expected, $win32case ) = @$_;
     $expected = $win32case if $IS_WIN32 && $win32case;
 
