@@ -7,6 +7,8 @@ use File::Spec;
 
 use Path::Tiny;
 
+# Tests adapted from Path::Class t/basic.t
+
 my $file = path( scalar tmpnam() );
 ok $file, "Got a filename via tmpnam()";
 
@@ -36,7 +38,7 @@ ok -e $file, "$file should exist";
 1 while unlink $file;
 ok not -e $file;
 
-my $dir = path( tempdir( CLEANUP => 1 ) );
+my $dir = path( tempdir( TMPDIR => 1, CLEANUP => 1 ) );
 ok $dir;
 ok -d $dir;
 
@@ -53,8 +55,10 @@ ok -e $file;
 ok $dir->remove, "Removed $dir";
 ok !-e $dir, "$dir no longer exists";
 
+my $tmpdir = Path::Tiny->tempdir;
+
 {
-    $dir = path( 't', 'foo', 'bar' );
+    $dir = path( $tmpdir, 'foo', 'bar' );
     $dir->parent->remove if -e $dir->parent;
 
     ok $dir->mkpath, "Created $dir";
@@ -66,7 +70,7 @@ ok !-e $dir, "$dir no longer exists";
 }
 
 {
-    $dir = path( 't', 'foo' );
+    $dir = path( $tmpdir, 'foo' );
     ok $dir->mkpath;
     ok $dir->child('dir')->mkpath;
     ok -d $dir->child('dir');
@@ -118,7 +122,7 @@ ok !-e $dir, "$dir no longer exists";
 }
 
 {
-    my $file = path( 't', 'slurp' );
+    my $file = path( $tmpdir, 'slurp' );
     ok $file;
 
     my $fh = $file->openw or die "Can't create $file: $!";
@@ -140,7 +144,7 @@ ok !-e $dir, "$dir no longer exists";
 }
 
 {
-    my $file = path( 't', 'slurp' );
+    my $file = path( $tmpdir, 'slurp' );
     ok $file;
 
     my $fh = $file->openw(':raw') or die "Can't create $file: $!";
@@ -164,16 +168,16 @@ ok !-e $dir, "$dir no longer exists";
     ok not -e $file;
 }
 
-##{
-##    my $file = path( 't', 'spew');
-##    $file->remove() if -e $file;
-##    $file->spew( iomode => '>:raw', "Line1\r\n" );
-##    $file->spew( iomode => '>>', "Line2" );
-##
-##    my $content = $file->slurp( iomode => '<:raw');
-##
-##    is( $content, "Line1\r\nLine2" );
-##}
+{
+    my $file = path( $tmpdir, 'spew');
+    $file->remove() if $file->exists;
+    $file->spew( {binmode => ':raw'}, "Line1\r\n" );
+    $file->append( {binmode => ':raw'}, "Line2" );
+
+    my $content = $file->slurp( {binmode => ':raw' } );
+
+    is( $content, "Line1\r\nLine2" );
+}
 
 {
     # Make sure we can make an absolute/relative roundtrip
@@ -181,6 +185,9 @@ ok !-e $dir, "$dir no longer exists";
     is $cwd, $cwd->absolute->relative,
       "from $cwd to " . $cwd->absolute . " to " . $cwd->absolute->relative;
 }
+
+# We don't have subsume so comment these out.  Keep in case we
+# implement it later
 
 ##{
 ##  my $t = path( 't');
@@ -196,96 +203,5 @@ ok !-e $dir, "$dir no longer exists";
 ##
 ##  $t->child('foo')->remove;
 ##}
-
-##{
-##  # Test recursive iteration through the following structure:
-##  #     a
-##  #    / \
-##  #   b   c
-##  #  / \   \
-##  # d   e   f
-##  #    / \   \
-##  #   g   h   i
-##  (my $abe = path( qw(a b e)))->mkpath;
-##  (my $acf = path( qw(a c f)))->mkpath;
-##  path( $acf, 'i')->touch;
-##  path( $abe, 'h')->touch;
-##  path( $abe, 'g')->touch;
-##  path( 'a', 'b', 'd')->touch;
-##
-##  my $a = path( 'a');
-##
-##  # Make sure the children() method works ok
-##  my @children = sort map $_->as_foreign('Unix'), $a->children;
-##  is_deeply \@children, ['a/b', 'a/c'];
-##
-##  {
-##    recurse_test( $a,
-##		  preorder => 1, depthfirst => 0,  # The default
-##		  precedence => [qw(a           a/b
-##				    a           a/c
-##				    a/b         a/b/e/h
-##				    a/b         a/c/f/i
-##				    a/c         a/b/e/h
-##				    a/c         a/c/f/i
-##				   )],
-##		);
-##  }
-##
-##  {
-##    my $files =
-##      recurse_test( $a,
-##		    preorder => 1, depthfirst => 1,
-##		    precedence => [qw(a           a/b
-##				      a           a/c
-##				      a/b         a/b/e/h
-##				      a/c         a/c/f/i
-##				     )],
-##		  );
-##    is_depthfirst($files);
-##  }
-##
-##  {
-##    my $files =
-##      recurse_test( $a,
-##		    preorder => 0, depthfirst => 1,
-##		    precedence => [qw(a/b         a
-##				      a/c         a
-##				      a/b/e/h     a/b
-##				      a/c/f/i     a/c
-##				     )],
-##		  );
-##    is_depthfirst($files);
-##  }
-##
-##
-##  $a->remove;
-##
-##  sub is_depthfirst {
-##    my $files = shift;
-##    if ($files->{'a/b'} < $files->{'a/c'}) {
-##      cmp_ok $files->{'a/b/e'}, '<', $files->{'a/c'}, "Ensure depth-first search";
-##    } else {
-##      cmp_ok $files->{'a/c/f'}, '<', $files->{'a/b'}, "Ensure depth-first search";
-##    }
-##  }
-##
-##  sub recurse_test {
-##    my ($dir, %args) = @_;
-##    my $precedence = delete $args{precedence};
-##    my ($i, %files) = (0);
-##    $a->recurse( callback => sub {$files{shift->as_foreign('Unix')->stringify} = ++$i},
-##		 %args );
-##    while (my ($pre, $post) = splice @$precedence, 0, 2) {
-##      cmp_ok $files{$pre}, '<', $files{$post}, "$pre should come before $post";
-##    }
-##    return \%files;
-##  }
-##}
-
-{
-    $dir = Path::Tiny->tempdir();
-    isa_ok $dir, 'Path::Tiny';
-};
 
 done_testing;
