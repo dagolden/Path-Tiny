@@ -15,6 +15,7 @@ use File::Copy       ();
 use File::Path       ();
 use File::Spec       ();
 use File::Spec::Unix ();
+use File::Stat       ();
 use File::Temp 0.18 ();
 
 our @EXPORT = qw/path/;
@@ -57,9 +58,9 @@ sub tempfile { unshift @_, 'new'; goto &_temp }
 sub tempdir { unshift @_, 'newdir'; goto &_temp }
 
 sub _temp {
-    my $method = shift;
-    my $temp   = File::Temp->$method(@_);
-    my $self   = path($temp);
+    my ( $method, $class, @args ) = @_;
+    my $temp = File::Temp->$method(@args);
+    my $self = path($temp);
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
 }
@@ -142,21 +143,26 @@ sub iterator {
     opendir( my $dh, $self->[PATH] );
     return sub {
         return unless $dh;
-        my $next = scalar readdir $dh;
-        undef $dh if !defined $next;
-        return $next;
+        my $next;
+        while ( defined( $next = readdir $dh ) ) {
+            return $self->child($next) if $next ne '.' && $next ne '..';
+        }
+        undef $dh;
+        return;
     };
 }
 
+# binmode/chomp
 sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $fh = $self->openr( $args->{binmode} );
+    my $fh    = $self->openr( $args->{binmode} );
+    my $chomp = $args->{chomp};
     if ( $args->{count} ) {
-        return map { scalar <$fh> } 1 .. $args->{count};
+        return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
     else {
-        return <$fh>;
+        return map { chomp if $chomp; $_ } <$fh>;
     }
 }
 
