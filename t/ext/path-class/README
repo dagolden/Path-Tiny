@@ -1,0 +1,3 @@
+These tests are adapted from those in Path::Class.  Path::Tiny isn't API
+compatible so some adjustments have been made.  For the most part, these
+tests are here to see if it handles special cases the same way.
