@@ -212,6 +212,9 @@ Boolean for whether the path appear relative or not.
 Returns a code reference that walks a directory lazily.  Each invocation
 returns a C<Path::Tiny> object or undef when the iterator is exhausted.
 
+This iterator is B<not> recursive.  For recursive iteration, use
+L<Path::Iterator::Rule> instead.
+
 =head2 lines
 
     @contents = path("/tmp/foo.txt")->lines;
@@ -379,6 +382,20 @@ L<Path::Class>
 =back
 
 Probably others.  Let me know if you want me to add a module to the list.
+
+=head1 BENCHMARKING
+
+I benchmarked a naive file-finding task: finding all C<*.pm> files in C<@INC>.
+I tested L<Path::Iterator::Rule> and subclasses of it that do file
+manipulations using a file path helper.
+
+    Path::Iterator::Rule    0.501s (no objects)
+    Path::Tiny::Rule        1.082s (not on CPAN)
+    IO::All::Rule           1.544s
+    Path::Class::Rule       5.172s
+
+This benchmark heavily stressed object creation and determination of
+a file's basename.
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
 

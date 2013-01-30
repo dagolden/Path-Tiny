@@ -340,6 +340,9 @@ sub is_relative { substr( $_[0]->dirname, 0, 1 ) ne '/' }
 Returns a code reference that walks a directory lazily.  Each invocation
 returns a C<Path::Tiny> object or undef when the iterator is exhausted.
 
+This iterator is B<not> recursive.  For recursive iteration, use
+L<Path::Iterator::Rule> instead.
+
 =cut
 
 sub iterator {
@@ -721,6 +724,20 @@ All paths are converted to Unix-style forward slashes.
 * L<Path::Class>
 
 Probably others.  Let me know if you want me to add a module to the list.
+
+=head1 BENCHMARKING
+
+I benchmarked a naive file-finding task: finding all C<*.pm> files in C<@INC>.
+I tested L<Path::Iterator::Rule> and subclasses of it that do file
+manipulations using a file path helper.
+
+    Path::Iterator::Rule    0.501s (no objects)
+    Path::Tiny::Rule        1.082s (not on CPAN)
+    IO::All::Rule           1.544s
+    Path::Class::Rule       5.172s
+
+This benchmark heavily stressed object creation and determination of
+a file's basename.
 
 =cut
 
