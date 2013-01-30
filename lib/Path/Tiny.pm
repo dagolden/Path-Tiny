@@ -361,10 +361,11 @@ sub iterator {
     @contents = path("/tmp/foo.txt")->lines;
     @contents = path("/tmp/foo.txt")->lines(\%options);
 
-Returns a list of lines from a file.  Optionally takes a hash-reference
-of options.  Valid options are C<binmode> and C<chomp>.  If C<binmode> is
-provided, it will be set on the handle prior to reading.  If C<chomp> is
-set, lines will be chomped before being returned.
+Returns a list of lines from a file.  Optionally takes a hash-reference of
+options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
+is provided, it will be set on the handle prior to reading.  If C<count> is
+provided, up to that many lines will be returned. If C<chomp> is set, lines
+will be chomped before being returned.
 
 =cut
 
@@ -423,7 +424,9 @@ sub mkpath {
 
 =method move
 
-TBD
+    path("foo.txt")->move("bar.txt");
+
+Just like C<rename>.
 
 =cut
 
@@ -464,7 +467,11 @@ while ( my ( $k, $v ) = each %opens ) {
 
 =method parent
 
-TBD
+    $parent = path("foo/bar/baz")->parent; # foo/bar
+    $parent = path("foo/wibble.txt")->parent; # foo
+
+Returns a C<Path::Tiny> object corresponding to the parent
+directory of the original directory or file.
 
 =cut
 
@@ -496,7 +503,11 @@ sub parent {
 
 =method relative
 
-TBD
+    $rel = path("/tmp/foo/bar")->relative("/tmp"); # foo/bar
+
+Returns a C<Path::Tiny> object with a relative path name.
+Given the trickiness of this, it's a thin wrapper around
+C<< File::Spec->abs2rel() >>.
 
 =cut
 
@@ -535,9 +546,14 @@ sub remove {
 
 =method slurp
 
-TBD
+    $data = path("foo.txt")->slurp;
+    $data = path("foo.txt")->slurp( {binmode => ":raw"} );
 
-=cut 
+Reads file contents into a scalar.  Takes an optional hash reference may be
+used to pass options.  The only option is C<binmode>, which is passed to
+C<binmode()> on the handle used for reading.
+
+=cut
 
 sub slurp {
     my ( $self, $args ) = @_;
@@ -549,7 +565,9 @@ sub slurp {
 
 =method slurp_utf8
 
-TBD
+    $data = path("foo.txt")->slurp_utf8;
+
+This is like C<slurp> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
@@ -557,11 +575,16 @@ sub slurp_utf8 { push @_, { binmode => ":encoding(UTF-8)" }; goto &slurp }
 
 =method spew
 
-TBD
+    path("foo.txt")->spew(@data);
+    path("foo.txt")->spew({binmode => ":raw"}, @data);
+
+Writes data to a file atomically.  The file is written to a temporary file in
+the same directory, then renamed over the original.  An optional hash reference
+may be used to pass options.  The only option is C<binmode>, which is passed to
+C<binmode()> on the handle used for writing.
 
 =cut
 
-# N.B. atomic
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
@@ -574,13 +597,17 @@ sub spew {
 
 =method spew_utf8
 
-TBD
+    path("foo.txt")->spew_utf8(@data);
+
+This is like C<spew> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
 sub spew_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &spew }
 
 =method stat
+
+    $stat = path("foo.txt")->stat;
 
 Like calling C<stat> from L<File::stat>.
 
@@ -591,7 +618,10 @@ sub stat { File::stat::stat( $_[0]->[PATH] ) }
 
 =method stringify
 
-TBD
+    $path = path("foo.txt");
+    say $path->stringify; # same as "$path"
+
+Returns a string representation of the path.
 
 =cut
 
@@ -599,7 +629,10 @@ sub stringify { $_[0]->[PATH] }
 
 =method touch
 
-TBD
+    path("foo.txt")->touch;
+
+Like the Unix C<touch> utility.  Creates the file if it doesn't exist, or else
+changes the modification and access times to the current time.
 
 =cut
 
@@ -616,7 +649,11 @@ sub touch {
 
 =method volume
 
-TBD
+    path("/tmp/foo.txt")->volume;
+
+Returns the volume portion of the path.  This is equivalent
+equivalent to what L<File::Spec> would give from C<splitpath> and thus
+usually is the empty string on Unix-like operating systems.
 
 =cut
 
@@ -635,16 +672,40 @@ opena opena_utf8 openrw openrw_utf8
 
   use Path::Tiny;
 
-  my $dir = path("/tmp");
-  my $subdir = $dir->child("foo");
-  my $file = $subdir->child("bar.txt");
+  # creating Path::Tiny objects
 
-  ...
+  $dir = path("/tmp");
+  $foo = path("foo.txt");
+
+  $subdir = $dir->child("foo");
+  $bar = $subdir->child("bar.txt");
+
+  # reading files
+
+  $guts = $file->slurp;
+  $guts = $file->slurp_utf8;
+
+  @lines = $file->lines;
+  @lines = $file->lines_utf8;
+
+  $head = $file->lines( {count => 1} );
+
+  # writing files
+
+  $bar->spew( @data );
+  $bar->spew_utf8( @data );
+
+  # reading directories
+
+  for ( $dir->children ) { ... }
+
+  $iter = $dir->iterator;
+  while ( my $next = $iter->() ) { ... }
 
 =head1 DESCRIPTION
 
 This module attempts to provide a small, fast utility for working with
-file paths.  It is friendlier to use than raw L<File::Spec> and provides
+file paths.  It is friendlier to use than L<File::Spec> and provides
 easy access to functions from several other core file handling modules.
 
 It doesn't attempt to be as full-featured as L<IO::All> or L<Path::Class>,
@@ -661,7 +722,7 @@ All paths are converted to Unix-style forward slashes.
 * L<IO::All>
 * L<Path::Class>
 
-Probably others.  Let me know if you want me to add some.
+Probably others.  Let me know if you want me to add a module to the list.
 
 =cut
 
