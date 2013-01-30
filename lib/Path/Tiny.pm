@@ -112,7 +112,7 @@ sub _temp {
     my $temp = File::Temp->$method( TMPDIR => 1, @args );
     close $temp if $method eq 'new'; # so we can unlink it safely if needed
     my $self = path($temp);
-    $self->[TEMP] = $temp; # keep object alive while we are
+    $self->[TEMP] = $temp;           # keep object alive while we are
     return $self;
 }
 
@@ -136,6 +136,7 @@ sub _splitpath {
 
 Returns a new C<Path::Tiny> object with an absolute path.  Unless
 an argument is given, the current directory is used as the absolute base path.
+The argument must be absolute or you won't get an absolute result.
 
 =cut
 
@@ -301,7 +302,8 @@ sub is_absolute { substr( $_[0]->dirname, 0, 1 ) eq '/' }
 
     if ( path("/tmp")->is_dir ) { ... }
 
-Just like C<-d>.
+Just like C<-d>.  This means it actually has to exist on the filesystem.
+Until then, it's just a path.
 
 =cut
 
@@ -311,7 +313,8 @@ sub is_dir { -d $_[0]->[PATH] }
 
     if ( path("/tmp")->is_file ) { ... }
 
-Just like C<-f>.
+Just like C<-f>.  This means it actually has to exist on the filesystem.
+Until then, it's just a path.
 
 =cut
 
