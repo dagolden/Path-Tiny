@@ -43,6 +43,22 @@ subtest "spew -> lines (UTF-8)" => sub {
     is( join( '', $file->lines_utf8 ), join( '', _utf8_lines ), "lines" );
 };
 
+subtest "spew -> lines (count)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my @exp = _lines;
+    is( join( '', $file->lines( { count => 2 } ) ), join( '', @exp[ 0 .. 1 ] ),
+        "lines" );
+};
+
+subtest "spew -> lines (count, UTF-8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my @exp = _utf8_lines;
+    is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ),
+        "lines" );
+};
+
 subtest "append -> slurp" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append(_lines), "append" );
@@ -134,7 +150,6 @@ subtest "openrw (UTF-8)" => sub {
     my $got = do { local $/, <$fh> };
     is( $got, join( '', _utf8_lines ), "openr & read" );
 };
-
 
 done_testing;
 # COPYRIGHT
