@@ -76,7 +76,7 @@ sub new { path( $_[1] ) }
 
     $path = Path::Tiny->rootdir; # /
 
-Gives you C<File::Spec->rootdir> as a C<Path::Tiny> object if you're too
+Gives you C<< File::Spec->rootdir >> as a C<Path::Tiny> object if you're too
 picky for C<path("/")>.
 
 =cut
