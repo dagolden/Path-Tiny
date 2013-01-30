@@ -75,7 +75,7 @@ ok !-e $dir, "$dir no longer exists";
     ok $dir->child('0')->touch;
     my @contents;
     my $iter = $dir->iterator;
-    while ( defined( my $file = $iter->() ) ) {
+    while ( my $file = $iter->() ) {
         push @contents, $file;
     }
     is scalar @contents, 3

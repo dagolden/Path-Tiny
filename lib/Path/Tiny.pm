@@ -34,51 +34,128 @@ use overload (
     fallback => 1,
 );
 
-# constructor function
+#--------------------------------------------------------------------------#
+# Constructors
+#--------------------------------------------------------------------------#
 
-# stringify objects; normalize to unix separators
+=construct path
+
+    $path = path("foo/bar");
+    $path = path("/tmp/file.txt");
+    $path = path(); # like path(".")
+
+Constructs a C<Path::Tiny> object.  It doesn't matter if you give a file or
+directory path.  It's still up to you to call directory-like methods only on
+directories and file-like methods only on files.  This function is exported
+automatically by default.
+
+=cut
+
 sub path {
     $_[0] = "." unless defined $_[0];
-    my $path = join( "/", @_ );
+    my $path = join( "/", @_ ); # stringifies any objects, too :-)
     $path = "." unless length $path;
     $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/]; # unix convention
+    $path =~ tr[\\][/]; # unix convention enforced
     $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
     bless [$path], __PACKAGE__;
 }
 
-# constructor methods
+=construct new
+
+    $path = Path::Tiny->new("foo/bar");
+
+This is just like C<path>, but with method call overhead.  (Why would you
+do that?)
+
+=cut
 
 sub new { path( $_[1] ) }
 
+=construct rootdir
+
+    $path = Path::Tiny->rootdir; # /
+
+Gives you C<File::Spec->rootdir> as a C<Path::Tiny> object if you're too
+picky for C<path("/")>.
+
+=cut
+
 sub rootdir { path( File::Spec->rootdir ) }
 
-sub tempfile { unshift @_, 'new'; goto &_temp }
+=construct tempfile
 
-sub tempdir { unshift @_, 'newdir'; goto &_temp }
+    $temp = Path::Tiny->tempfile( @options );
+
+This passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
+object with the file name.  If you want a template, you must use a C<TEMPLATE>
+named argument.  The C<TMPDIR> option is enabled by default.
+
+The resulting C<File::Temp> object is cached.  The C<filehandle> method (and
+anything that uses it internally) will use the cached object handle.  When the
+C<Path::Tiny> object is destroyed, the C<File::Temp> object will be as well.
+
+=cut
+
+sub tempfile { shift; unshift @_, 'new'; goto &_temp }
+
+=construct tempdir
+
+    $temp = Path::Tiny->tempdir( @options );
+
+This is just like C<tempfile>, except it calls C<< File::Temp->newdir >> instead.
+
+=cut
+
+sub tempdir { shift; unshift @_, 'newdir'; goto &_temp }
 
 sub _temp {
-    my ( $method, $class, @args ) = @_;
-    my $temp = File::Temp->$method(@args);
+    my ( $method, @args ) = @_;
+    my $temp = File::Temp->$method(TMPDIR => 1, @args);
     my $self = path($temp);
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
 }
 
-# private methods
+#--------------------------------------------------------------------------#
+# Private methods
+#--------------------------------------------------------------------------#
 
 sub _splitpath {
     my ($self) = @_;
     @{$self}[ VOL, DIR, FILE ] = File::Spec->splitpath( $self->[PATH] );
 }
 
-# public methods
+#--------------------------------------------------------------------------#
+# Public methods
+#--------------------------------------------------------------------------#
+
+=method absolute
+
+    $abs = path("foo/bar")->absolute;
+    $abs = path("foo/bar")->absolute("/tmp");
+
+Returns a new C<Path::Tiny> object with an absolute path.  Unless
+an argument is given, the current directory is used as the absolute base path.
+
+=cut
 
 sub absolute {
     my ( $self, $base ) = @_;
     return $self if $self->is_absolute;
     return path( join "/", $base // Cwd::getcwd, $_[0]->[PATH] );
 }
+
+=method append
+
+    path("foo.txt")->append(@data);
+    path("foo.txt")->append({binmode => ":raw"}, @data);
+
+Appends data to a file.  The file is locked with C<flock> prior to writing.  An
+optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to C<binmode()> on the handle used for writing.
+
+=cut
 
 sub append {
     my ( $self, @data ) = @_;
@@ -91,16 +168,54 @@ sub append {
     close $fh;
 }
 
+=method append_utf8
+
+    path("foo.txt")->append_utf8(@data);
+
+This is like C<append> with a C<binmode> of C<:encoding(UTF-8)>.
+
+=cut
+
+sub append_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &append }
+
+=method basename
+
+    path("foo/bar.txt")->basename; # bar.txt
+
+Returns the file portion or last directory portion of a path.
+
+=cut
+
 sub basename {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[FILE];
     return $self->[FILE];
 }
 
+=method child
+
+    $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
+    $file = path("/tmp")->child(@parts);
+
+Returns a new <Path::Tiny> object relative to the original.  Works
+like C<catfile> or C<catdir> from File::Spec, but without caring about
+file or directoris.
+
+=cut
+
 sub child {
     my ( $self, @parts ) = @_;
     return path( join "/", $self->[PATH], @parts );
 }
+
+=method children
+
+    @paths = path("/tmp")->children;
+
+Returns a list of C<Path::Tiny> objects for all file and directories
+within a directory.  Excludes "." and ".." automatically.
+
+=cut
 
 # XXX take a match parameter?  qr or coderef?
 sub children {
@@ -109,34 +224,116 @@ sub children {
     return map { $self->child($_) } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
 }
 
+=method copy
+
+    path("/tmp/foo.txt")->copy("/tmp/bar.txt");
+
+Copies a file using L<File::Copy>'s C<copy> function.
+
+=cut
+
 # XXX do recursively for directories?
 sub copy { File::Copy::copy( $_[0]->[PATH], $_[1] ) or die "Copy failed: $!" }
 
-# N.B. This gives trailing slashes.  If that's not desired, for dirs, just use
-# "stringify"; for files, use "parent".
+=method dirname
+
+    path("/tmp/foo.txt")->dirname; # "/tmp/"
+
+Returns the directory name portion of the path.  This is roughly
+equivalent to what L<File::Spec> would give from C<splitpath> and thus
+usually has the trailing slash. If that's not desired, stringify directories
+or call C<parent> on files.
+
+=cut
+
 sub dirname {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[DIR];
     return length $self->[DIR] ? $self->[DIR] : ".";
 }
 
+=method exists
+
+    path("/tmp")->exists;
+
+Just like C<-e>.
+
+=cut
+
 sub exists { -e $_[0]->[PATH] }
+
+=method filehandle
+
+    $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
+
+Returns a file handle.  The C<$mode> argument must be a Perl-style
+read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
+is given, it is passed to C<binmode> on the handle.
+
+See L</openr>, L</openw>, L</openrw>, L</opena> for sugar.
+
+=cut
 
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
     return $self->[TEMP] if defined $self->[TEMP];
+    $mode //= "<";
     open my $fh, $mode, $self->[PATH];
     binmode( $fh, $binmode ) if $binmode;
     return $fh;
 }
 
+=method is_absolute
+
+    if ( path("/tmp")->is_absolute ) { ... }
+
+Boolean for whether the path appear absolute or not.
+
+=cut
+
 sub is_absolute { substr( $_[0]->dirname, 0, 1 ) eq '/' }
+
+=method is_dir
+
+    if ( path("/tmp")->is_dir ) { ... }
+
+Just like C<-d>.
+
+=cut
 
 sub is_dir { -d $_[0]->[PATH] }
 
+=method is_file
+
+    if ( path("/tmp")->is_file ) { ... }
+
+Just like C<-f>.
+
+=cut
+
 sub is_file { -f $_[0]->[PATH] }
 
+=method is_relative
+
+    if ( path("/tmp")->is_relative ) { ... }
+
+Boolean for whether the path appear relative or not.
+
+=cut
+
 sub is_relative { substr( $_[0]->dirname, 0, 1 ) ne '/' }
+
+=method iterator
+
+    $iter = path("/tmp")->iterator;
+    while ( $path = $iter->() ) {
+        ...
+    }
+
+Returns a code reference that walks a directory lazily.  Each invocation
+returns a C<Path::Tiny> object or undef when the iterator is exhausted.
+
+=cut
 
 sub iterator {
     my ($self) = @_;
@@ -152,7 +349,18 @@ sub iterator {
     };
 }
 
-# binmode/chomp
+=method lines
+
+    @contents = path("/tmp/foo.txt")->lines;
+    @contents = path("/tmp/foo.txt")->lines(\%options);
+
+Returns a list of lines from a file.  Optionally takes a hash-reference
+of options.  Valid options are C<binmode> and C<chomp>.  If C<binmode> is
+provided, it will be set on the handle prior to reading.  If C<chomp> is
+set, lines will be chomped before being returned.
+
+=cut
+
 sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
@@ -164,6 +372,21 @@ sub lines {
     else {
         return map { chomp if $chomp; $_ } <$fh>;
     }
+}
+
+=method lines_utf8
+
+    @contents = path("/tmp/foo.txt")->lines_utf8;
+    @contents = path("/tmp/foo.txt")->lines({chomp => 1});
+
+This is like C<lines> with a C<binmode> of C<:encoding(UTF-8)>.
+
+=cut
+
+sub lines_utf8 {
+    $_[1] = {} unless ref $_[1] eq 'HASH';
+    $_[1]->{binmode} = ":encoding(UTF-8)";
+    goto &lines;
 }
 
 sub lstat { File::stat::stat( $_[0]->[PATH] ) }
@@ -278,7 +501,9 @@ sub volume {
 
   use Path::Tiny;
 
-  my $file = path("/foo/bar");
+  my $dir = path("/tmp");
+  my $subdir = $dir->child("foo");
+  my $file = $subdir->child("bar.txt");
 
   ...
 
@@ -294,10 +519,6 @@ nor does it try to work for anything except Unix-like and Win32 platforms.
 It tries to be fast, with as minimal overhead over File::Spec as possible.
 
 All paths are converted to Unix-style forward slashes.
-
-=head1 USAGE
-
-To be written.
 
 =head1 SEE ALSO
 
