@@ -92,8 +92,11 @@ object with the file name.  If you want a template, you must use a C<TEMPLATE>
 named argument.  The C<TMPDIR> option is enabled by default.
 
 The resulting C<File::Temp> object is cached.  The C<filehandle> method (and
-anything that uses it internally) will use the cached object handle.  When the
-C<Path::Tiny> object is destroyed, the C<File::Temp> object will be as well.
+anything that uses it internally) will return the cached object handle rather
+than opening a new one, but any binmode options will be applied.
+
+When the C<Path::Tiny> object is destroyed, the C<File::Temp> object will be as
+well.
 
 =cut
 
@@ -276,9 +279,14 @@ See L</openr>, L</openw>, L</openrw>, L</opena> for sugar.
 
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
-    return $self->[TEMP] if defined $self->[TEMP];
-    $mode //= "<";
-    open my $fh, $mode, $self->[PATH];
+    my $fh;
+    if ( defined $self->[TEMP] ) {
+        $fh = $self->[TEMP];
+    }
+    else {
+        $mode //= "<";
+        open $fh, $mode, $self->[PATH];
+    }
     binmode( $fh, $binmode ) if $binmode;
     return $fh;
 }
