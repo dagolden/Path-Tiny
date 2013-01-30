@@ -609,7 +609,8 @@ sub volume {
 
 1;
 
-=for Pod::Coverage method_names_here
+=for Pod::Coverage
+opena opena_utf8 openrw openrw_utf8
 
 =head1 SYNOPSIS
 
