@@ -114,7 +114,7 @@ sub tempdir { shift; unshift @_, 'newdir'; goto &_temp }
 
 sub _temp {
     my ( $method, @args ) = @_;
-    my $temp = File::Temp->$method(TMPDIR => 1, @args);
+    my $temp = File::Temp->$method( TMPDIR => 1, @args );
     my $self = path($temp);
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
@@ -397,22 +397,70 @@ sub lines_utf8 {
     goto &lines;
 }
 
+=method lstat
+
+TBD
+
+=cut
+
 sub lstat { File::stat::stat( $_[0]->[PATH] ) }
+
+=method mkpath
+
+TBD
+
+=cut
 
 sub mkpath {
     my ( $self, $opts ) = @_;
     return File::Path::make_path( $self->[PATH], ref($opts) eq 'HASH' ? $opts : () );
 }
 
+=method move
+
+TBD
+
+=cut
+
 sub move { rename $_[0]->[PATH], $_[1] }
 
-sub opena { $_[0]->filehandle( ">>", $_[1] ) }
+=method openr, openr_utf8, openw, openw_utf8, ...
 
-sub openr { $_[0]->filehandle( "<", $_[1] ) }
+    $fh = path("foo.txt")->openr($binmode);  # read
+    $fh = path("foo.txt")->openr_utf8;
 
-sub openrw { $_[0]->filehandle( "+<", $_[1] ) }
+    $fh = path("foo.txt")->openw($binmode);  # write
+    $fh = path("foo.txt")->openw_utf8;
 
-sub openw { $_[0]->filehandle( ">", $_[1] ) }
+    $fh = path("foo.txt")->opena($binmode);  # append
+    $fh = path("foo.txt")->opena_utf8;
+
+    $fh = path("foo.txt")->openrw($binmode); # read/write
+    $fh = path("foo.txt")->openrw_utf8;
+
+Returns a file handle opened in the specified mode.  The C<openr> style
+methods take a single C<binmode> argument.  The C<openr_utf8> style methods
+use C<:encoding(UTF-8)>.
+
+=cut
+
+my %opens = (
+    opena  => ">>",
+    openr  => "<",
+    openw  => ">",
+    openrw => "+<"
+);
+
+while ( my ( $k, $v ) = each %opens ) {
+    *{$k} = sub { $_[0]->filehandle( $v, $_[1] ) };
+    *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":encoding(UTF-8)" ) };
+}
+
+=method parent
+
+TBD
+
+=cut
 
 sub parent {
     my ($self) = @_;
@@ -440,11 +488,23 @@ sub parent {
     }
 }
 
+=method relative
+
+TBD
+
+=cut
+
 # Easy to get wrong, so wash it through File::Spec (sigh)
 sub relative {
     my ( $self, $base ) = @_;
     return path( File::Spec->abs2rel( $self->[PATH], $base ) );
 }
+
+=method remove
+
+TBD
+
+=cut
 
 sub remove {
     my ( $self, $opts ) = @_;
@@ -456,6 +516,12 @@ sub remove {
     }
 }
 
+=method slurp
+
+TBD
+
+=cut 
+
 sub slurp {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
@@ -464,7 +530,19 @@ sub slurp {
     return scalar <$fh>;
 }
 
+=method slurp_utf8
+
+TBD
+
+=cut
+
 sub slurp_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &slurp }
+
+=method spew
+
+TBD
+
+=cut
 
 # N.B. atomic
 sub spew {
@@ -477,12 +555,36 @@ sub spew {
     $temp->rename( $self->[PATH] );
 }
 
+=method spew_utf8
+
+TBD
+
+=cut
+
 sub spew_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &spew }
+
+=method stat
+
+TBD
+
+=cut
 
 # XXX break out individual stat() components as subs?
 sub stat { File::stat::stat( $_[0]->[PATH] ) }
 
+=method stringify
+
+TBD
+
+=cut
+
 sub stringify { $_[0]->[PATH] }
+
+=method touch
+
+TBD
+
+=cut
 
 sub touch {
     my ($self) = @_;
@@ -494,6 +596,12 @@ sub touch {
         close $self->openw;
     }
 }
+
+=method volume
+
+TBD
+
+=cut
 
 sub volume {
     my ($self) = @_;

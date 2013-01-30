@@ -208,6 +208,80 @@ set, lines will be chomped before being returned.
 
 This is like C<lines> with a C<binmode> of C<:encoding(UTF-8)>.
 
+=head2 lstat
+
+TBD
+
+=head2 mkpath
+
+TBD
+
+=head2 move
+
+TBD
+
+=head2 openr, openr_utf8, openw, openw_utf8, ...
+
+    $fh = path("foo.txt")->openr($binmode);  # read
+    $fh = path("foo.txt")->openr_utf8;
+
+    $fh = path("foo.txt")->openw($binmode);  # write
+    $fh = path("foo.txt")->openw_utf8;
+
+    $fh = path("foo.txt")->opena($binmode);  # append
+    $fh = path("foo.txt")->opena_utf8;
+
+    $fh = path("foo.txt")->openrw($binmode); # read/write
+    $fh = path("foo.txt")->openrw_utf8;
+
+Returns a file handle opened in the specified mode.  The C<openr> style
+methods take a single C<binmode> argument.  The C<openr_utf8> style methods
+use C<:encoding(UTF-8)>.
+
+=head2 parent
+
+TBD
+
+=head2 relative
+
+TBD
+
+=head2 remove
+
+TBD
+
+=head2 slurp
+
+TBD
+
+=head2 slurp_utf8
+
+TBD
+
+=head2 spew
+
+TBD
+
+=head2 spew_utf8
+
+TBD
+
+=head2 stat
+
+TBD
+
+=head2 stringify
+
+TBD
+
+=head2 touch
+
+TBD
+
+=head2 volume
+
+TBD
+
 =for Pod::Coverage method_names_here
 
 =head1 SEE ALSO
