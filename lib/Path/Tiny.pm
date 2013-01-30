@@ -51,8 +51,9 @@ automatically by default.
 =cut
 
 sub path {
-    $_[0] = "." unless defined $_[0];
-    my $path = join( "/", @_ ); # stringifies any objects, too :-)
+    my $path = shift // ".";
+    # join stringifies any objects, too, which is handy :-)
+    $path = join( "/", ($path eq '/' ? "" : $path), @_ ) if @_;
     $path = "." unless length $path;
     $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/]; # unix convention enforced
@@ -205,7 +206,8 @@ file or directories.
 
 sub child {
     my ( $self, @parts ) = @_;
-    return path( join "/", $self->[PATH], @parts );
+    my $path = $self->[PATH];
+    return path( join( "/", ($path eq '/' ? "" : $path), @parts) );
 }
 
 =method children
