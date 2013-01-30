@@ -213,13 +213,15 @@ my $tmpdir = Path::Tiny->tempdir;
 }
 
 SKIP: {
-    my $file = $tmpdir->child("foo.txt");
-    my $link = $tmpdir->child("bar.txt");
+    my $newtmp = Path::Tiny->tempdir;
+    my $file = $newtmp->child("foo.txt");
+    my $link = $newtmp->child("bar.txt");
     $file->spew("Hello World\n");
     eval { symlink $file => $link };
-    skip 1, "symlink failed" if @_;
+    skip "symlink unavailable", 1 if $@;
     ok( $link->lstat->size, "lstat" );
 }
+
 # We don't have subsume so comment these out.  Keep in case we
 # implement it later
 
