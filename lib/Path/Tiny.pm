@@ -8,14 +8,13 @@ package Path::Tiny;
 
 # Dependencies
 use autodie 2.00;
-use Cwd              ();
-use Exporter         (qw/import/);
-use Fcntl            (qw/:flock SEEK_END/);
-use File::Copy       ();
-use File::Path       ();
-use File::Spec       ();
-use File::Spec::Unix ();
-use File::Stat       ();
+use Cwd        ();
+use Exporter   (qw/import/);
+use Fcntl      (qw/:flock SEEK_END/);
+use File::Copy ();
+use File::Stat ();
+use File::Path 2.07 ();
+use File::Spec 3.33 ();
 use File::Temp 0.18 ();
 
 our @EXPORT = qw/path/;
