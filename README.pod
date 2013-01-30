@@ -51,8 +51,6 @@ easy access to functions from several other core file handling modules.
 It doesn't attempt to be as full-featured as L<IO::All> or L<Path::Class>,
 nor does it try to work for anything except Unix-like and Win32 platforms.
 
-It tries to be fast, with as minimal overhead over File::Spec as possible.
-
 All paths are converted to Unix-style forward slashes.
 
 =head1 CONSTRUCTORS
@@ -127,7 +125,7 @@ This is like C<append> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =head2 basename
 
-    path("foo/bar.txt")->basename; # bar.txt
+    $name = path("foo/bar.txt")->basename; # bar.txt
 
 Returns the file portion or last directory portion of a path.
 
@@ -155,7 +153,7 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 =head2 dirname
 
-    path("/tmp/foo.txt")->dirname; # "/tmp/"
+    $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
 
 Returns the directory name portion of the path.  This is roughly
 equivalent to what L<File::Spec> would give from C<splitpath> and thus
@@ -164,7 +162,7 @@ or call C<parent> on files.
 
 =head2 exists
 
-    path("/tmp")->exists;
+    if ( path("/tmp")->exists ) { ... }
 
 Just like C<-e>.
 
@@ -354,7 +352,7 @@ changes the modification and access times to the current time.
 
 =head2 volume
 
-    path("/tmp/foo.txt")->volume;
+    $vol = path("/tmp/foo.txt")->volume;
 
 Returns the volume portion of the path.  This is equivalent
 equivalent to what L<File::Spec> would give from C<splitpath> and thus

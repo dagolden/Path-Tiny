@@ -180,7 +180,7 @@ sub append_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &appe
 
 =method basename
 
-    path("foo/bar.txt")->basename; # bar.txt
+    $name = path("foo/bar.txt")->basename; # bar.txt
 
 Returns the file portion or last directory portion of a path.
 
@@ -237,7 +237,7 @@ sub copy { File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or die "Copy failed: $!" }
 
 =method dirname
 
-    path("/tmp/foo.txt")->dirname; # "/tmp/"
+    $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
 
 Returns the directory name portion of the path.  This is roughly
 equivalent to what L<File::Spec> would give from C<splitpath> and thus
@@ -254,7 +254,7 @@ sub dirname {
 
 =method exists
 
-    path("/tmp")->exists;
+    if ( path("/tmp")->exists ) { ... }
 
 Just like C<-e>.
 
@@ -649,7 +649,7 @@ sub touch {
 
 =method volume
 
-    path("/tmp/foo.txt")->volume;
+    $vol = path("/tmp/foo.txt")->volume;
 
 Returns the volume portion of the path.  This is equivalent
 equivalent to what L<File::Spec> would give from C<splitpath> and thus
@@ -710,8 +710,6 @@ easy access to functions from several other core file handling modules.
 
 It doesn't attempt to be as full-featured as L<IO::All> or L<Path::Class>,
 nor does it try to work for anything except Unix-like and Win32 platforms.
-
-It tries to be fast, with as minimal overhead over File::Spec as possible.
 
 All paths are converted to Unix-style forward slashes.
 
