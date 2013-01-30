@@ -44,9 +44,8 @@
             "Exporter" : "0",
             "Fcntl" : "0",
             "File::Copy" : "0",
-            "File::Path" : "0",
-            "File::Spec" : "0",
-            "File::Spec::Unix" : "0",
+            "File::Path" : "2.07",
+            "File::Spec" : "3.33",
             "File::Stat" : "0",
             "File::Temp" : "0.18",
             "autodie" : "2.00",
@@ -60,6 +59,7 @@
       "test" : {
          "requires" : {
             "File::Find" : "0",
+            "File::Spec::Unix" : "0",
             "Test::Deep" : "0",
             "Test::More" : "0.96"
          }
