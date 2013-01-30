@@ -396,7 +396,9 @@ sub lines_utf8 {
 
 =method lstat
 
-TBD
+    $stat = path("/some/symlink")->lstat;
+
+Like calling C<lstat> from L<File::stat>.
 
 =cut
 
@@ -404,7 +406,11 @@ sub lstat { File::stat::stat( $_[0]->[PATH] ) }
 
 =method mkpath
 
-TBD
+    path("foo/bar/baz")->mkpath;
+    path("foo/bar/baz")->mkpath( \%options );
+
+Like calling C<make_path> from L<File::Path>.  An optional hash reference
+is passed through to C<make_path>.
 
 =cut
 
@@ -500,7 +506,18 @@ sub relative {
 
 =method remove
 
-TBD
+    # directory
+    path("foo/bar/baz")->remove;
+    path("foo/bar/baz")->remove( \%options );
+
+    # file
+    path("foo.txt")->remove;
+
+For directories, this is like Like calling C<remove_tree> from L<File::Path>.  An
+optional hash reference is passed through to C<remove_tree>.
+
+For files, the file is unlinked if it exists.  Unlike C<unlink>, if the file
+does not exist, this silently does nothing and returns a true value anyway.
 
 =cut
 
@@ -563,7 +580,7 @@ sub spew_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &spew }
 
 =method stat
 
-TBD
+Like calling C<stat> from L<File::stat>.
 
 =cut
 
