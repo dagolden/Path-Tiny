@@ -452,6 +452,7 @@ my %opens = (
 );
 
 while ( my ( $k, $v ) = each %opens ) {
+    no strict 'refs';
     *{$k} = sub { $_[0]->filehandle( $v, $_[1] ) };
     *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":encoding(UTF-8)" ) };
 }
@@ -552,7 +553,7 @@ sub spew {
     my $fh   = $temp->openw( $args->{binmode} );
     print {$fh} $_ for @data;
     close $fh;
-    $temp->rename( $self->[PATH] );
+    $temp->move( $self->[PATH] );
 }
 
 =method spew_utf8
