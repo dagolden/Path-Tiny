@@ -197,7 +197,7 @@ sub basename {
     $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
     $file = path("/tmp")->child(@parts);
 
-Returns a new <Path::Tiny> object relative to the original.  Works
+Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
 file or directoris.
 
