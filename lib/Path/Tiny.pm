@@ -14,7 +14,7 @@ use Fcntl      (qw/:flock SEEK_END/);
 use File::Copy ();
 use File::Stat ();
 use File::Path 2.07 ();
-use File::Spec 3.33 ();
+use File::Spec 3.40 ();
 use File::Temp 0.18 ();
 
 our @EXPORT = qw/path/;

@@ -45,7 +45,7 @@
             "Fcntl" : "0",
             "File::Copy" : "0",
             "File::Path" : "2.07",
-            "File::Spec" : "3.33",
+            "File::Spec" : "3.40",
             "File::Stat" : "0",
             "File::Temp" : "0.18",
             "autodie" : "2.00",
