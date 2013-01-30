@@ -91,12 +91,8 @@ This passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
 object with the file name.  If you want a template, you must use a C<TEMPLATE>
 named argument.  The C<TMPDIR> option is enabled by default.
 
-The resulting C<File::Temp> object is cached.  The C<filehandle> method (and
-anything that uses it internally) will return the cached object handle rather
-than opening a new one, but any binmode options will be applied.
-
-When the C<Path::Tiny> object is destroyed, the C<File::Temp> object will be as
-well.
+The resulting C<File::Temp> object is cached. When the C<Path::Tiny> object is
+destroyed, the C<File::Temp> object will be as well.
 
 =cut
 
@@ -115,6 +111,7 @@ sub tempdir { shift; unshift @_, 'newdir'; goto &_temp }
 sub _temp {
     my ( $method, @args ) = @_;
     my $temp = File::Temp->$method( TMPDIR => 1, @args );
+    close $temp if $method eq 'new'; # so we can unlink it safely if needed
     my $self = path($temp);
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
@@ -280,7 +277,7 @@ See L</openr>, L</openw>, L</openrw>, L</opena> for sugar.
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
     my $fh;
-    if ( defined $self->[TEMP] ) {
+    if ( 0 && defined $self->[TEMP] ) {
         $fh = $self->[TEMP];
     }
     else {

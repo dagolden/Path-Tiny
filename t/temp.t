@@ -26,10 +26,8 @@ subtest "tempfile" => sub {
 subtest "tempfile handle" => sub {
     my $tempfile = Path::Tiny->tempfile;
     my $fh       = $tempfile->filehandle;
-    is( $fh, $tempfile->[4], "filehandle() returns cached File::Temp object" );
-    unlike( PerlIO::get_layers($fh), qr/:utf8/, "handle does not have utf8" );
-    ok( $fh = $tempfile->filehandle( ">", ":utf8" ), "calling filehandle() with :utf8" );
-    like( join( ":", PerlIO::get_layers($fh) ), qr/utf8/, "handle has utf8" );
+    is( ref $tempfile->[4], 'File::Temp', "cached File::Temp object" );
+    is( fileno $tempfile->[4], undef, "cached handle is closed" );
 };
 
 done_testing;
