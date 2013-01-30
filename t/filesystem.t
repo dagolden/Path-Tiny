@@ -25,7 +25,7 @@ ok $file->is_file, "it's a file!";
 my ( $volume, $dirname, $basename ) =
   map { s{\\}{/}; $_ } File::Spec->splitpath($file);
 is( $file->volume,   $volume,   "volume correct" );
-is( $file->volume,   $volume,   "volume cached " ); # for coverage
+is( $file->volume,   $volume,   "volume cached " );  # for coverage
 is( $file->dirname,  $dirname,  "dirname correct" );
 is( $file->basename, $basename, "basename correct" );
 
@@ -37,7 +37,7 @@ is( $file->basename, $basename, "basename correct" );
 {
     my $stat = $file->stat;
     ok $stat;
-    cmp_ok $stat->mtime, '>', time() - 20; # Modified within last 20 seconds
+    cmp_ok $stat->mtime, '>', time() - 20;           # Modified within last 20 seconds
 
     $stat = $file->parent->stat;
     ok $stat;
@@ -78,7 +78,7 @@ my $tmpdir = Path::Tiny->tempdir;
     ok -d $dir, "$dir is a directory";
 
     $dir = $dir->parent;
-    ok $dir->remove({safe => 1}); # check that we pass through args
+    ok $dir->remove( { safe => 1 } ); # check that we pass through args
     ok !-e $dir;
 }
 
@@ -208,14 +208,13 @@ my $tmpdir = Path::Tiny->tempdir;
     $file->copy($copy);
     is( $copy->slurp, "Hello World\n", "file copied" );
     chmod 0400, $copy; # read only
-    like( exception { $file->copy($copy) },
-        qr/permission/i, "copy throws error if permission denied" );
+    ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
 }
 
 SKIP: {
     my $newtmp = Path::Tiny->tempdir;
-    my $file = $newtmp->child("foo.txt");
-    my $link = $newtmp->child("bar.txt");
+    my $file   = $newtmp->child("foo.txt");
+    my $link   = $newtmp->child("bar.txt");
     $file->spew("Hello World\n");
     eval { symlink $file => $link };
     skip "symlink unavailable", 1 if $@;
