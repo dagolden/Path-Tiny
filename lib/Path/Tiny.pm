@@ -52,9 +52,9 @@ automatically by default.
 
 sub path {
     my $path = shift // ".";
+    $path = "." unless length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ($path eq '/' ? "" : $path), @_ ) if @_;
-    $path = "." unless length $path;
     $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/]; # unix convention enforced
     $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
