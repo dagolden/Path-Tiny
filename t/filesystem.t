@@ -20,6 +20,7 @@ ok $file, "Got a filename via tmpnam()";
 }
 
 ok -e $file, "$file should exist";
+ok $file->is_file, "it's a file!";
 
 {
     my $fh = $file->openr;
@@ -41,6 +42,7 @@ ok not -e $file;
 my $dir = path( tempdir( TMPDIR => 1, CLEANUP => 1 ) );
 ok $dir;
 ok -d $dir;
+ok $dir->is_dir, "It's a directory!";
 
 $file = $dir->child('foo.x');
 $file->touch;
@@ -84,6 +86,7 @@ my $tmpdir = Path::Tiny->tempdir;
     }
     is scalar @contents, 3
       or diag explain \@contents;
+    is( $iter->(), undef, "exhausted iterator is undef" );
 
     my $joined = join ' ', sort map $_->basename, grep { -f $_ } @contents;
     is $joined, '0 file.x'
@@ -161,7 +164,7 @@ my $tmpdir = Path::Tiny->tempdir;
     is_deeply \@content, [ "Line1\n", "Line2\n", $line3 ];
 
     chop($line3);
-    @content = $file->lines( {chomp => 1, binmode => ':crlf:utf8'} );
+    @content = $file->lines( { chomp => 1, binmode => ':crlf:utf8' } );
     is_deeply \@content, [ "Line1", "Line2", $line3 ];
 
     $file->remove;
@@ -169,12 +172,12 @@ my $tmpdir = Path::Tiny->tempdir;
 }
 
 {
-    my $file = path( $tmpdir, 'spew');
+    my $file = path( $tmpdir, 'spew' );
     $file->remove() if $file->exists;
-    $file->spew( {binmode => ':raw'}, "Line1\r\n" );
-    $file->append( {binmode => ':raw'}, "Line2" );
+    $file->spew( { binmode => ':raw' }, "Line1\r\n" );
+    $file->append( { binmode => ':raw' }, "Line2" );
 
-    my $content = $file->slurp( {binmode => ':raw' } );
+    my $content = $file->slurp( { binmode => ':raw' } );
 
     is( $content, "Line1\r\nLine2" );
 }
@@ -184,6 +187,14 @@ my $tmpdir = Path::Tiny->tempdir;
     my $cwd = path();
     is $cwd, $cwd->absolute->relative,
       "from $cwd to " . $cwd->absolute . " to " . $cwd->absolute->relative;
+}
+
+{
+    my $file = $tmpdir->child("foo.txt");
+    $file->spew("Hello World\n");
+    my $copy = $tmpdir->child("bar.txt");
+    $file->copy($copy);
+    is( $copy->slurp, "Hello World\n", "file copied" );
 }
 
 # We don't have subsume so comment these out.  Keep in case we

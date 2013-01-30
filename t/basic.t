@@ -2,10 +2,12 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
+use File::Spec;
 use Path::Tiny;
 use Cwd;
 
 my $file1 = path('foo.txt');
+isa_ok( $file1, "Path::Tiny" );
 is $file1, 'foo.txt';
 ok $file1->is_relative;
 is $file1->dirname, '.';
@@ -89,6 +91,12 @@ is $file->parent, '/foo/baz';
 
   $file = path('one/two/three');
   is $file->relative('one'), 'two/three';
+}
+
+{
+    my $file = Path::Tiny->new(File::Spec->rootdir);
+    my $root = Path::Tiny->rootdir;
+    is( $file, $root, "rootdir is like path('/')");
 }
 
 done_testing();

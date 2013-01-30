@@ -14,5 +14,11 @@ ok( ! -e $path, "target directory not created yet" );
 ok( $path->mkpath, "mkpath on directory returned true" );
 ok( -d $path, "target directory created" );
 
+my $path2 = path($tempdir)->child("bar");
+ok( ! -e $path2, "target directory not created yet" );
+ok( $path2->mkpath({mode => 0700}), "mkpath on directory with mode" );
+is( $path2->stat->mode & 0777, 0700, "correct mode" );
+ok( -d $path2, "target directory created" );
+
 done_testing;
 # COPYRIGHT

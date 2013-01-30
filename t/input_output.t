@@ -25,6 +25,12 @@ subtest "spew -> slurp" => sub {
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 
+subtest "spew -> slurp (binmode)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew( { binmode => ":utf8" }, _utf8_lines ), "spew" );
+    is( $file->slurp( { binmode => ":utf8" } ), join( '', _utf8_lines ), "slurp" );
+};
+
 subtest "spew -> slurp (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
@@ -55,14 +61,19 @@ subtest "spew -> lines (count, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     my @exp = _utf8_lines;
-    is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ),
-        "lines" );
+    is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ), "lines" );
 };
 
 subtest "append -> slurp" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append(_lines), "append" );
     is( $file->slurp, join( '', _lines ), "slurp" );
+};
+
+subtest "append -> slurp (binmode)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append( { binmode => ":utf8" }, _utf8_lines ), "append" );
+    is( $file->slurp( { binmode => ":utf8" } ), join( '', _utf8_lines ), "slurp" );
 };
 
 subtest "append -> slurp (UTF-8)" => sub {
