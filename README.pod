@@ -112,9 +112,9 @@ Returns the file portion or last directory portion of a path.
     $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
     $file = path("/tmp")->child(@parts);
 
-Returns a new <Path::Tiny> object relative to the original.  Works
+Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
-file or directoris.
+file or directories.
 
 =head2 children
 
@@ -252,6 +252,9 @@ David Golden <dagolden@cpan.org>
 
 =head1 COPYRIGHT AND LICENSE
 
-This software is copyright (c) 2013 by Autopragmatic, LLC.  No
-license is granted to other entities.
+This software is Copyright (c) 2013 by David Golden.
+
+This is free software, licensed under:
+
+  The Apache License, Version 2.0, January 2004
 

@@ -199,7 +199,7 @@ sub basename {
 
 Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
-file or directoris.
+file or directories.
 
 =cut
 
