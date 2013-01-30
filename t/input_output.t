@@ -25,6 +25,12 @@ subtest "spew -> slurp" => sub {
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 
+subtest "spew -> slurp (empty)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew, "spew" );
+    is( $file->slurp, '', "slurp" );
+};
+
 subtest "spew -> slurp (binmode)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew( { binmode => ":utf8" }, _utf8_lines ), "spew" );
@@ -57,6 +63,14 @@ subtest "spew -> lines (count)" => sub {
         "lines" );
 };
 
+subtest "spew -> lines (count, chomp)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my @exp = map { chomp; $_ } _lines;
+    is( join( '', $file->lines( { chomp => 1, count => 2 } ) ), join( '', @exp[ 0 .. 1 ] ),
+        "lines" );
+};
+
 subtest "spew -> lines (count, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
@@ -67,6 +81,18 @@ subtest "spew -> lines (count, UTF-8)" => sub {
 subtest "append -> slurp" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append(_lines), "append" );
+    is( $file->slurp, join( '', _lines ), "slurp" );
+};
+
+subtest "append -> slurp (empty)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append, "append" );
+    is( $file->slurp, "", "slurp" );
+};
+
+subtest "append -> slurp (piecemeal)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append($_), "piecemeal append") for _lines;
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 

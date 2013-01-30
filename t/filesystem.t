@@ -2,6 +2,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
+use Test::Fatal;
 use File::Temp qw(tmpnam tempdir);
 use File::Spec;
 
@@ -21,6 +22,12 @@ ok $file, "Got a filename via tmpnam()";
 
 ok -e $file, "$file should exist";
 ok $file->is_file, "it's a file!";
+my ( $volume, $dirname, $basename ) =
+  map { s{\\}{/}; $_ } File::Spec->splitpath($file);
+is( $file->volume,   $volume,   "volume correct" );
+is( $file->volume,   $volume,   "volume cached " ); # for coverage
+is( $file->dirname,  $dirname,  "dirname correct" );
+is( $file->basename, $basename, "basename correct" );
 
 {
     my $fh = $file->openr;
@@ -47,6 +54,9 @@ ok $dir->is_dir, "It's a directory!";
 $file = $dir->child('foo.x');
 $file->touch;
 ok -e $file;
+utime time - 10, time - 10, $file;
+$file->touch;
+ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
 
 {
     my @files = $dir->children;
@@ -56,6 +66,7 @@ ok -e $file;
 
 ok $dir->remove, "Removed $dir";
 ok !-e $dir, "$dir no longer exists";
+ok $dir->remove, "Removing non-existent dir returns true";
 
 my $tmpdir = Path::Tiny->tempdir;
 
@@ -67,7 +78,7 @@ my $tmpdir = Path::Tiny->tempdir;
     ok -d $dir, "$dir is a directory";
 
     $dir = $dir->parent;
-    ok $dir->remove;
+    ok $dir->remove({safe => 1}); # check that we pass through args
     ok !-e $dir;
 }
 
@@ -142,8 +153,9 @@ my $tmpdir = Path::Tiny->tempdir;
     @content = $file->lines( { chomp => 1 } );
     is_deeply \@content, [ "Line1", "Line2" ];
 
-    $file->remove;
-    ok not -e $file;
+    ok( $file->remove, "removing file" );
+    ok !-e $file, "file is gone";
+    ok $file->remove, "removing file again returns true";
 }
 
 {
@@ -195,8 +207,19 @@ my $tmpdir = Path::Tiny->tempdir;
     my $copy = $tmpdir->child("bar.txt");
     $file->copy($copy);
     is( $copy->slurp, "Hello World\n", "file copied" );
+    chmod 0400, $copy; # read only
+    like( exception { $file->copy($copy) },
+        qr/permission/i, "copy throws error if permission denied" );
 }
 
+SKIP: {
+    my $file = $tmpdir->child("foo.txt");
+    my $link = $tmpdir->child("bar.txt");
+    $file->spew("Hello World\n");
+    eval { symlink $file => $link };
+    skip 1, "symlink failed" if @_;
+    ok( $link->lstat->size, "lstat" );
+}
 # We don't have subsume so comment these out.  Keep in case we
 # implement it later
 
