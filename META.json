@@ -61,6 +61,7 @@
             "File::Find" : "0",
             "File::Spec::Unix" : "0",
             "Test::Deep" : "0",
+            "Test::Fatal" : "0",
             "Test::More" : "0.96"
          }
       }
