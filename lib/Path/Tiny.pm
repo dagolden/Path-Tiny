@@ -176,7 +176,7 @@ This is like C<append> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
-sub append_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &append }
+sub append_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &append }
 
 =method basename
 
@@ -534,7 +534,7 @@ TBD
 
 =cut
 
-sub slurp_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &slurp }
+sub slurp_utf8 { push @_, { binmode => ":encoding(UTF-8)" }; goto &slurp }
 
 =method spew
 
@@ -559,7 +559,7 @@ TBD
 
 =cut
 
-sub spew_utf8 { unshift @_, { binmode => ":encoding(UTF-8)" }; goto &spew }
+sub spew_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &spew }
 
 =method stat
 
