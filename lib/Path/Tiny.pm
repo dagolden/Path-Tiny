@@ -37,9 +37,8 @@ use overload (
 
 # stringify objects; normalize to unix separators
 sub path {
-    my $path = shift;
-    $path = "." unless defined $path;
-    $path = "$path" if ref $path;
+    $_[0] = "." unless defined $_[0];
+    my $path = join( "/", @_ );
     $path = "." unless length $path;
     $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/]; # unix convention
@@ -83,11 +82,11 @@ sub absolute {
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $fh   = $self->opena( $args->{binmode} );
-    flock($fh, LOCK_EX);
-    seek($fh, 0, SEEK_END);
+    my $fh = $self->opena( $args->{binmode} );
+    flock( $fh, LOCK_EX );
+    seek( $fh, 0, SEEK_END );
     print {$fh} $_ for @data;
-    flock($fh, LOCK_UN);
+    flock( $fh, LOCK_UN );
     close $fh;
 }
 
@@ -112,10 +111,12 @@ sub children {
 # XXX do recursively for directories?
 sub copy { File::Copy::copy( $_[0]->[PATH], $_[1] ) or die "Copy failed: $!" }
 
+# N.B. This gives trailing slashes.  If that's not desired, for dirs, just use
+# "stringify"; for files, use "parent".
 sub dirname {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[DIR];
-    return $self->[DIR];
+    return length $self->[DIR] ? $self->[DIR] : ".";
 }
 
 sub exists { -e $_[0]->[PATH] }
@@ -180,13 +181,22 @@ sub parent {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[FILE];
     if ( length $self->[FILE] ) {
-        return path("..") if $self->[FILE] eq '.';
-        return path( $self->[VOL] . $self->[DIR] );
+        if ( $self->[FILE] eq '.' || $self->[FILE] =~ /\.\./ ) {
+            return path( $self->[PATH] . "/.." );
+        }
+        else {
+            return path( $self->[VOL] . $self->[DIR] );
+        }
     }
     elsif ( length $self->[DIR] ) {
-        return path("/") if $self->[DIR] eq "/";
-        ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/$}{/};
-        return path( $self->[VOL] . $dir );
+        if ( $self->[DIR] =~ /\.\./ ) {
+            return path( $self->[VOL] . $self->[DIR] . "/.." );
+        }
+        else {
+            return path("/") if $self->[DIR] eq "/";
+            ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/$}{/};
+            return path( $self->[VOL] . $dir );
+        }
     }
     else {
         return path( $self->[VOL] );
