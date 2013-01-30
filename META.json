@@ -47,6 +47,7 @@
             "File::Path" : "0",
             "File::Spec" : "0",
             "File::Spec::Unix" : "0",
+            "File::Stat" : "0",
             "File::Temp" : "0.18",
             "autodie" : "2.00",
             "constant" : "0",
