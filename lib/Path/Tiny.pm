@@ -232,7 +232,7 @@ Copies a file using L<File::Copy>'s C<copy> function.
 =cut
 
 # XXX do recursively for directories?
-sub copy { File::Copy::copy( $_[0]->[PATH], $_[1] ) or die "Copy failed: $!" }
+sub copy { File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or die "Copy failed: $!" }
 
 =method dirname
 
