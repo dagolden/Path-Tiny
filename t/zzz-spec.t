@@ -5,6 +5,8 @@ use Test::More 0.96;
 
 use Path::Tiny;
 
+my $IS_WIN32 = $^O eq 'MSWin32';
+
 # tests adapted from File::Spec's t/Spec.t test
 
 # Each element in this array is a single test. Storing them this way makes
@@ -12,57 +14,51 @@ use Path::Tiny;
 # before these tests are run.
 
 my @tests = (
-# [ Function          ,            Expected          ,         Platform ]
+    # [ Function          ,            Expected          ,         Win32-different ]
 
-[ "path('a','b','c')",         'a/b/c'  ],
-[ "path('a','b','./c')",       'a/b/c'  ],
-[ "path('./a','b','c')",       'a/b/c'  ],
-[ "path('c')",                 'c' ],
-[ "path('./c')",               'c' ],
-
-[ "path()",                     '.'          ],
-[ "path('')",                   '.'         ],
-[ "path('/')",                  '/'         ],
-[ "path('','d1','d2','d3','')", '/d1/d2/d3' ],
-[ "path('d1','d2','d3','')",    'd1/d2/d3'  ],
-[ "path('','d1','d2','d3')",    '/d1/d2/d3' ],
-[ "path('d1','d2','d3')",       'd1/d2/d3'  ],
-[ "path('/','d2/d3')",          '/d2/d3'    ],
-
-[ "path('///../../..//./././a//b/.././c/././')",   '/a/b/../c' ],
-[ "path('a/../../b/c')",            'a/../../b/c'    ],
-[ "path('/.')",                     '/'              ],
-[ "path('/./')",                    '/'              ],
-[ "path('/a/./')",                  '/a'             ],
-[ "path('/a/.')",                   '/a'             ],
-[ "path('/../../')",                '/'              ],
-[ "path('/../..')",                 '/'              ],
-
-[  "path('/t1/t2/t3')->relative('/t1/t2/t3')",          '.'                  ],
-[  "path('/t1/t2/t4')->relative('/t1/t2/t3')",          '../t4'              ],
-[  "path('/t1/t2')->relative('/t1/t2/t3')",             '..'                 ],
-[  "path('/t1/t2/t3/t4')->relative('/t1/t2/t3')",       't4'                 ],
-[  "path('/t4/t5/t6')->relative('/t1/t2/t3')",          '../../../t4/t5/t6'  ],
-[  "path('/')->relative('/t1/t2/t3')",                  '../../..'           ],
-[  "path('///')->relative('/t1/t2/t3')",                '../../..'           ],
-[  "path('/.')->relative('/t1/t2/t3')",                 '../../..'           ],
-[  "path('/./')->relative('/t1/t2/t3')",                '../../..'           ],
-[  "path('/t1/t2/t3')->relative( '/')",                 't1/t2/t3'           ],
-[  "path('/t1/t2/t3')->relative( '/t1')",               't2/t3'              ],
-[  "path('t1/t2/t3')->relative( 't1')",                 't2/t3'              ],
-[  "path('t1/t2/t3')->relative( 't4')",                 '../t1/t2/t3'        ],
-[  "path('.')->relative( '.')",                         '.'                  ],
-[  "path('/')->relative( '/')",                         '.'                  ],
-[  "path('../t1')->relative( 't2/t3')",                 '../../../t1'        ],
-[  "path('t1')->relative( 't2/../t3')",                 '../t1'              ],
-
-
-[ "path('t4')->absolute('/t1/t2/t3')",             '/t1/t2/t3/t4'    ],
-[ "path('t4/t5')->absolute('/t1/t2/t3')",          '/t1/t2/t3/t4/t5' ],
-[ "path('.')->absolute('/t1/t2/t3')",              '/t1/t2/t3'       ],
-[ "path('..')->absolute('/t1/t2/t3')",             '/t1/t2/t3/..'    ],
-[ "path('../t4')->absolute('/t1/t2/t3')",          '/t1/t2/t3/../t4' ],
-[ "path('/t1')->absolute('/t1/t2/t3')",            '/t1'             ],
+    [ "path('a','b','c')",                           'a/b/c' ],
+    [ "path('a','b','./c')",                         'a/b/c' ],
+    [ "path('./a','b','c')",                         'a/b/c' ],
+    [ "path('c')",                                   'c' ],
+    [ "path('./c')",                                 'c' ],
+    [ "path()",                                      '.' ],
+    [ "path('')",                                    '.' ],
+    [ "path('/')",                                   '/' ],
+    [ "path('','d1','d2','d3','')",                  '/d1/d2/d3' ],
+    [ "path('d1','d2','d3','')",                     'd1/d2/d3' ],
+    [ "path('','d1','d2','d3')",                     '/d1/d2/d3' ],
+    [ "path('d1','d2','d3')",                        'd1/d2/d3' ],
+    [ "path('/','d2/d3')",                           '/d2/d3' ],
+    [ "path('///../../..//./././a//b/.././c/././')", '/a/b/../c', '/a/c' ],
+    [ "path('a/../../b/c')",                         'a/../../b/c', '../b/c' ],
+    [ "path('/.')",                                  '/' ],
+    [ "path('/./')",                                 '/' ],
+    [ "path('/a/./')",                               '/a' ],
+    [ "path('/a/.')",                                '/a' ],
+    [ "path('/../../')",                             '/' ],
+    [ "path('/../..')",                              '/' ],
+    [ "path('/t1/t2/t4')->relative('/t1/t2/t3')",    '../t4' ],
+    [ "path('/t1/t2')->relative('/t1/t2/t3')",       '..' ],
+    [ "path('/t1/t2/t3/t4')->relative('/t1/t2/t3')", 't4' ],
+    [ "path('/t4/t5/t6')->relative('/t1/t2/t3')",    '../../../t4/t5/t6' ],
+    [ "path('/')->relative('/t1/t2/t3')",            '../../..' ],
+    [ "path('///')->relative('/t1/t2/t3')",          '../../..' ],
+    [ "path('/.')->relative('/t1/t2/t3')",           '../../..' ],
+    [ "path('/./')->relative('/t1/t2/t3')",          '../../..' ],
+    [ "path('/t1/t2/t3')->relative( '/')",           't1/t2/t3' ],
+    [ "path('/t1/t2/t3')->relative( '/t1')",         't2/t3' ],
+    [ "path('t1/t2/t3')->relative( 't1')",           't2/t3' ],
+    [ "path('t1/t2/t3')->relative( 't4')",           '../t1/t2/t3' ],
+    [ "path('.')->relative( '.')",                   '.' ],
+    [ "path('/')->relative( '/')",                   '.' ],
+    [ "path('../t1')->relative( 't2/t3')",           '../../../t1' ],
+    [ "path('t1')->relative( 't2/../t3')",           '../t1' ],
+    [ "path('t4')->absolute('/t1/t2/t3')",           '/t1/t2/t3/t4' ],
+    [ "path('t4/t5')->absolute('/t1/t2/t3')",        '/t1/t2/t3/t4/t5' ],
+    [ "path('.')->absolute('/t1/t2/t3')",            '/t1/t2/t3' ],
+    [ "path('..')->absolute('/t1/t2/t3')",           '/t1/t2/t3/..', '/t1/t2' ],
+    [ "path('../t4')->absolute('/t1/t2/t3')",        '/t1/t2/t3/../t4', '/t1/t2/t4' ],
+    [ "path('/t1')->absolute('/t1/t2/t3')",          '/t1' ],
 
 ##[ "Win32->catdir()",                        ''                   ],
 ##[ "Win32->catdir('')",                      '\\'                 ],
@@ -215,7 +211,7 @@ my @tests = (
 ##[ "Cygwin->rel2abs('/t1','/t1/t2/t3')",            '/t1'             ],
 ##[ "Cygwin->rel2abs('//t1/t2/t3','/foo')",          '//t1/t2/t3'      ],
 ##
-) ;
+);
 
 ##
 ##can_ok('File::Spec::Win32', '_cwd');
@@ -248,18 +244,20 @@ my @tests = (
 
 # Tries a named function with the given args and compares the result against
 # an expected result. Works with functions that return scalars or arrays.
-for ( @tests ) {
-    my ($function, $expected) = @$_;
+for (@tests) {
+    my ( $function, $expected, $win32case) = @$_;
+    $expected = $win32case if $IS_WIN32 && $win32case;
 
-    $function =~ s#\\#\\\\#g ;
+    $function =~ s#\\#\\\\#g;
     my $got = join ',', eval $function;
 
- SKIP: {
-	if ($@) {
-	    is($@, '', $function);
-	} else {
-	    is($got, $expected, $function);
-	}
+    SKIP: {
+        if ($@) {
+            is( $@, '', $function );
+        }
+        else {
+            is( $got, $expected, $function );
+        }
     }
 }
 
