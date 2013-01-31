@@ -689,6 +689,11 @@ openr_utf8 opena_utf8 openw_utf8 openrw_utf8
   $subdir = $dir->child("foo");
   $bar = $subdir->child("bar.txt");
 
+  # stringifies as cleaned up path
+
+  $file = path("./foo.txt");
+  print $file; # "foo.txt"
+
   # reading files
 
   $guts = $file->slurp;
