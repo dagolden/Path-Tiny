@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - lstat was calling the wrong stat [rt.cpan.org #83063]
+
 0.002     2013-01-30 22:09:37 America/New_York
 
     [FIXED]

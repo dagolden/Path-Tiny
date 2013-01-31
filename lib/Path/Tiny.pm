@@ -410,7 +410,7 @@ Like calling C<lstat> from L<File::stat>.
 
 =cut
 
-sub lstat { File::stat::stat( $_[0]->[PATH] ) }
+sub lstat { File::stat::lstat( $_[0]->[PATH] ) }
 
 =method mkpath
 
