@@ -58,10 +58,10 @@ sub path {
     my $path = shift // ".";
     $path = "." unless length $path;
     # join stringifies any objects, too, which is handy :-)
-    $path = join( "/", ($path eq '/' ? "" : $path), @_ ) if @_;
+    $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/]; # unix convention enforced
-    $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
+    $path =~ tr[\\][/];                   # unix convention enforced
+    $path =~ s{/$}{} if $path ne "/";     # hack to make splitpath give us a basename
     bless [$path], __PACKAGE__;
 }
 
@@ -211,7 +211,7 @@ file or directories.
 sub child {
     my ( $self, @parts ) = @_;
     my $path = $self->[PATH];
-    return path( join( "/", ($path eq '/' ? "" : $path), @parts) );
+    return path( join( "/", ( $path eq '/' ? "" : $path ), @parts ) );
 }
 
 =method children
