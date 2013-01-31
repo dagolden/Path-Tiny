@@ -8,6 +8,10 @@ Revision history for Path-Tiny
 
     - make atomic writes thread-safe [rt.cpan.org #83064]
 
+    [CHANGED]
+
+    - updated bugtracker to point to github
+
 0.002     2013-01-30 22:09:37 America/New_York
 
     [FIXED]
