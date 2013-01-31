@@ -33,6 +33,10 @@ use overload (
     fallback => 1,
 );
 
+my $TID = 0; # for thread safe atomic writes
+
+sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
+
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -593,7 +597,7 @@ C<binmode()> on the handle used for writing.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $temp = path( $self->[PATH] . $$ );
+    my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh   = $temp->openw( $args->{binmode} );
     print {$fh} $_ for @data;
     close $fh;
