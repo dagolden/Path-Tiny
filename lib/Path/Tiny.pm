@@ -268,11 +268,11 @@ sub exists { -e $_[0]->[PATH] }
 
     $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
 
-Returns a file handle.  The C<$mode> argument must be a Perl-style
+Returns an open file handle.  The C<$mode> argument must be a Perl-style
 read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
 is given, it is passed to C<binmode> on the handle.
 
-See L</openr>, L</openw>, L</openrw>, L</opena> for sugar.
+See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
 =cut
 
@@ -294,7 +294,7 @@ sub filehandle {
 
     if ( path("/tmp")->is_absolute ) { ... }
 
-Boolean for whether the path appear absolute or not.
+Boolean for whether the path appears absolute or not.
 
 =cut
 
@@ -326,7 +326,7 @@ sub is_file { -f $_[0]->[PATH] }
 
     if ( path("/tmp")->is_relative ) { ... }
 
-Boolean for whether the path appear relative or not.
+Boolean for whether the path appears relative or not.
 
 =cut
 
@@ -437,7 +437,7 @@ Just like C<rename>.
 
 sub move { rename $_[0]->[PATH], $_[1] }
 
-=method openr, openr_utf8, openw, openw_utf8, ...
+=method openr, openw, openrw, opena
 
     $fh = path("foo.txt")->openr($binmode);  # read
     $fh = path("foo.txt")->openr_utf8;
@@ -452,8 +452,8 @@ sub move { rename $_[0]->[PATH], $_[1] }
     $fh = path("foo.txt")->openrw_utf8;
 
 Returns a file handle opened in the specified mode.  The C<openr> style
-methods take a single C<binmode> argument.  The C<openr_utf8> style methods
-use C<:encoding(UTF-8)>.
+methods take a single C<binmode> argument.  All of the C<open*> methods have
+C<open*_utf8> equivalents that use C<:encoding(UTF-8)>.
 
 =cut
 
@@ -531,7 +531,7 @@ sub relative {
     # file
     path("foo.txt")->remove;
 
-For directories, this is like Like calling C<remove_tree> from L<File::Path>.  An
+For directories, this is like like calling C<remove_tree> from L<File::Path>.  An
 optional hash reference is passed through to C<remove_tree>.
 
 For files, the file is unlinked if it exists.  Unlike C<unlink>, if the file
@@ -715,8 +715,12 @@ easy access to functions from several other core file handling modules.
 
 It doesn't attempt to be as full-featured as L<IO::All> or L<Path::Class>,
 nor does it try to work for anything except Unix-like and Win32 platforms.
+Even then, it might break if you try something particularly obscure or
+tortuous.  (Quick!  What does this mean: C<< ///../../..//./././a//b/.././c/././ >>?
+And how does it differ on Win32?)
 
-All paths are converted to Unix-style forward slashes.
+All paths are forced to have Unix-style forward slashes.  Stringifying
+the object gives you back the path (after some clean up).
 
 =head1 SEE ALSO
 
@@ -730,13 +734,15 @@ Probably others.  Let me know if you want me to add a module to the list.
 =head1 BENCHMARKING
 
 I benchmarked a naive file-finding task: finding all C<*.pm> files in C<@INC>.
-I tested L<Path::Iterator::Rule> and subclasses of it that do file
-manipulations using a file path helper.
+I tested L<Path::Iterator::Rule> and different subclasses of it that do file
+manipulations using file path helpers L<Path::Class>, L<IO::All>, L<File::Fu>
+and C<Path::Tiny>.
 
-    Path::Iterator::Rule    0.501s (no objects)
-    Path::Tiny::Rule        1.082s (not on CPAN)
-    IO::All::Rule           1.544s
-    Path::Class::Rule       5.172s
+    Path::Iterator::Rule    0.474s (no objects)
+    Path::Tiny::Rule        0.938s (not on CPAN)
+    IO::All::Rule           1.355s
+    File::Fu::Rule          1.437s (not on CPAN)
+    Path::Class::Rule       4.673s
 
 This benchmark heavily stressed object creation and determination of
 a file's basename.
