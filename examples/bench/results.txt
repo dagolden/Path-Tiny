@@ -1,0 +1,48 @@
+new-nonexistent-file.pl
+                Rate Path::Class    File::Fu     IO::All  Path::Tiny
+Path::Class  26547/s          --        -42%        -49%        -87%
+File::Fu     45510/s         71%          --        -12%        -78%
+IO::All      51692/s         95%         14%          --        -75%
+Path::Tiny  210437/s        693%        362%        307%          --
+new-existing-file.pl
+                Rate Path::Class     IO::All    File::Fu  Path::Tiny
+Path::Class  24889/s          --         -9%        -30%        -88%
+IO::All      27428/s         10%          --        -23%        -87%
+File::Fu     35544/s         43%         30%          --        -83%
+Path::Tiny  206769/s        731%        654%        482%          --
+basename-existing-file.pl
+               Rate     IO::All Path::Class    File::Fu  Path::Tiny
+IO::All     21879/s          --        -12%        -14%        -72%
+Path::Class 24802/s         13%          --         -2%        -69%
+File::Fu    25373/s         16%          2%          --        -68%
+Path::Tiny  78913/s        261%        218%        211%          --
+absolute-existing-file.pl
+               Rate Path::Class    File::Fu     IO::All  Path::Tiny
+Path::Class 11821/s          --        -31%        -33%        -61%
+File::Fu    17230/s         46%          --         -2%        -43%
+IO::All     17612/s         49%          2%          --        -42%
+Path::Tiny  30373/s        157%         76%         72%          --
+new-existing-dir.pl
+                Rate Path::Class     IO::All    File::Fu  Path::Tiny
+Path::Class  25048/s          --         -2%        -31%        -88%
+IO::All      25600/s          2%          --        -30%        -88%
+File::Fu     36540/s         46%         43%          --        -83%
+Path::Tiny  210436/s        740%        722%        476%          --
+new-nonexistent-dir.pl
+                Rate Path::Class     IO::All    File::Fu  Path::Tiny
+Path::Class  45997/s          --         -4%        -55%        -78%
+IO::All      48000/s          4%          --        -54%        -77%
+File::Fu    103322/s        125%        115%          --        -51%
+Path::Tiny  210436/s        357%        338%        104%          --
+slurp-benchmark.pl
+               Rate Path::Class     IO::All    File::Fu  Path::Tiny
+Path::Class  7405/s          --         -8%        -37%        -56%
+IO::All      8029/s          8%          --        -31%        -53%
+File::Fu    11712/s         58%         46%          --        -31%
+Path::Tiny  16999/s        130%        112%         45%          --
+read-children.pl
+              Rate Path::Class     IO::All  Path::Tiny    File::Fu
+Path::Class 56.6/s          --        -69%        -96%        -96%
+IO::All      184/s        225%          --        -86%        -87%
+Path::Tiny  1355/s       2293%        636%          --         -4%
+File::Fu    1412/s       2392%        666%          4%          --
