@@ -37,6 +37,9 @@ my $TID = 0; # for thread safe atomic writes
 
 sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
 
+# detect File::Slurp lazily; but note File::Slurp is not safe except for :raw
+my $HAS_FS;
+
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -165,12 +168,17 @@ C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $fh = $self->opena( $args->{binmode} );
+    my $binmode = $args->{binmode} // '';
+    my $fh = $self->opena($binmode);
     flock( $fh, LOCK_EX );
-    seek( $fh, 0, SEEK_END );
-    print {$fh} $_ for @data;
-    flock( $fh, LOCK_UN );
-    close $fh;
+    seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
+    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
+        File::Slurp::write_file( $fh, { append => 1 }, @data );
+    }
+    else {
+        print {$fh} $_ for @data;
+        close $fh;            # force immediate flush
+    }
 }
 
 =method append_utf8
@@ -227,7 +235,8 @@ within a directory.  Excludes "." and ".." automatically.
 sub children {
     my ($self) = @_;
     opendir my $dh, $self->[PATH];
-    return map { path($self->[PATH] . "/$_") } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
+    return
+      map { path( $self->[PATH] . "/$_" ) } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
 }
 
 =method copy
@@ -381,10 +390,14 @@ will be chomped before being returned.
 sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $fh    = $self->openr( $args->{binmode} );
-    my $chomp = $args->{chomp};
+    my $binmode = $args->{binmode} // '';
+    my $fh      = $self->openr($binmode);
+    my $chomp   = $args->{chomp};
     if ( $args->{count} ) {
         return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
+    }
+    elsif ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
+        return File::Slurp::read_file( $fh, { chomp => $chomp } );
     }
     else {
         return map { chomp if $chomp; $_ } <$fh>;
@@ -567,9 +580,14 @@ C<binmode()> on the handle used for reading.
 sub slurp {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $fh = $self->openr( $args->{binmode} );
-    local $/;
-    return scalar <$fh>;
+    my $binmode = $args->{binmode} // '';
+    my $fh = $self->openr($binmode);
+    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
+        return scalar File::Slurp::read_file($fh);
+    }
+    else {
+        return scalar do { local $/; <$fh> };
+    }
 }
 
 =method slurp_utf8
@@ -580,7 +598,11 @@ This is like C<slurp> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
-sub slurp_utf8 { push @_, { binmode => ":encoding(UTF-8)" }; goto &slurp }
+sub slurp_utf8 {
+    $_[1] = {} unless ref $_[1] eq 'HASH';
+    $_[1]->{binmode} = ":encoding(UTF-8)";
+    goto &slurp;
+}
 
 =method spew
 
@@ -597,10 +619,15 @@ C<binmode()> on the handle used for writing.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $temp = path( $self->[PATH] . $TID . $$ );
-    my $fh   = $temp->openw( $args->{binmode} );
-    print {$fh} $_ for @data;
-    close $fh;
+    my $binmode = $args->{binmode} // '';
+    my $temp    = path( $self->[PATH] . $TID . $$ );
+    my $fh      = $temp->openw($binmode);
+    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
+        File::Slurp::write_file( $fh, @data );
+    }
+    else {
+        print {$fh} $_ for @data;
+    }
     $temp->move( $self->[PATH] );
 }
 

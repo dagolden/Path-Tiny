@@ -168,16 +168,20 @@ my $tmpdir = Path::Tiny->tempdir;
     ok -e $file;
 
     my $content = $file->slurp( { binmode => ':raw' } );
-    is $content, "Line1\r\nLine2\r\n\302\261\r\n";
+    is $content, "Line1\r\nLine2\r\n\302\261\r\n", "slurp raw";
 
     my $line3 = "\302\261\n";
     utf8::decode($line3);
+
+    $content = $file->slurp( { binmode => ':crlf:utf8' } );
+    is $content, "Line1\nLine2\n" . $line3, "slurp+crlf+utf8";
+
     my @content = $file->lines( { binmode => ':crlf:utf8' } );
-    is_deeply \@content, [ "Line1\n", "Line2\n", $line3 ];
+    is_deeply \@content, [ "Line1\n", "Line2\n", $line3 ], "lines+crlf+utf8";
 
     chop($line3);
     @content = $file->lines( { chomp => 1, binmode => ':crlf:utf8' } );
-    is_deeply \@content, [ "Line1", "Line2", $line3 ];
+    is_deeply \@content, [ "Line1", "Line2", $line3 ], "lines+chomp+crlf+utf8";
 
     $file->remove;
     ok not -e $file;
