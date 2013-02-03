@@ -208,7 +208,10 @@ my $tmpdir = Path::Tiny->tempdir;
     $file->copy($copy);
     is( $copy->slurp, "Hello World\n", "file copied" );
     chmod 0400, $copy; # read only
-    ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
+    SKIP: {
+      skip "No exception if run as root", 1 if $> == 0;
+      ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
+    }
 }
 
 SKIP: {
