@@ -731,6 +731,11 @@ And how does it differ on Win32?)
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
+=head1 TYPE CONSTRAINTS AND COERCIONS
+
+A standard L<MooseX::Types> library is available at
+L<MooseX::Types::Path::Tiny>.
+
 =head1 SEE ALSO
 
 =for :list
