@@ -812,6 +812,11 @@ might be faster.
 Another option might be to read using C<:raw> and then pass the result
 to C<Encode::decode> yourself.
 
+=head1 TYPE CONSTRAINTS AND COERCIONS
+
+A standard L<MooseX::Types> library is available at
+L<MooseX::Types::Path::Tiny>.
+
 =head1 SEE ALSO
 
 =for :list
