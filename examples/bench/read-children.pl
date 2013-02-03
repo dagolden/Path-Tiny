@@ -16,7 +16,7 @@ cmpthese(
         'Path::Tiny'  => sub { path($ENV{HOME})->children },
         'Path::Class' => sub { dir($ENV{HOME})->children },
         'IO::All'     => sub { io($ENV{HOME})->all },
-        'File::Fu'    => sub { File::Fu->dir($ENV{HOME})->list },
+        'File::Fu'    => sub { File::Fu->dir($ENV{HOME})->list(all => 1) },
     }
 );
 
