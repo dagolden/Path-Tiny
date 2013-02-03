@@ -227,7 +227,7 @@ within a directory.  Excludes "." and ".." automatically.
 sub children {
     my ($self) = @_;
     opendir my $dh, $self->[PATH];
-    return map { $self->child($_) } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
+    return map { path($self->[PATH] . "/$_") } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
 }
 
 =method copy
