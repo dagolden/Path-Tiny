@@ -6,7 +6,7 @@ use Test::More 0.96;
 plan skip_all => "Not ready for Win32 yet"
   if $^O eq 'MSWin32';
 
-use Path::Class;
+##use Path::Class;
 use Path::Tiny;
 
 my @cases = (
