@@ -169,7 +169,7 @@ sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
     my $binmode = $args->{binmode} // '';
-    my $fh = $self->opena($binmode);
+    my $fh = $self->filehandle( ">>", $binmode );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
@@ -401,8 +401,8 @@ sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
     my $binmode = $args->{binmode} // '';
-    my $fh      = $self->openr($binmode);
-    my $chomp   = $args->{chomp};
+    my $fh = $self->filehandle( "<", $binmode );
+    my $chomp = $args->{chomp};
     if ( $args->{count} ) {
         return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
@@ -610,12 +610,13 @@ sub slurp {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
     my $binmode = $args->{binmode} // '';
-    my $fh = $self->openr($binmode);
+    my $fh = $self->filehandle( "<", $binmode );
     if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
         return scalar File::Slurp::read_file($fh);
     }
     else {
-        return scalar do { local $/; <$fh> };
+        local $/;
+        return scalar <$fh>;
     }
 }
 
@@ -664,7 +665,7 @@ sub spew {
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
     my $binmode = $args->{binmode} // '';
     my $temp    = path( $self->[PATH] . $TID . $$ );
-    my $fh      = $temp->openw($binmode);
+    my $fh      = $temp->filehandle( ">", $binmode );
     if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
         File::Slurp::write_file( $fh, @data );
     }
