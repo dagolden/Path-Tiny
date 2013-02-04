@@ -812,6 +812,23 @@ And how does it differ on Win32?)
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
+If L<File::Slurp> is installed, it will be used for all C<:raw> I/O methods
+instead of the default implementation and offers a significant speed boost.
+Unfortunately, it uses C<sysread>, which is not safe for anything other than
+C<:raw> reads.
+
+=head1 CAVEATS
+
+=head2 utf8 vs UTF-8
+
+All the C<*_utf8> methods use C<encoding(UTF-8)>, which is the stricter mode.
+However, this can be significantly slower than C<:utf8>.  If you need
+performance and can accept the security risk, C<slurp({binmode => ":utf8"})
+might be faster.
+
+Another option might be to read using C<:raw> and then pass the result
+to C<Encode::decode> yourself.
+
 =head1 SEE ALSO
 
 =for :list
