@@ -39,6 +39,9 @@
          }
       },
       "runtime" : {
+         "recommends" : {
+            "File::Slurp" : "0"
+         },
          "requires" : {
             "Cwd" : "0",
             "Exporter" : "0",
@@ -58,9 +61,9 @@
       },
       "test" : {
          "requires" : {
+            "Devel::Hide" : "0",
             "File::Find" : "0",
             "File::Spec::Unix" : "0",
-            "Path::Class" : "0",
             "Test::Deep" : "0",
             "Test::Fatal" : "0",
             "Test::More" : "0.96"

@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added slurp_raw and other *_raw helper methods
+
+    - If File::Slurp is installed, any :raw reads will use it
+      for an easy speed boost
+
     [CHANGED]
 
     - internal optimizations

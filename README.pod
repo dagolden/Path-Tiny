@@ -62,6 +62,11 @@ And how does it differ on Win32?)
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
+If L<File::Slurp> is installed, it will be used for all C<:raw> I/O methods
+instead of the default implementation and offers a significant speed boost.
+Unfortunately, it uses C<sysread>, which is not safe for anything other than
+C<:raw> reads.
+
 =head1 CONSTRUCTORS
 
 =head2 path
@@ -125,6 +130,12 @@ The argument must be absolute or you won't get an absolute result.
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
 optional hash reference may be used to pass options.  The only option is
 C<binmode>, which is passed to C<binmode()> on the handle used for writing.
+
+=head2 append_raw
+
+    path("foo.txt")->append_raw(@data);
+
+This is like C<append> with a C<binmode> of C<:raw>.
 
 =head2 append_utf8
 
@@ -235,10 +246,15 @@ is provided, it will be set on the handle prior to reading.  If C<count> is
 provided, up to that many lines will be returned. If C<chomp> is set, lines
 will be chomped before being returned.
 
+=head2 lines_raw
+
+    @contents = path("/tmp/foo.txt")->lines_raw;
+
+This is like C<lines> with a C<binmode> of C<:raw>.
+
 =head2 lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines_utf8;
-    @contents = path("/tmp/foo.txt")->lines({chomp => 1});
 
 This is like C<lines> with a C<binmode> of C<:encoding(UTF-8)>.
 
@@ -265,20 +281,25 @@ Just like C<rename>.
 =head2 openr, openw, openrw, opena
 
     $fh = path("foo.txt")->openr($binmode);  # read
+    $fh = path("foo.txt")->openr_raw;
     $fh = path("foo.txt")->openr_utf8;
 
     $fh = path("foo.txt")->openw($binmode);  # write
+    $fh = path("foo.txt")->openw_raw;
     $fh = path("foo.txt")->openw_utf8;
 
     $fh = path("foo.txt")->opena($binmode);  # append
+    $fh = path("foo.txt")->opena_raw;
     $fh = path("foo.txt")->opena_utf8;
 
     $fh = path("foo.txt")->openrw($binmode); # read/write
+    $fh = path("foo.txt")->openrw_raw;
     $fh = path("foo.txt")->openrw_utf8;
 
-Returns a file handle opened in the specified mode.  The C<openr> style
-methods take a single C<binmode> argument.  All of the C<open*> methods have
-C<open*_utf8> equivalents that use C<:encoding(UTF-8)>.
+Returns a file handle opened in the specified mode.  The C<openr> style methods
+take a single C<binmode> argument.  All of the C<open*> methods have
+C<open*_raw> and C<open*_utf8> equivalents that use C<:raw> and
+C<:encoding(UTF-8)>, respectively.
 
 =head2 parent
 
@@ -320,6 +341,12 @@ Reads file contents into a scalar.  Takes an optional hash reference may be
 used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for reading.
 
+=head2 slurp_raw
+
+    $data = path("foo.txt")->slurp_raw;
+
+This is like C<slurp> with a C<binmode> of C<:raw>.
+
 =head2 slurp_utf8
 
     $data = path("foo.txt")->slurp_utf8;
@@ -335,6 +362,12 @@ Writes data to a file atomically.  The file is written to a temporary file in
 the same directory, then renamed over the original.  An optional hash reference
 may be used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for writing.
+
+=head2 spew_raw
+
+    path("foo.txt")->spew_raw(@data);
+
+This is like C<spew> with a C<binmode> of C<:raw>.
 
 =head2 spew_utf8
 
@@ -371,6 +404,18 @@ equivalent to what L<File::Spec> would give from C<splitpath> and thus
 usually is the empty string on Unix-like operating systems.
 
 =for Pod::Coverage openr_utf8 opena_utf8 openw_utf8 openrw_utf8
+
+=head1 CAVEATS
+
+=head2 utf8 vs UTF-8
+
+All the C<*_utf8> methods use C<encoding(UTF-8)>, which is the stricter mode.
+However, this can be significantly slower than C<:utf8>.  If you need
+performance and can accept the security risk, C<slurp({binmode => ":utf8"})
+might be faster.
+
+Another option might be to read using C<:raw> and then pass the result
+to C<Encode::decode> yourself.
 
 =head1 SEE ALSO
 
