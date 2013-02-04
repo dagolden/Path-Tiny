@@ -181,6 +181,16 @@ sub append {
     }
 }
 
+=method append_raw
+
+    path("foo.txt")->append_raw(@data);
+
+This is like C<append> with a C<binmode> of C<:raw>.
+
+=cut
+
+sub append_raw { splice @_, 1, 0, { binmode => ":raw" }; goto &append }
+
 =method append_utf8
 
     path("foo.txt")->append_utf8(@data);
@@ -404,10 +414,23 @@ sub lines {
     }
 }
 
+=method lines_raw
+
+    @contents = path("/tmp/foo.txt")->lines_raw;
+
+This is like C<lines> with a C<binmode> of C<:raw>.
+
+=cut
+
+sub lines_raw {
+    $_[1] = {} unless ref $_[1] eq 'HASH';
+    $_[1]->{binmode} = ":raw";
+    goto &lines;
+}
+
 =method lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines_utf8;
-    @contents = path("/tmp/foo.txt")->lines({chomp => 1});
 
 This is like C<lines> with a C<binmode> of C<:encoding(UTF-8)>.
 
@@ -457,20 +480,25 @@ sub move { rename $_[0]->[PATH], $_[1] }
 =method openr, openw, openrw, opena
 
     $fh = path("foo.txt")->openr($binmode);  # read
+    $fh = path("foo.txt")->openr_raw;
     $fh = path("foo.txt")->openr_utf8;
 
     $fh = path("foo.txt")->openw($binmode);  # write
+    $fh = path("foo.txt")->openw_raw;
     $fh = path("foo.txt")->openw_utf8;
 
     $fh = path("foo.txt")->opena($binmode);  # append
+    $fh = path("foo.txt")->opena_raw;
     $fh = path("foo.txt")->opena_utf8;
 
     $fh = path("foo.txt")->openrw($binmode); # read/write
+    $fh = path("foo.txt")->openrw_raw;
     $fh = path("foo.txt")->openrw_utf8;
 
-Returns a file handle opened in the specified mode.  The C<openr> style
-methods take a single C<binmode> argument.  All of the C<open*> methods have
-C<open*_utf8> equivalents that use C<:encoding(UTF-8)>.
+Returns a file handle opened in the specified mode.  The C<openr> style methods
+take a single C<binmode> argument.  All of the C<open*> methods have
+C<open*_raw> and C<open*_utf8> equivalents that use C<:raw> and
+C<:encoding(UTF-8)>, respectively.
 
 =cut
 
@@ -483,7 +511,8 @@ my %opens = (
 
 while ( my ( $k, $v ) = each %opens ) {
     no strict 'refs';
-    *{$k} = sub { $_[0]->filehandle( $v, $_[1] ) };
+    *{$k}             = sub { $_[0]->filehandle( $v, $_[1] ) };
+    *{ $k . "_raw" }  = sub { $_[0]->filehandle( $v, ":raw" ) };
     *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":encoding(UTF-8)" ) };
 }
 
@@ -590,6 +619,20 @@ sub slurp {
     }
 }
 
+=method slurp_raw
+
+    $data = path("foo.txt")->slurp_raw;
+
+This is like C<slurp> with a C<binmode> of C<:raw>.
+
+=cut
+
+sub slurp_raw {
+    $_[1] = {} unless ref $_[1] eq 'HASH';
+    $_[1]->{binmode} = ":raw";
+    goto &slurp;
+}
+
 =method slurp_utf8
 
     $data = path("foo.txt")->slurp_utf8;
@@ -631,6 +674,16 @@ sub spew {
     }
     $temp->move( $self->[PATH] );
 }
+
+=method spew_raw
+
+    path("foo.txt")->spew_raw(@data);
+
+This is like C<spew> with a C<binmode> of C<:raw>.
+
+=cut
+
+sub spew_raw { splice @_, 1, 0, { binmode => ":raw" }; goto &spew }
 
 =method spew_utf8
 
