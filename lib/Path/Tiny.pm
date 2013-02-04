@@ -627,6 +627,7 @@ sub spew {
     }
     else {
         print {$fh} $_ for @data;
+        close $fh; # flush
     }
     $temp->move( $self->[PATH] );
 }
