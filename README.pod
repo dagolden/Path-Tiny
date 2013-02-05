@@ -62,11 +62,6 @@ And how does it differ on Win32?)
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
-If L<File::Slurp> is installed, it will be used for all C<:raw> I/O methods
-instead of the default implementation and offers a significant speed boost.
-Unfortunately, it uses C<sysread>, which is not safe for anything other than
-C<:raw> reads.
-
 =head1 CONSTRUCTORS
 
 =head2 path
@@ -135,7 +130,7 @@ C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 
     path("foo.txt")->append_raw(@data);
 
-This is like C<append> with a C<binmode> of C<:raw>.
+This is like C<append> with a C<binmode> of C<:unix> for fast, unbuffered, raw write.
 
 =head2 append_utf8
 
@@ -250,7 +245,8 @@ will be chomped before being returned.
 
     @contents = path("/tmp/foo.txt")->lines_raw;
 
-This is like C<lines> with a C<binmode> of C<:raw>.
+This is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw> instead
+of C<:unix> so PerlIO buffering can manage reading by line.
 
 =head2 lines_utf8
 
@@ -345,7 +341,8 @@ C<binmode()> on the handle used for reading.
 
     $data = path("foo.txt")->slurp_raw;
 
-This is like C<slurp> with a C<binmode> of C<:raw>.
+This is like C<slurp> with a C<binmode> of C<:unix> for
+a fast, unbuffered, raw read.
 
 =head2 slurp_utf8
 
@@ -367,7 +364,7 @@ C<binmode()> on the handle used for writing.
 
     path("foo.txt")->spew_raw(@data);
 
-This is like C<spew> with a C<binmode> of C<:raw>.
+This is like C<spew> with a C<binmode> of C<:unix> for a fast, unbuffered, raw write.
 
 =head2 spew_utf8
 

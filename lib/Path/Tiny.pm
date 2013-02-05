@@ -37,9 +37,6 @@ my $TID = 0; # for thread safe atomic writes
 
 sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
 
-# detect File::Slurp lazily; but note File::Slurp is not safe except for :raw
-my $HAS_FS;
-
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -172,24 +169,19 @@ sub append {
     my $fh = $self->filehandle( ">>", $binmode );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
-    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
-        File::Slurp::write_file( $fh, { append => 1 }, @data );
-    }
-    else {
-        print {$fh} $_ for @data;
-        close $fh;            # force immediate flush
-    }
+    print {$fh} $_ for @data;
+    close $fh;            # force immediate flush
 }
 
 =method append_raw
 
     path("foo.txt")->append_raw(@data);
 
-This is like C<append> with a C<binmode> of C<:raw>.
+This is like C<append> with a C<binmode> of C<:unix> for fast, unbuffered, raw write.
 
 =cut
 
-sub append_raw { splice @_, 1, 0, { binmode => ":raw" }; goto &append }
+sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
 
 =method append_utf8
 
@@ -406,9 +398,6 @@ sub lines {
     if ( $args->{count} ) {
         return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
-    elsif ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
-        return File::Slurp::read_file( $fh, { chomp => $chomp } );
-    }
     else {
         return map { chomp if $chomp; $_ } <$fh>;
     }
@@ -418,7 +407,8 @@ sub lines {
 
     @contents = path("/tmp/foo.txt")->lines_raw;
 
-This is like C<lines> with a C<binmode> of C<:raw>.
+This is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw> instead
+of C<:unix> so PerlIO buffering can manage reading by line.
 
 =cut
 
@@ -668,13 +658,8 @@ sub spew {
     my $binmode = $args->{binmode} // '';
     my $temp    = path( $self->[PATH] . $TID . $$ );
     my $fh      = $temp->filehandle( ">", $binmode );
-    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
-        File::Slurp::write_file( $fh, @data );
-    }
-    else {
-        print {$fh} $_ for @data;
-        close $fh; # flush
-    }
+    print {$fh} $_ for @data;
+    close $fh; # flush
     $temp->move( $self->[PATH] );
 }
 
@@ -682,11 +667,11 @@ sub spew {
 
     path("foo.txt")->spew_raw(@data);
 
-This is like C<spew> with a C<binmode> of C<:raw>.
+This is like C<spew> with a C<binmode> of C<:unix> for a fast, unbuffered, raw write.
 
 =cut
 
-sub spew_raw { splice @_, 1, 0, { binmode => ":raw" }; goto &spew }
+sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
 
 =method spew_utf8
 
@@ -814,11 +799,6 @@ And how does it differ on Win32?)
 
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
-
-If L<File::Slurp> is installed, it will be used for all C<:raw> I/O methods
-instead of the default implementation and offers a significant speed boost.
-Unfortunately, it uses C<sysread>, which is not safe for anything other than
-C<:raw> reads.
 
 =head1 CAVEATS
 
