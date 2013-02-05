@@ -41,6 +41,12 @@ subtest "spew -> slurp (UTF-8)" => sub {
     is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
 };
 
+subtest "spew -> slurp (raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_lines), "spew" );
+    is( $file->slurp_raw, join( '', _lines ), "slurp" );
+};
+
 subtest "spew -> lines" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
@@ -51,6 +57,12 @@ subtest "spew -> lines (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     is( join( '', $file->lines_utf8 ), join( '', _utf8_lines ), "lines" );
+};
+
+subtest "spew -> lines (raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_lines), "spew" );
+    is( join( '', $file->lines_raw ), join( '', _lines ), "lines" );
 };
 
 subtest "spew -> lines (count)" => sub {
@@ -74,6 +86,13 @@ subtest "spew -> lines (count, UTF-8)" => sub {
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     my @exp = _utf8_lines;
     is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_lines), "spew" );
+    my @exp = _lines;
+    is( join( '', $file->lines_raw( { count => 2 } ) ), join( '', @exp ), "lines" );
 };
 
 subtest "append -> slurp" => sub {
@@ -104,6 +123,12 @@ subtest "append -> slurp (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append_utf8(_utf8_lines), "append" );
     is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
+};
+
+subtest "append -> slurp (raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append_raw(_lines), "append" );
+    is( $file->slurp_raw, join( '', _lines ), "slurp" );
 };
 
 subtest "openw -> openr" => sub {
