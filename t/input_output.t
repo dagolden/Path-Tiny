@@ -157,6 +157,19 @@ subtest "openw -> openr (UTF-8)" => sub {
     }
 };
 
+subtest "openw -> openr (raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    {
+        my $fh = $file->openw_raw;
+        ok( ( print {$fh} _lines ), "openw & print" );
+    }
+    {
+        my $fh = $file->openr_raw;
+        my $got = do { local $/, <$fh> };
+        is( $got, join( '', _lines ), "openr & read" );
+    }
+};
+
 subtest "opena -> openr" => sub {
     my $file  = Path::Tiny->tempfile;
     my @lines = _lines;
@@ -193,6 +206,24 @@ subtest "opena -> openr (UTF-8)" => sub {
     }
 };
 
+subtest "opena -> openr (raw)" => sub {
+    my $file  = Path::Tiny->tempfile;
+    my @lines = _lines;
+    {
+        my $fh = $file->openw_raw;
+        ok( ( print {$fh} shift @lines ), "openw & print one line" );
+    }
+    {
+        my $fh = $file->opena_raw;
+        ok( ( print {$fh} @lines ), "opena & print rest of lines" );
+    }
+    {
+        my $fh = $file->openr_raw;
+        my $got = do { local $/, <$fh> };
+        is( $got, join( '', _lines ), "openr & read" );
+    }
+};
+
 subtest "openrw" => sub {
     my $file = Path::Tiny->tempfile;
     my $fh   = $file->openrw;
@@ -204,11 +235,20 @@ subtest "openrw" => sub {
 
 subtest "openrw (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
-    my $fh   = $file->openrw;
+    my $fh   = $file->openrw_utf8;
     ok( ( print {$fh} _utf8_lines ), "openrw & print" );
     ok( seek( $fh, 0, 0 ), "seek back to start" );
     my $got = do { local $/, <$fh> };
     is( $got, join( '', _utf8_lines ), "openr & read" );
+};
+
+subtest "openrw (raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    my $fh   = $file->openrw_raw;
+    ok( ( print {$fh} _lines ), "openrw & print" );
+    ok( seek( $fh, 0, 0 ), "seek back to start" );
+    my $got = do { local $/, <$fh> };
+    is( $got, join( '', _lines ), "openr & read" );
 };
 
 done_testing;

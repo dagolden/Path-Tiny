@@ -97,6 +97,7 @@ is $file->parent, '/foo/baz';
     my $file = Path::Tiny->new(File::Spec->rootdir);
     my $root = Path::Tiny->rootdir;
     is( $file, $root, "rootdir is like path('/')");
+    is( $file->child("lib"), "/lib", "child of rootdir is correct");
 }
 
 done_testing();
