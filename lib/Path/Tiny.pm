@@ -611,8 +611,9 @@ sub slurp {
     $args = {} unless ref $args eq 'HASH';
     my $binmode = $args->{binmode} // '';
     my $fh = $self->filehandle( "<", $binmode );
-    if ( ( $HAS_FS //= eval { require File::Slurp; 1 } ) && $binmode eq ":raw" ) {
-        return scalar File::Slurp::read_file($fh);
+    if ( $binmode eq ":unix" and my $size = -s $fh ) {
+        read $fh, (my $buf), $size; # File::Slurp in a nutshell
+        return $buf;
     }
     else {
         local $/;
@@ -624,13 +625,14 @@ sub slurp {
 
     $data = path("foo.txt")->slurp_raw;
 
-This is like C<slurp> with a C<binmode> of C<:raw>.
+This is like C<slurp> with a C<binmode> of C<:unix> for
+a fast, unbuffered, raw read.
 
 =cut
 
 sub slurp_raw {
     $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":raw";
+    $_[1]->{binmode} = ":unix";
     goto &slurp;
 }
 
