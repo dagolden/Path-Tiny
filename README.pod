@@ -241,6 +241,11 @@ is provided, it will be set on the handle prior to reading.  If C<count> is
 provided, up to that many lines will be returned. If C<chomp> is set, lines
 will be chomped before being returned.
 
+Because the return is a list, C<lines> in scalar context will return the number
+of lines (and throw away the data).
+
+    $number_of_lines = path("/tmp/foo.txt")->lines;
+
 =head2 lines_raw
 
     @contents = path("/tmp/foo.txt")->lines_raw;
@@ -413,6 +418,11 @@ might be faster.
 
 Another option might be to read using C<:raw> and then pass the result
 to C<Encode::decode> yourself.
+
+=head1 TYPE CONSTRAINTS AND COERCIONS
+
+A standard L<MooseX::Types> library is available at
+L<MooseX::Types::Path::Tiny>.
 
 =head1 SEE ALSO
 

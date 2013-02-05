@@ -387,6 +387,11 @@ is provided, it will be set on the handle prior to reading.  If C<count> is
 provided, up to that many lines will be returned. If C<chomp> is set, lines
 will be chomped before being returned.
 
+Because the return is a list, C<lines> in scalar context will return the number
+of lines (and throw away the data).
+
+    $number_of_lines = path("/tmp/foo.txt")->lines;
+
 =cut
 
 sub lines {
