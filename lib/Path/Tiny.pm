@@ -555,7 +555,7 @@ sub parent {
     $real = path("/baz/foo/../bar")->realpath;
     $real = path("foo/../bar")->realpath;
 
-Returns a new C<Path::Tiny> object with all symbolic links and upward dirctory
+Returns a new C<Path::Tiny> object with all symbolic links and upward directory
 parts resolved using L<Cwd>'s C<realpath>.  Compared to C<absolute>, this is
 more expensive as it must actually consult the filesystem.
 
@@ -760,6 +760,7 @@ sub volume {
 
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
+openr_raw opena_raw openw_raw openrw_raw
 
 =head1 SYNOPSIS
 
@@ -830,7 +831,7 @@ might be faster.
 Another option might be to read using C<:raw> and then pass the result
 to C<Encode::decode> yourself.
 
-=head1 TYPE CONSTRAINTS AND COERCIONS
+=head1 TYPE CONSTRAINTS AND COERCION
 
 A standard L<MooseX::Types> library is available at
 L<MooseX::Types::Path::Tiny>.
