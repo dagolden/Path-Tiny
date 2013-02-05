@@ -10,6 +10,8 @@ Revision history for Path-Tiny
 
     [FIXED]
 
+    - slurp/lines/spew/append now do appropriate flocking
+
     - Fixed test that fails if run as root (BINGOS)
 
     - Fixed test that fails if cwd/getcwd don't agree

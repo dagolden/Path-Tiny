@@ -174,6 +174,7 @@ sub append {
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     print {$fh} $_ for @data;
+    flock( $fh, LOCK_UN );
     close $fh;                # force immediate flush
 }
 
@@ -403,13 +404,18 @@ sub lines {
     $args = {} unless ref $args eq 'HASH';
     my $binmode = $args->{binmode} // '';
     my $fh = $self->filehandle( "<", $binmode );
+    flock( $fh, LOCK_SH );
     my $chomp = $args->{chomp};
+    my @lines;
     if ( $args->{count} ) {
-        return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
+        @lines = map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
     else {
-        return map { chomp if $chomp; $_ } <$fh>;
+        @lines = $chomp ? ( map { chomp if $chomp; $_ } <$fh> ) : <$fh>;
     }
+    flock( $fh, LOCK_UN );
+    close $fh;
+    return @lines;
 }
 
 =method lines_raw
@@ -623,14 +629,17 @@ sub slurp {
     $args = {} unless ref $args eq 'HASH';
     my $binmode = $args->{binmode} // '';
     my $fh = $self->filehandle( "<", $binmode );
+    my $buf;
+    flock( $fh, LOCK_SH );
     if ( $binmode eq ":unix" and my $size = -s $fh ) {
-        read $fh, ( my $buf ), $size; # File::Slurp in a nutshell
-        return $buf;
+        read $fh, $buf, $size; # File::Slurp in a nutshell
     }
     else {
-        local $/;
-        return scalar <$fh>;
+        $buf = do { local $/; <$fh> };
     }
+    flock( $fh, LOCK_UN );
+    close $fh;
+    return $buf;
 }
 
 =method slurp_raw
@@ -680,7 +689,11 @@ sub spew {
     my $binmode = $args->{binmode} // '';
     my $temp    = path( $self->[PATH] . $TID . $$ );
     my $fh      = $temp->filehandle( ">", $binmode );
+    flock( $fh, LOCK_EX );
+    seek( $fh, 0, 0 );
+    truncate( $fh, 0 );
     print {$fh} $_ for @data;
+    flock( $fh, LOCK_UN );
     close $fh; # flush
     $temp->move( $self->[PATH] );
 }
@@ -821,6 +834,9 @@ And how does it differ on Win32?)
 
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
+
+File input/output methods C<flock> handles before reading or writing,
+as appropriate.
 
 =head1 CAVEATS
 
