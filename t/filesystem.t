@@ -215,7 +215,7 @@ my $tmpdir = Path::Tiny->tempdir;
     SKIP: {
         skip "No exception if run as root", 1 if $> == 0;
         skip "No exception writing to read-only file", 1
-          unless exception { open my $fh, ">", "$copy" }; # probe if actually read-only
+          unless exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
         ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
     }
 }
