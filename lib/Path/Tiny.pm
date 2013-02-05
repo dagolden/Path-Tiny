@@ -169,8 +169,7 @@ C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $binmode = $args->{binmode} // '';
-    my $fh = $self->filehandle( ">>", $binmode );
+    my $fh = $self->filehandle( ">>", $args->{binmode} );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     print {$fh} $_ for @data;
@@ -298,15 +297,9 @@ See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
-    my $fh;
-    if ( 0 && defined $self->[TEMP] ) {
-        $fh = $self->[TEMP];
-    }
-    else {
-        $mode //= "<";
-        open $fh, $mode, $self->[PATH];
-    }
-    binmode( $fh, $binmode ) if $binmode;
+    $mode    //= "<";
+    $binmode //= "";
+    open my $fh, "$mode$binmode", $self->[PATH];
     return $fh;
 }
 
@@ -402,8 +395,7 @@ of lines (and throw away the data).
 sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $binmode = $args->{binmode} // '';
-    my $fh = $self->filehandle( "<", $binmode );
+    my $fh = $self->filehandle( "<", $args->{binmode} );
     flock( $fh, LOCK_SH );
     my $chomp = $args->{chomp};
     my @lines;
@@ -468,8 +460,7 @@ is passed through to C<make_path>.
 =cut
 
 sub mkpath {
-    my ( $self, $opts ) = @_;
-    return File::Path::make_path( $self->[PATH], ref($opts) eq 'HASH' ? $opts : () );
+    File::Path::make_path( $_[0]->[PATH], ref $_[1] eq 'HASH' ? $_[1] : () );
 }
 
 =method move
@@ -531,6 +522,8 @@ directory of the original directory or file.
 
 =cut
 
+# XXX this is ugly and coverage is incomplete.  I think it's there for windows
+# so need to check coverage there and compare
 sub parent {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[FILE];
@@ -581,10 +574,7 @@ C<< File::Spec->abs2rel() >>.
 =cut
 
 # Easy to get wrong, so wash it through File::Spec (sigh)
-sub relative {
-    my ( $self, $base ) = @_;
-    return path( File::Spec->abs2rel( $self->[PATH], $base ) );
-}
+sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
 =method remove
 
@@ -627,11 +617,10 @@ C<binmode()> on the handle used for reading.
 sub slurp {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $binmode = $args->{binmode} // '';
-    my $fh = $self->filehandle( "<", $binmode );
-    my $buf;
+    my $fh = $self->filehandle( "<", $args->{binmode} );
     flock( $fh, LOCK_SH );
-    if ( $binmode eq ":unix" and my $size = -s $fh ) {
+    my $buf;
+    if ( ( $args->{binmode} // "" ) eq ":unix" and my $size = -s $fh ) {
         read $fh, $buf, $size; # File::Slurp in a nutshell
     }
     else {
@@ -651,11 +640,7 @@ a fast, unbuffered, raw read.
 
 =cut
 
-sub slurp_raw {
-    $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":unix";
-    goto &slurp;
-}
+sub slurp_raw { $_[1] = { binmode => ":unix" }; goto &slurp }
 
 =method slurp_utf8
 
@@ -665,11 +650,7 @@ This is like C<slurp> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
-sub slurp_utf8 {
-    $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":encoding(UTF-8)";
-    goto &slurp;
-}
+sub slurp_utf8 { $_[1] = { binmode => ":encoding(UTF-8)" }; goto &slurp }
 
 =method spew
 
@@ -686,15 +667,14 @@ C<binmode()> on the handle used for writing.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $binmode = $args->{binmode} // '';
-    my $temp    = path( $self->[PATH] . $TID . $$ );
-    my $fh      = $temp->filehandle( ">", $binmode );
+    my $temp = path( $self->[PATH] . $TID . $$ );
+    my $fh   = $temp->filehandle( ">", $args->{binmode} );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, 0 );
     truncate( $fh, 0 );
     print {$fh} $_ for @data;
     flock( $fh, LOCK_UN );
-    close $fh; # flush
+    close $fh;
     $temp->move( $self->[PATH] );
 }
 
