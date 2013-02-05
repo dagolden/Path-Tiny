@@ -6,6 +6,10 @@ Revision history for Path-Tiny
 
     - Added slurp_raw and other *_raw helper methods
 
+    [FIXED]
+
+    - Fixed test that fails if run as root (BINGOS)
+
     [CHANGED]
 
     - internal optimizations
