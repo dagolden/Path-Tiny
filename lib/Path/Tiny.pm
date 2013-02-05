@@ -143,6 +143,10 @@ Returns a new C<Path::Tiny> object with an absolute path.  Unless
 an argument is given, the current directory is used as the absolute base path.
 The argument must be absolute or you won't get an absolute result.
 
+This will not resolve upward directories ("foo/../bar") unless C<canonpath>
+in L<File::Spec> would normally do so on your platform.  If you need them
+resolved, you must call the more expensive C<realpath> method instead.
+
 =cut
 
 sub absolute {
@@ -546,6 +550,19 @@ sub parent {
         return path( $self->[VOL] );
     }
 }
+
+=method realpath
+
+    $real = path("/baz/foo/../bar")->realpath;
+    $real = path("foo/../bar")->realpath;
+
+Returns a new C<Path::Tiny> object with all symbolic links and upward dirctory
+parts resolved using L<Cwd>'s C<realpath>.  Compared to C<absolute>, this is
+more expensive as it must actually consult the filesystem.
+
+=cut
+
+sub realpath { return path( Cwd::realpath( $_[0]->[PATH] ) ) }
 
 =method relative
 

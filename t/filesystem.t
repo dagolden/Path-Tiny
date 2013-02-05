@@ -206,6 +206,20 @@ my $tmpdir = Path::Tiny->tempdir;
 }
 
 {
+    # realpath should resolve ..
+    my $lib = path("t/../lib");
+    my $real = $lib->realpath;
+    unlike $real, qr/\.\./, "updir gone from realpath";
+    SKIP: {
+        skip "standand unix bin/sbin not present", 1
+            unless -d "/sbin" && -d "/bin";
+        my $abs = path("/bin/../sbin");
+        is( $abs->realpath, "/sbin", "realpath on absolute" );
+    }
+}
+
+
+{
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
     my $copy = $tmpdir->child("bar.txt");

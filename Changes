@@ -6,6 +6,8 @@ Revision history for Path-Tiny
 
     - Added slurp_raw and other *_raw helper methods
 
+    - Added realpath method (with thanks to ETHER)
+
     [FIXED]
 
     - Fixed test that fails if run as root (BINGOS)
