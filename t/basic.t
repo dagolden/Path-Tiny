@@ -78,7 +78,7 @@ is $file->parent, '/foo/baz';
   is path(''), '.';
   is path(), '.';
   is path('', 'var', 'tmp'), 'var/tmp';
-  is path()->absolute, path(Cwd::cwd());
+  is path()->absolute, path(Cwd::getcwd());
   is path(undef), '.';
 }
 
