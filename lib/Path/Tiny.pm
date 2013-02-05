@@ -174,7 +174,7 @@ sub append {
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     print {$fh} $_ for @data;
-    close $fh;            # force immediate flush
+    close $fh;                # force immediate flush
 }
 
 =method append_raw
@@ -624,7 +624,7 @@ sub slurp {
     my $binmode = $args->{binmode} // '';
     my $fh = $self->filehandle( "<", $binmode );
     if ( $binmode eq ":unix" and my $size = -s $fh ) {
-        read $fh, (my $buf), $size; # File::Slurp in a nutshell
+        read $fh, ( my $buf ), $size; # File::Slurp in a nutshell
         return $buf;
     }
     else {
