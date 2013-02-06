@@ -893,7 +893,7 @@ or decode data after a raw, binary input/output operation, which is much
 faster.
 
 If you need the performance and can accept the security risk,
-C<slurp({binmode => ":unix:utf8"})> will be faster than C<:unix:encoding(UTF-8)>
+C<< slurp({binmode => ":unix:utf8"}) >> will be faster than C<:unix:encoding(UTF-8)>
 (but not as fast as C<Unicode::UTF8>).
 
 Note that the C<*_utf8> methods read in B<raw> mode.  There is no CRLF
