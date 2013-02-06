@@ -23,7 +23,7 @@ for my $t ( $tests->children ) {
     say "Running $t...";
     my $pl = Path::Tiny->tempfile;
     $pl->spew_raw( _test_guts( $opts->get_count, $t->slurp_raw ) );
-    my $string = qx/$^X $pl/;
+    my $string = join( "", grep { $_ !~ /warning: too few/ } qx/$^X $pl/ );
     eval { $results{$t->basename} = JSON->new->decode($string) }
         or warn "ERROR DECODING:\n$string";
 }
