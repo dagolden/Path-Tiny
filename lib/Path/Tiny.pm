@@ -316,11 +316,14 @@ sub exists { -e $_[0]->[PATH] }
 
 Returns an open file handle.  The C<$mode> argument must be a Perl-style
 read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
-is given, it is passed to C<binmode> on the handle.
+is given, it is set during the C<open> call.
 
 See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
 =cut
+
+# Note: must put binmode on open line, not subsequent binmode() call, so things
+# like ":unix" actually stop perlio/crlf from being added
 
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
@@ -871,17 +874,38 @@ the object gives you back the path (after some clean up).
 File input/output methods C<flock> handles before reading or writing,
 as appropriate.
 
+The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw mode
+without CRLF translation.  Installing L<Unicode::UTF8> will speed up several
+of them and is highly recommended.
+
 =head1 CAVEATS
 
 =head2 utf8 vs UTF-8
 
-All the C<*_utf8> methods use C<encoding(UTF-8)>, which is the stricter mode.
-However, this can be significantly slower than C<:utf8>.  If you need
-performance and can accept the security risk, C<slurp({binmode => ":utf8"})
-might be faster.
+All the C<*_utf8> methods use C<:encoding(UTF-8)> -- either as
+C<:unix:encoding(UTF-8)> (unbuffered) or C<:raw:encoding(UTF-8)> (buffered) --
+which is strict against the Unicode spec and disallows illegal Unicode
+codepoints or UTF-8 sequences.
 
-Another option might be to read using C<:raw> and then pass the result
-to C<Encode::decode> yourself.
+Unfortunately, C<:encoding(UTF-8)> is very, very slow.  If you install
+L<Unicode::UTF8>, that module will be used by some C<*_utf8> methods to encode
+or decode data after a raw, binary input/output operation, which is much
+faster.
+
+If you need the performance and can accept the security risk,
+C<slurp({binmode => ":unix:utf8"})> will be faster than C<:unix:encoding(UTF-8)>
+(but not as fast as C<Unicode::UTF8>).
+
+Note that the C<*_utf8> methods read in B<raw> mode.  There is no CRLF
+translation on Windows.  If you must have CRLF translation, use the regular
+input/output methods with an appropriate binmode:
+
+  $path->spew_utf8($data);                            # raw
+  $path->spew({binmode => ":encoding(UTF-8)"}, $data; # LF -> CRLF
+
+Consider L<PerlIO::utf8_strict> for a faster L<PerlIO> layer alternative to
+C<:encoding(UTF-8)>, though it does not appear to be as fast as the
+C<Unicode::UTF8> approach.
 
 =head1 TYPE CONSTRAINTS AND COERCION
 
