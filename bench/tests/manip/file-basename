@@ -3,7 +3,7 @@ my $file   = $tmpdir->child("foo.txt");
 $file->touch;
 $file = "$file";
 
-my $result = timethese(
+$result = timethese(
     $count,
     {
         'Path::Tiny'  => sub { path($file)->basename },

@@ -1,6 +1,6 @@
 my $file = "fooabc123.txt";
 
-my $result = timethese(
+$result = timethese(
     $count,
     {
         'Path::Tiny'  => sub { path($file)->absolute },

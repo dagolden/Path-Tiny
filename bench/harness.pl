@@ -9,7 +9,7 @@ use Path::Tiny;
 use aliased 'Path::Iterator::Rule' => 'PIR';
 
 my %default_count = (
-    'construct'         => -2,
+    'construct'         => -1,
     'manip'             => -2,
     'slurp'             => -3,
     'slurp-lax-utf8'    => -3,
@@ -76,6 +76,7 @@ use warnings;
 use Benchmark qw( :hireswallclock );
 use Benchmark::Forking qw( timethese );
 use JSON -convert_blessed_universally;
+use File::pushd qw/tempd/;
 
 use File::Fu;
 use IO::All;
@@ -85,6 +86,7 @@ use Path::Tiny;
 my $count = COUNT;
 my $corpus = path("CORPUS");
 my $test = path("TEST");
+my $result;
 
 TIMETHESE
 

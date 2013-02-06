@@ -3,7 +3,7 @@ my $file = $corpus->child("ascii-$size");
 die "Couldn't find $file"
     unless $file->exists;
 
-my $result = timethese (
+$result = timethese (
     $count,
     {
         'Path::Tiny'  => sub { my $s = path($file)->slurp_raw },

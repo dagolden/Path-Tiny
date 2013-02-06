@@ -1,4 +1,4 @@
-my $result = timethese (
+$result = timethese (
     $count,
     {
         'Path::Tiny'  => sub { path($ENV{HOME})->children },

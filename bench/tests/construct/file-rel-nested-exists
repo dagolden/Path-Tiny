@@ -1,7 +1,9 @@
 {
     my $wd = tempd;
-    my $path = "foo/bar/baz.txt";
-    path($path)->touch;
+    my $path = path("foo/bar/baz.txt");
+    $path->parent->mkpath;
+    $path->touch;
+    $path = "$path";
 
     $result = timethese(
         $count,
