@@ -9,12 +9,13 @@ use Path::Tiny;
 use aliased 'Path::Iterator::Rule' => 'PIR';
 
 my %default_count = (
-    tests        => -3,
-    construct    => -2,
-    manip        => -2,
-    slurp        => -3,
-    'slurp-raw'  => -3,
-    'slurp-utf8' => -3,
+    'construct'         => -2,
+    'manip'             => -2,
+    'slurp'             => -3,
+    'slurp-lax-utf8'    => -3,
+    'slurp-raw'         => -3,
+    'slurp-strict-utf8' => -3,
+    'tests'             => -3,
 );
 
 my @spec = (
