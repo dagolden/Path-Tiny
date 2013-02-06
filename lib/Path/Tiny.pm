@@ -61,9 +61,9 @@ sub path {
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/];                   # unix convention enforced
-    $path =~ s{/$}{} if $path ne "/";     # hack to make splitpath give us a basename
-    bless [$path, $cpath], __PACKAGE__;
+    $path =~ tr[\\][/];                               # unix convention enforced
+    $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
+    bless [ $path, $cpath ], __PACKAGE__;
 }
 
 =construct new
