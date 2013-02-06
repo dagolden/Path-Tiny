@@ -15,6 +15,7 @@ my %default_count = (
     'slurp-lax-utf8'    => -3,
     'slurp-raw'         => -3,
     'slurp-strict-utf8' => -3,
+    'spew'              => -3,
     'tests'             => -3,
 );
 
@@ -29,7 +30,7 @@ my @spec = (
 my $opts = Getopt::Lucid->getopt( \@spec )->validate;
 
 my $count = $opts->get_count // $default_count{ path( $opts->get_tests )->basename }
-  // -1;
+  // -2;
 
 my $corpus = path( $opts->get_corpus )->absolute;
 die "Corpus $corpus not found"
