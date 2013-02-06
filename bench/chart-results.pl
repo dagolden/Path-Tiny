@@ -25,7 +25,7 @@ use Getopt::Lucid ':all';
 }
 
 sub iter_per_sec {
-    my ( $real, $user, $system, $children_user, $children_system, $iters ) = @{$_[0]};
+    my ( $real, $user, $system, $children_user, $children_system, $iters ) = @{ $_[0] };
     return $iters / sum( $user, $system, $children_user, $children_system, 0.00000001 );
 }
 
@@ -33,6 +33,7 @@ my $opts = Getopt::Lucid->getopt(
     [
         Param("input|i")->default("results.json"),
         Param("output|o")->default("output.png"),
+        Param("sort")->default("tiny")->valid(qw/^(?:tiny|min|max|sum)$/),
     ]
 )->validate;
 
@@ -47,7 +48,7 @@ my @range_vals;
 
 for my $file ( keys %$bench_data ) {
     for my $mod ( keys %{ $bench_data->{$file} } ) {
-        my $iters = iter_per_sec($bench_data->{$file}{$mod});
+        my $iters = iter_per_sec( $bench_data->{$file}{$mod} );
         $series_data->{$mod}{$file} = $iters;
         push @{ $tests->{$file} }, $iters;
         push @range_vals, log10($iters);
@@ -55,9 +56,29 @@ for my $file ( keys %$bench_data ) {
 }
 
 my $N_tests = keys %$tests;
-my @file_order =
-  sort { $series_data->{'Path::Tiny'}{$b} <=> $series_data->{'Path::Tiny'}{$a} }
-  keys %$bench_data;
+my @file_order;
+
+my $sort = $opts->get_sort;
+if ( $sort eq 'sum' ) {
+    @file_order =
+      sort { sum( @{ $tests->{$b} } ) <=> sum( @{ $tests->{$a} } ) } keys %$tests;
+}
+elsif ( $sort eq 'min' ) {
+    @file_order =
+      sort { min( @{ $tests->{$b} } ) <=> min( @{ $tests->{$a} } ) } keys %$tests;
+}
+elsif ( $sort eq 'max' ) {
+    @file_order =
+      sort { max( @{ $tests->{$b} } ) <=> max( @{ $tests->{$a} } ) } keys %$tests;
+}
+elsif ( $sort eq 'tiny' ) { # sort by Path::Tiny results
+    @file_order =
+      sort { $series_data->{'Path::Tiny'}{$b} <=> $series_data->{'Path::Tiny'}{$a} }
+      keys %$bench_data;
+}
+else {
+    die "Unknown sort '$sort'\n";
+}
 
 my $cc = Chart::Clicker->new( width => 800, height => 600, format => 'png' );
 
