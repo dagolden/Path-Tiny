@@ -10,10 +10,10 @@ use aliased 'Path::Iterator::Rule' => 'PIR';
 
 my %default_count = (
     tests        => -2,
-    construct    => -1,
-    manip        => -1,
-    slurp        => 100,
-    'slurp-utf8' => 100,
+    construct    => -2,
+    manip        => -2,
+    slurp        => -3,
+    'slurp-utf8' => -3,
 );
 
 my @spec = (
@@ -24,14 +24,17 @@ my @spec = (
 
 my $opts = Getopt::Lucid->getopt( \@spec )->validate;
 
-my $count = $opts->get_count // $default_count{ $opts->get_tests } // -1;
+my $count = $opts->get_count // $default_count{ path( $opts->get_tests )->basename }
+  // -1;
+
+say "Beginning tests with count = $count:";
 
 my %results;
 
 my $tests = path( $opts->get_tests );
 
 for my $t ( map { path($_) } PIR->new->file->all($tests) ) {
-    say "Running $t...";
+    say "... $t";
     my $pl = Path::Tiny->tempfile;
     $pl->spew_raw( _test_guts( $count, $t->slurp_raw ) );
     my $string = join( "", grep { $_ !~ /warning: too few/ } qx/$^X $pl/ );
@@ -59,6 +62,7 @@ use v5.10;
 use strict;
 use warnings;
 
+use Benchmark qw( :hireswallclock );
 use Benchmark::Forking qw( timethese );
 use JSON -convert_blessed_universally;
 

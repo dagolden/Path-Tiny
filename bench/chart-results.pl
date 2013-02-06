@@ -21,7 +21,12 @@ use Getopt::Lucid ':all';
 
 {
     my $log10 = log(10);
-    sub log10 { return log($_[0])/$log10 };
+    sub log10 { return log( $_[0] ) / $log10 }
+}
+
+sub iter_per_sec {
+    my ( $real, $user, $system, $children_user, $children_system, $iters ) = @{$_[0]};
+    return $iters / sum( $user, $system, $children_user, $children_system, 0.00000001 );
 }
 
 my $opts = Getopt::Lucid->getopt(
@@ -42,7 +47,7 @@ my @range_vals;
 
 for my $file ( keys %$bench_data ) {
     for my $mod ( keys %{ $bench_data->{$file} } ) {
-        my $iters = $bench_data->{$file}{$mod}[-1];
+        my $iters = iter_per_sec($bench_data->{$file}{$mod});
         $series_data->{$mod}{$file} = $iters;
         push @{ $tests->{$file} }, $iters;
         push @range_vals, log10($iters);
@@ -51,16 +56,17 @@ for my $file ( keys %$bench_data ) {
 
 my $N_tests = keys %$tests;
 my @file_order =
-  sort { $series_data->{'Path::Tiny'}{$b} <=> $series_data->{'Path::Tiny'}{$a} } keys %$bench_data;
+  sort { $series_data->{'Path::Tiny'}{$b} <=> $series_data->{'Path::Tiny'}{$a} }
+  keys %$bench_data;
 
 my $cc = Chart::Clicker->new( width => 800, height => 600, format => 'png' );
 
 my @series;
 my $CCDS = 'Chart::Clicker::Data::Series';
 
-for my $m ( keys %$series_data ) {
+for my $m ( sort keys %$series_data ) {
     my @keys = ( 1 .. @file_order );
-    my @values = map { log($series_data->{$m}{$_})/log(10) } @file_order;
+    my @values = map { log( $series_data->{$m}{$_} ) / log(10) } @file_order;
     push @series, $CCDS->new( keys => \@keys, values => \@values, name => $m );
 }
 
@@ -72,22 +78,22 @@ $cc->add_to_datasets($ds);
 
 my $defctx = $cc->get_context('default');
 
-my $min_range = int(min(@range_vals));
-my $max_range = int(max(@range_vals) + 1);
+my $min_range = int( min(@range_vals) );
+my $max_range = int( max(@range_vals) + 1 );
 
 $defctx->range_axis->label("#/sec");
-$defctx->range_axis->tick_values( [$min_range .. $max_range] );
+$defctx->range_axis->tick_values( [ $min_range .. $max_range ] );
 $defctx->range_axis->range->min($min_range);
 $defctx->range_axis->range->max($max_range);
-$defctx->range_axis->format( sub { "1" . ("0" x $_[0]) } );
+$defctx->range_axis->format( sub { "1" . ( "0" x $_[0] ) } );
 
 $defctx->domain_axis->label('Benchmark file');
 $defctx->domain_axis->tick_values( [ 1 .. @file_order ] );
 $defctx->domain_axis->tick_label_angle(1.57);
-$defctx->domain_axis->format( sub { $file_order[$_[0]-1] } );
+$defctx->domain_axis->format( sub { $file_order[ $_[0] - 1 ] } );
 
 $defctx->renderer->brush->width(2);
 
 say "Writing " . $opts->get_output;
-$cc->write_output($opts->get_output);
+$cc->write_output( $opts->get_output );
 
