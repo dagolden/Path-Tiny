@@ -194,11 +194,23 @@ sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
 
     path("foo.txt")->append_utf8(@data);
 
-This is like C<append> with a C<binmode> of C<:encoding(UTF-8)>.
+This is like C<append> with a C<binmode> of C<:unix:encoding(UTF-8)>.
+
+If L<Unicode::UTF8> is installed, a raw append will be done instead on the data
+encoded with C<Unicode::UTF8>.
 
 =cut
 
-sub append_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &append }
+sub append_utf8 {
+    if ( $HAS_UU //= eval { require Unicode::UTF8; 1 } ) {
+        my $self = shift;
+        append( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
+    }
+    else {
+        splice @_, 1, 0, { binmode => ":unix:encoding(UTF-8)" };
+        goto &append;
+    }
+}
 
 =method basename
 
@@ -661,7 +673,11 @@ sub slurp_raw { $_[1] = { binmode => ":unix" }; goto &slurp }
 
     $data = path("foo.txt")->slurp_utf8;
 
-This is like C<slurp> with a C<binmode> of C<:encoding(UTF-8)>.
+This is like C<slurp> with a C<binmode> of C<:unix:encoding(UTF-8)>.
+
+If L<Unicode::UTF8> is installed, a raw slurp will be done instead and the
+result decoded with C<Unicode::UTF8>.  This is is just as strict and is roughly
+an order of magnitude faster than using C<:encoding(UTF-8)>.
 
 =cut
 
@@ -715,11 +731,23 @@ sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
 
     path("foo.txt")->spew_utf8(@data);
 
-This is like C<spew> with a C<binmode> of C<:encoding(UTF-8)>.
+This is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
+
+If L<Unicode::UTF8> is installed, a raw spew will be done instead on the data
+encoded with C<Unicode::UTF8>.
 
 =cut
 
-sub spew_utf8 { splice @_, 1, 0, { binmode => ":encoding(UTF-8)" }; goto &spew }
+sub spew_utf8 {
+    if ( $HAS_UU //= eval { require Unicode::UTF8; 1 } ) {
+        my $self = shift;
+        spew( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
+    }
+    else {
+        splice @_, 1, 0, { binmode => ":unix:encoding(UTF-8)" };
+        goto &spew;
+    }
+}
 
 =method stat
 
