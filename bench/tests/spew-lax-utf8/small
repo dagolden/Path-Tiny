@@ -1,0 +1,18 @@
+my ($size, $how) = split qr/-/, $test->basename;
+my $file = $corpus->child("uni-$size");
+die "Couldn't find $file"
+    unless $file->exists;
+my $data = $file->slurp_utf8;
+my $temp = Path::Tiny->tempfile;
+
+$result = timethese (
+    $count,
+    {
+        'Path::Tiny'  => sub { path("$temp")->spew({binmode => ":utf8"}, $data) },
+        'Path::Class' => sub { file("$temp")->spew(iomode => ">:utf8", $data) },
+        'IO::All'     => sub { io("$temp")->utf8->print($data) },
+        'File::Fu'    => sub { File::Fu->file("$temp")->write($data, binmode => ":utf8") },
+    },
+    "none"
+);
+
