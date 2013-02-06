@@ -714,7 +714,7 @@ sub spew {
     flock( $fh, LOCK_EX );
     seek( $fh, 0, 0 );
     truncate( $fh, 0 );
-    print {$fh} $_ for @data;
+    print {$fh} @data;
     flock( $fh, LOCK_UN );
     close $fh;
     $temp->move( $self->[PATH] );
