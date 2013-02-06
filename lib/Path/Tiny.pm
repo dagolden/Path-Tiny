@@ -717,6 +717,7 @@ C<binmode()> on the handle used for writing.
 
 =cut
 
+# XXX add "unsafe" option to disable flocking and atomic?  Check benchmarks on append() first.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
