@@ -1,4 +1,7 @@
-my $file = $INC{'Benchmark.pm'};
+my ($size, $how) = split qr/-/, $test->basename;
+my $file = $corpus->child("ascii-$size");
+die "Couldn't find $file"
+    unless $file->exists;
 
 my $result = timethese (
     $count,
