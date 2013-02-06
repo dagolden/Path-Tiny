@@ -26,8 +26,8 @@ subtest "tempfile" => sub {
 subtest "tempfile handle" => sub {
     my $tempfile = Path::Tiny->tempfile;
     my $fh       = $tempfile->filehandle;
-    is( ref $tempfile->[4], 'File::Temp', "cached File::Temp object" );
-    is( fileno $tempfile->[4], undef, "cached handle is closed" );
+    is( ref $tempfile->[5], 'File::Temp', "cached File::Temp object" );
+    is( fileno $tempfile->[5], undef, "cached handle is closed" );
 };
 
 done_testing;

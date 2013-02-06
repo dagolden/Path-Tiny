@@ -6,13 +6,15 @@ Revision history for Path-Tiny
 
     - Added slurp_raw and other *_raw helper methods
 
-    - Added realpath method (with thanks to ETHER)
+    - Added realpath method (with thanks to ether)
+
+    - Added canonpath method (with thanks to sjmiller)
 
     [FIXED]
 
     - slurp/lines/spew/append now do appropriate flocking
 
-    - Fixed test that fails if run as root (BINGOS)
+    - Fixed test that fails if run as root (bingos)
 
     - Fixed test that fails if cwd/getcwd don't agree
 

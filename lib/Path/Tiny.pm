@@ -20,11 +20,12 @@ use File::Temp 0.18 ();
 our @EXPORT = qw/path/;
 
 use constant {
-    PATH => 0,
-    VOL  => 1,
-    DIR  => 2,
-    FILE => 3,
-    TEMP => 4,
+    PATH  => 0,
+    CANON => 1,
+    VOL   => 2,
+    DIR   => 3,
+    FILE  => 4,
+    TEMP  => 5,
 };
 
 use overload (
@@ -59,10 +60,10 @@ sub path {
     $path = "." unless length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
-    $path = File::Spec->canonpath($path); # ugh, but probably worth it
+    my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/];                   # unix convention enforced
     $path =~ s{/$}{} if $path ne "/";     # hack to make splitpath give us a basename
-    bless [$path], __PACKAGE__;
+    bless [$path, $cpath], __PACKAGE__;
 }
 
 =construct new
@@ -210,6 +211,18 @@ sub basename {
     $self->_splitpath unless defined $self->[FILE];
     return $self->[FILE];
 }
+
+=method canonpath
+
+    $canonical = path("foo/bar")->canonpath; # foo\bar on Windows
+
+Returns a string with the canonical format of the path name for
+the platform.  In particular, this means directory separators
+will be C<\> on Windows.
+
+=cut
+
+sub canonpath { $_[0]->[CANON] }
 
 =method child
 
@@ -714,7 +727,8 @@ sub stat { File::stat::stat( $_[0]->[PATH] ) }
     $path = path("foo.txt");
     say $path->stringify; # same as "$path"
 
-Returns a string representation of the path.
+Returns a string representation of the path.  Unlike C<canonpath>, this method
+returns the path standardized with Unix-style C</> directory separators.
 
 =cut
 

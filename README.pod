@@ -151,6 +151,14 @@ This is like C<append> with a C<binmode> of C<:encoding(UTF-8)>.
 
 Returns the file portion or last directory portion of a path.
 
+=head2 canonpath
+
+    $canonical = path("foo/bar")->canonpath; # foo\bar on Windows
+
+Returns a string with the canonical format of the path name for
+the platform.  In particular, this means directory separators
+will be C<\> on Windows.
+
 =head2 child
 
     $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
@@ -404,7 +412,8 @@ Like calling C<stat> from L<File::stat>.
     $path = path("foo.txt");
     say $path->stringify; # same as "$path"
 
-Returns a string representation of the path.
+Returns a string representation of the path.  Unlike C<canonpath>, this method
+returns the path standardized with Unix-style C</> directory separators.
 
 =head2 touch
 

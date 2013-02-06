@@ -53,6 +53,11 @@ is $file->dirname, '/foo/baz/';
 is $file->parent, '/foo/baz';
 
 {
+    my $file = path("foo/bar/baz");
+    is( $file->canonpath, File::Spec->canonpath("$file"), "canonpath" );
+}
+
+{
   my $dir = path('/foo/bar/baz');
   is $dir->parent, '/foo/bar';
   is $dir->parent->parent, '/foo';
