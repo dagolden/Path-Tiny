@@ -1,7 +1,6 @@
 {
     my $wd = tempd;
-    my $path = "foo.txt";
-    path($path)->touch;
+    my $path = "foo/bar/baz.txt";
 
     $result = timethese(
         $count,

@@ -1,11 +1,15 @@
-my $result = timethese(
-    $count,
-    {
-        'Path::Tiny'  => sub { path("$ENV{HOME}/foo.txt") },
-        'Path::Class' => sub { file("$ENV{HOME}/foo.txt") },
-        'IO::All'     => sub { io("$ENV{HOME}/foo.txt") },
-        'File::Fu'    => sub { File::Fu->file("$ENV{HOME}/foo.txt") },
-    },
-    "none"
-);
+{
+    my $wd = tempd;
+    my $path = "foo.txt";
 
+    $result = timethese(
+        $count,
+        {
+            'Path::Tiny'  => sub { path($path) },
+            'Path::Class' => sub { file($path) },
+            'IO::All'     => sub { io($path) },
+            'File::Fu'    => sub { File::Fu->file($path) },
+        },
+        "none"
+    );
+}

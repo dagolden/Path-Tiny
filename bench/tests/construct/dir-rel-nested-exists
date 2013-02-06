@@ -1,15 +1,15 @@
 {
     my $wd = tempd;
-    my $path = "foo.txt";
-    path($path)->touch;
+    my $path = "foo/bar/baz";
+    path($path)->mkpath;
 
     $result = timethese(
         $count,
         {
             'Path::Tiny'  => sub { path($path) },
-            'Path::Class' => sub { file($path) },
+            'Path::Class' => sub { dir($path) },
             'IO::All'     => sub { io($path) },
-            'File::Fu'    => sub { File::Fu->file($path) },
+            'File::Fu'    => sub { File::Fu->dir($path) },
         },
         "none"
     );
