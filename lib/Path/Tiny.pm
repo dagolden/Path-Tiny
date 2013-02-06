@@ -456,13 +456,13 @@ sub lines_raw {
 
     @contents = path("/tmp/foo.txt")->lines_utf8;
 
-This is like C<lines> with a C<binmode> of C<:encoding(UTF-8)>.
+This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
 
 =cut
 
 sub lines_utf8 {
     $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":encoding(UTF-8)";
+    $_[1]->{binmode} = ":raw:encoding(UTF-8)";
     goto &lines;
 }
 
@@ -521,7 +521,7 @@ sub move { rename $_[0]->[PATH], $_[1] }
 Returns a file handle opened in the specified mode.  The C<openr> style methods
 take a single C<binmode> argument.  All of the C<open*> methods have
 C<open*_raw> and C<open*_utf8> equivalents that use C<:raw> and
-C<:encoding(UTF-8)>, respectively.
+C<:raw:encoding(UTF-8)>, respectively.
 
 =cut
 
@@ -536,7 +536,7 @@ while ( my ( $k, $v ) = each %opens ) {
     no strict 'refs';
     *{$k}             = sub { $_[0]->filehandle( $v, $_[1] ) };
     *{ $k . "_raw" }  = sub { $_[0]->filehandle( $v, ":raw" ) };
-    *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":encoding(UTF-8)" ) };
+    *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":raw:encoding(UTF-8)" ) };
 }
 
 =method parent
@@ -686,7 +686,7 @@ sub slurp_utf8 {
         return Unicode::UTF8::decode_utf8( slurp( $_[0], { binmode => ":unix" } ) );
     }
     else {
-        $_[1] = { binmode => ":encoding(UTF-8)" };
+        $_[1] = { binmode => ":raw:encoding(UTF-8)" };
         goto &slurp;
     }
 }
