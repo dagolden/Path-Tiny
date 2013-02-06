@@ -16,6 +16,7 @@ my %default_count = (
     'slurp-raw'         => -3,
     'slurp-strict-utf8' => -3,
     'spew'              => -3,
+    'spew-raw'          => -3,
     'tests'             => -3,
 );
 
