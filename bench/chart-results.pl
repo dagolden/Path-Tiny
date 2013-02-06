@@ -19,6 +19,11 @@ use JSON;
 
 use Getopt::Lucid ':all';
 
+{
+    my $log10 = log(10);
+    sub log10 { return log($_[0])/$log10 };
+}
+
 my $opts = Getopt::Lucid->getopt(
     [
         Param("input|i")->default("results.json"),
@@ -33,22 +38,24 @@ my $bench_data = from_json( path( $opts->get_input )->slurp_raw );
 
 my $tests;
 my $series_data;
+my @range_vals;
+
 for my $file ( keys %$bench_data ) {
     for my $mod ( keys %{ $bench_data->{$file} } ) {
         my $iters = $bench_data->{$file}{$mod}[-1];
         $series_data->{$mod}{$file} = $iters;
         push @{ $tests->{$file} }, $iters;
+        push @range_vals, log10($iters);
     }
 }
 
 my $N_tests = keys %$tests;
 my @file_order =
-  sort { sum( @{ $tests->{$b} } )/$N_tests <=> sum( @{ $tests->{$a} } )/$N_tests } keys %$tests;
+  sort { $series_data->{'Path::Tiny'}{$b} <=> $series_data->{'Path::Tiny'}{$a} } keys %$bench_data;
 
 my $cc = Chart::Clicker->new( width => 800, height => 600, format => 'png' );
 
 my @series;
-
 my $CCDS = 'Chart::Clicker::Data::Series';
 
 for my $m ( keys %$series_data ) {
@@ -65,10 +72,13 @@ $cc->add_to_datasets($ds);
 
 my $defctx = $cc->get_context('default');
 
+my $min_range = int(min(@range_vals));
+my $max_range = int(max(@range_vals) + 1);
+
 $defctx->range_axis->label("#/sec");
-$defctx->range_axis->tick_values( [0 .. 6] );
-$defctx->range_axis->range->min(0);
-$defctx->range_axis->range->max(6);
+$defctx->range_axis->tick_values( [$min_range .. $max_range] );
+$defctx->range_axis->range->min($min_range);
+$defctx->range_axis->range->max($max_range);
 $defctx->range_axis->format( sub { "1" . ("0" x $_[0]) } );
 
 $defctx->domain_axis->label('Benchmark file');
@@ -78,5 +88,6 @@ $defctx->domain_axis->format( sub { $file_order[$_[0]-1] } );
 
 $defctx->renderer->brush->width(2);
 
+say "Writing " . $opts->get_output;
 $cc->write_output($opts->get_output);
 

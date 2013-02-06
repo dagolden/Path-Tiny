@@ -8,25 +8,35 @@ use JSON -convert_blessed_universally;
 use Path::Tiny;
 use aliased 'Path::Iterator::Rule' => 'PIR';
 
+my %default_count = (
+    tests        => -2,
+    construct    => -1,
+    manip        => -1,
+    slurp        => 100,
+    'slurp-utf8' => 100,
+);
+
 my @spec = (
-    Param('count|c')->default(-1),
+    Param('count|c'),
     Param('output|o')->default("results.json"),
     Param("tests|t")->default("tests"),
 );
 
 my $opts = Getopt::Lucid->getopt( \@spec )->validate;
 
+my $count = $opts->get_count // $default_count{ $opts->get_tests } // -1;
+
 my %results;
 
-my $tests = path($opts->get_tests);
+my $tests = path( $opts->get_tests );
 
 for my $t ( map { path($_) } PIR->new->file->all($tests) ) {
     say "Running $t...";
     my $pl = Path::Tiny->tempfile;
-    $pl->spew_raw( _test_guts( $opts->get_count, $t->slurp_raw ) );
+    $pl->spew_raw( _test_guts( $count, $t->slurp_raw ) );
     my $string = join( "", grep { $_ !~ /warning: too few/ } qx/$^X $pl/ );
-    eval { $results{$t->basename} = JSON->new->decode($string) }
-        or warn "ERROR DECODING:\n$string";
+    eval { $results{ $t->basename } = JSON->new->decode($string) }
+      or warn "ERROR DECODING:\n$string";
 }
 
 say "Writing " . $opts->get_output;
