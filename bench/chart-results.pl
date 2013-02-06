@@ -22,7 +22,7 @@ use Getopt::Lucid ':all';
 my $opts = Getopt::Lucid->getopt(
     [
         Param("input|i")->default("results.json"),
-        Param("output|o")->default("chart.png"),
+        Param("output|o")->default("output.png"),
     ]
 )->validate;
 
@@ -41,10 +41,11 @@ for my $file ( keys %$bench_data ) {
     }
 }
 
+my $N_tests = keys %$tests;
 my @file_order =
-  sort { min( @{ $tests->{$b} } ) <=> min( @{ $tests->{$a} } ) } keys %$tests;
+  sort { sum( @{ $tests->{$b} } )/$N_tests <=> sum( @{ $tests->{$a} } )/$N_tests } keys %$tests;
 
-my $cc = Chart::Clicker->new( width => 800, height => 300, format => 'png' );
+my $cc = Chart::Clicker->new( width => 800, height => 600, format => 'png' );
 
 my @series;
 
@@ -52,30 +53,28 @@ my $CCDS = 'Chart::Clicker::Data::Series';
 
 for my $m ( keys %$series_data ) {
     my @keys = ( 1 .. @file_order );
-    my @values = map { $series_data->{$m}{$_} } @file_order;
-    push @series, $CCDS->new( keys => \@keys, values => \@values );
+    my @values = map { log($series_data->{$m}{$_})/log(10) } @file_order;
+    push @series, $CCDS->new( keys => \@keys, values => \@values, name => $m );
 }
 
 my $ds = Chart::Clicker::Data::DataSet->new( series => \@series, );
 
-$cc->title->text('File utilities');
+$cc->title->text('File utility benchmarking');
 $cc->title->padding->bottom(5);
 $cc->add_to_datasets($ds);
 
 my $defctx = $cc->get_context('default');
 
-$defctx->range_axis->label("#/s");
-##$defctx->range_axis->format(
-##    sub {
-##        my $m = int( $_[0] / 60 );
-##        my $s = $_[0] - $m * 60;
-##        return sprintf '%u:%05.2f', $m, $s;
-##    }
-##);
+$defctx->range_axis->label("#/sec");
+$defctx->range_axis->tick_values( [0 .. 6] );
+$defctx->range_axis->range->min(0);
+$defctx->range_axis->range->max(6);
+$defctx->range_axis->format( sub { "1" . ("0" x $_[0]) } );
 
-$defctx->domain_axis->label('Benchmarks');
-##$defctx->domain_axis->tick_values( [ 1 ..  ] );
-##$defctx->domain_axis->format( sub { "1e$_[0]" } );
+$defctx->domain_axis->label('Benchmark file');
+$defctx->domain_axis->tick_values( [ 1 .. @file_order ] );
+$defctx->domain_axis->tick_label_angle(1.57);
+$defctx->domain_axis->format( sub { $file_order[$_[0]-1] } );
 
 $defctx->renderer->brush->width(2);
 
