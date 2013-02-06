@@ -38,6 +38,8 @@ my $TID = 0; # for thread safe atomic writes
 
 sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
 
+my $HAS_UU;                        # has Unicode::UTF8; lazily populated
+
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -663,7 +665,15 @@ This is like C<slurp> with a C<binmode> of C<:encoding(UTF-8)>.
 
 =cut
 
-sub slurp_utf8 { $_[1] = { binmode => ":encoding(UTF-8)" }; goto &slurp }
+sub slurp_utf8 {
+    if ( $HAS_UU //= eval { require Unicode::UTF8; 1 } ) {
+        return Unicode::UTF8::decode_utf8( slurp( $_[0], { binmode => ":unix" } ) );
+    }
+    else {
+        $_[1] = { binmode => ":encoding(UTF-8)" };
+        goto &slurp;
+    }
+}
 
 =method spew
 
