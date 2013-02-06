@@ -6,6 +6,7 @@ use Benchmark::Forking qw( timethese );
 use Getopt::Lucid qw/:all/;
 use JSON -convert_blessed_universally;
 use Path::Tiny;
+use aliased 'Path::Iterator::Rule' => 'PIR';
 
 my @spec = (
     Param('count|c')->default(-1),
@@ -19,7 +20,7 @@ my %results;
 
 my $tests = path($opts->get_tests);
 
-for my $t ( $tests->children ) {
+for my $t ( map { path($_) } PIR->new->file->all($tests) ) {
     say "Running $t...";
     my $pl = Path::Tiny->tempfile;
     $pl->spew_raw( _test_guts( $opts->get_count, $t->slurp_raw ) );
@@ -28,6 +29,7 @@ for my $t ( $tests->children ) {
         or warn "ERROR DECODING:\n$string";
 }
 
+say "Writing " . $opts->get_output;
 path( $opts->get_output )->spew_raw( JSON->new->pretty->encode( \%results ) );
 
 exit;
