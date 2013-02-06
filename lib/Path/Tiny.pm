@@ -461,12 +461,23 @@ sub lines_raw {
 
 This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
 
+If L<Unicode::UTF8> is installed, a raw UTF-8 slurp will be done and then the
+lines will be split.  This is actually faster than relying on C<:encoding(UTF-8)>,
+though a bit memory intensive.  If memory use is a concern, consider C<openr_utf8>
+and iterating directly on the handle.
+
 =cut
 
 sub lines_utf8 {
     $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":raw:encoding(UTF-8)";
-    goto &lines;
+    if ( $HAS_UU //= eval { require Unicode::UTF8; 1 } && !$_[1]->{count} ) {
+        # when we split, we lose the \n, so put *back* the \n if not chomping
+        return map { $_[1]->{chomp} ? $_ : "$_\n" } split /\n/, slurp_utf8( $_[0] );
+    }
+    else {
+        $_[1]->{binmode} = ":raw:encoding(UTF-8)";
+        goto &lines;
+    }
 }
 
 =method lstat
