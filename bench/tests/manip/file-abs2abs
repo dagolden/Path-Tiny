@@ -1,4 +1,5 @@
-my $file = "fooabc123.txt";
+my $file  = path("foo.txt")->absolute;
+$file = "$file";
 
 $result = timethese(
     $count,

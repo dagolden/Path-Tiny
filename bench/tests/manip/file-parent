@@ -1,0 +1,16 @@
+my $tmpdir = Path::Tiny->tempdir;
+my $file   = $tmpdir->child("foo.txt");
+$file->touch;
+$file = "$file";
+
+$result = timethese(
+    $count,
+    {
+        'Path::Tiny'  => sub { path($file)->parent },
+        'Path::Class' => sub { file($file)->parent },
+        'IO::All'     => sub { io($file)->updir },
+        'File::Fu'    => sub { File::Fu->file($file)->parent },
+    },
+    "none"
+);
+

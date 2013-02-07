@@ -1,0 +1,15 @@
+my $file  = path("foo.txt")->absolute;
+$file->touch;
+$file = "$file";
+
+$result = timethese(
+    $count,
+    {
+        'Path::Tiny'  => sub { path($file)->relative },
+        'Path::Class' => sub { file($file)->relative },
+        'IO::All'     => sub { io($file)->relative },
+        'File::Fu'    => sub { File::Spec->abs2rel(File::Fu->file($file)) },
+    },
+    "none"
+);
+

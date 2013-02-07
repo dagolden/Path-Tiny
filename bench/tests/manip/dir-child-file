@@ -1,0 +1,14 @@
+my $tmpdir = Path::Tiny->tempdir;
+my $path = "$tmpdir";
+
+$result = timethese(
+    $count,
+    {
+        'Path::Tiny'  => sub { path($path)->child("foo.txt") },
+        'Path::Class' => sub { dir($path)->file("foo.txt")},
+        'IO::All'     => sub { io($path)->catfile("foo.txt") },
+        'File::Fu'    => sub { File::Fu->dir($path)->file("foo.txt") },
+    },
+    "none"
+);
+
