@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - t/parent.t is amended to work on Windows
+
 0.005     2013-02-07 15:41:32 America/New_York
 
     [FIXED]

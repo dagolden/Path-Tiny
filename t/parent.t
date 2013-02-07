@@ -3,16 +3,20 @@ use strict;
 use warnings;
 use Test::More 0.96;
 
-my $DEBUG; BEGIN { $DEBUG = 0 }
+my $DEBUG;
+BEGIN { $DEBUG = 0 }
 
-BEGIN { if ( $DEBUG ) { require Path::Class; Path::Class->import } }
+BEGIN {
+    if ($DEBUG) { require Path::Class; Path::Class->import }
+}
 
 use Path::Tiny;
 use File::Spec::Functions qw/canonpath/;
 
 sub canonical {
-  my $d = canonpath(shift); $d =~ s{\\}{/}g;
-  return $d;
+    my $d = canonpath(shift);
+    $d =~ s{\\}{/}g;
+    return $d;
 }
 
 my @cases = (
@@ -32,7 +36,7 @@ while (@cases) {
         my $path = path( shift @$list );
         while (@$list) {
             my $expect = shift @$list;
-	    my $got = $path->parent;
+            my $got    = $path->parent;
             is( $got, canonical($expect), "$path -> $got" );
             is( dir("$path")->parent, canonpath($expect), "Path::Class agrees" ) if $DEBUG;
             $path = $got;
