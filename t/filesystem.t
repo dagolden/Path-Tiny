@@ -5,6 +5,7 @@ use Test::More 0.96;
 use Test::Fatal;
 use File::Temp qw(tmpnam tempdir);
 use File::Spec;
+use Cwd;
 
 use Path::Tiny;
 
@@ -214,7 +215,7 @@ my $tmpdir = Path::Tiny->tempdir;
         skip "standand unix bin/sbin not present", 1
             unless -d "/sbin" && -d "/bin";
         my $abs = path("/bin/../sbin");
-        is( $abs->realpath, "/sbin", "realpath on absolute" );
+        is( $abs->realpath, Cwd::realpath("/sbin"), "realpath on absolute" );
     }
 }
 
