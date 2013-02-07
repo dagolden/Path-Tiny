@@ -3,11 +3,17 @@ use strict;
 use warnings;
 use Test::More 0.96;
 
-plan skip_all => "Not ready for Win32 yet"
-  if $^O eq 'MSWin32';
+my $DEBUG; BEGIN { $DEBUG = 0 }
 
-##use Path::Class;
+BEGIN { if ( $DEBUG ) { require Path::Class; Path::Class->import } }
+
 use Path::Tiny;
+use File::Spec::Functions qw/canonpath/;
+
+sub canonical {
+  my $d = canonpath(shift); $d =~ s{\\}{/}g;
+  return $d;
+}
 
 my @cases = (
     "absolute" => [ "/foo/bar" => "/foo" => "/" => "/" ],
@@ -25,10 +31,11 @@ while (@cases) {
     subtest $label => sub {
         my $path = path( shift @$list );
         while (@$list) {
-            my $parent = shift @$list;
-            is( $path->parent, $parent, "$path -> $parent" );
-##            is( dir("$path")->parent, $parent, "Path::Class agrees" );
-            $path = path($parent);
+            my $expect = shift @$list;
+	    my $got = $path->parent;
+            is( $got, canonical($expect), "$path -> $got" );
+            is( dir("$path")->parent, canonpath($expect), "Path::Class agrees" ) if $DEBUG;
+            $path = $got;
         }
     };
 }
