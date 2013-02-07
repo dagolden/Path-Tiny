@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.005     2013-02-07 15:41:32 America/New_York
+
     [FIXED]
 
     - Fixed test for platforms with /sbin symlinked to /usr/sbin
