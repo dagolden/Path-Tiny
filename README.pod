@@ -281,6 +281,11 @@ of C<:unix> so PerlIO buffering can manage reading by line.
 
 This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
 
+If L<Unicode::UTF8> is installed, a raw UTF-8 slurp will be done and then the
+lines will be split.  This is actually faster than relying on C<:encoding(UTF-8)>,
+though a bit memory intensive.  If memory use is a concern, consider C<openr_utf8>
+and iterating directly on the handle.
+
 =head2 lstat
 
     $stat = path("/some/symlink")->lstat;
