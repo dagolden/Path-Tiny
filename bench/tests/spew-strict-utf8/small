@@ -1,7 +1,6 @@
-my ($size, $how) = split qr/-/, $test->basename;
+my $size = $test->basename;
 my $file = $corpus->child("uni-$size");
-die "Couldn't find $file"
-    unless $file->exists;
+die "Couldn't find $file" unless $file->exists;
 my $data = $file->slurp_utf8;
 my $temp = Path::Tiny->tempfile;
 

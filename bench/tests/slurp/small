@@ -1,7 +1,6 @@
-my ($size, $how) = split qr/-/, $test->basename;
+my $size = $test->basename;
 my $file = $corpus->child("ascii-$size");
-die "Couldn't find $file"
-    unless $file->exists;
+die "Couldn't find $file" unless $file->exists;
 
 $result = timethese (
     $count,

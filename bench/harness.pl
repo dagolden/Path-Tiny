@@ -2,7 +2,6 @@
 use v5.10;
 use strict;
 use warnings;
-use Benchmark::Forking qw( timethese );
 use Getopt::Lucid qw/:all/;
 use JSON -convert_blessed_universally;
 use Path::Tiny;
