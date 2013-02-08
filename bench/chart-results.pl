@@ -87,7 +87,7 @@ my $CCDS = 'Chart::Clicker::Data::Series';
 
 for my $m ( sort keys %$series_data ) {
     my @keys = ( 1 .. @file_order );
-    my @values = map { log( $series_data->{$m}{$_} ) / log(10) } @file_order;
+    my @values = map { log10( $series_data->{$m}{$_} ) } @file_order;
     push @series, $CCDS->new( keys => \@keys, values => \@values, name => $m );
 }
 
