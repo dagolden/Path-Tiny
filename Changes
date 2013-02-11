@@ -6,6 +6,8 @@ Revision history for Path-Tiny
 
     - t/parent.t is amended to work on Windows
 
+    - new() now correctly takes multiple path arguments, like path()
+
 0.005     2013-02-07 15:41:32 America/New_York
 
     [FIXED]

@@ -105,4 +105,9 @@ is $file->parent, '/foo/baz';
     is( $file->child("lib"), "/lib", "child of rootdir is correct");
 }
 
+# constructor
+{
+    is( path(qw/foo bar baz/), Path::Tiny->new(qw/foo bar baz/), "path() vs new" );
+    is( path(qw/foo bar baz/), path("foo/bar/baz"), "path(a,b,c) vs path('a/b/c')" );
+}
 done_testing();

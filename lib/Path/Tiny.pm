@@ -77,7 +77,7 @@ do that?)
 
 =cut
 
-sub new { path( $_[1] ) }
+sub new { shift; path( @_ ) }
 
 =construct rootdir
 
