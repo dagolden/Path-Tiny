@@ -40,7 +40,7 @@
       },
       "runtime" : {
          "recommends" : {
-            "Unicode::UTF8" : "0"
+            "Unicode::UTF8" : "0.58"
          },
          "requires" : {
             "Cwd" : "0",
@@ -62,9 +62,11 @@
       "test" : {
          "requires" : {
             "Devel::Hide" : "0",
+            "ExtUtils::MakeMaker" : "0",
             "File::Find" : "0",
             "File::Spec::Functions" : "0",
             "File::Spec::Unix" : "0",
+            "List::Util" : "0",
             "Test::Deep" : "0",
             "Test::Fatal" : "0",
             "Test::More" : "0.96"
