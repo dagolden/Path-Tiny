@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Unicode::UTF8 0.58 is necessary for optional faster
+      Unicode processing
+
 0.006     2013-02-11 13:22:18 America/New_York
 
     [FIXED]

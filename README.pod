@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.006
+version 0.007
 
 =head1 SYNOPSIS
 
@@ -65,9 +65,9 @@ the object gives you back the path (after some clean up).
 File input/output methods C<flock> handles before reading or writing,
 as appropriate.
 
-The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw mode
-without CRLF translation.  Installing L<Unicode::UTF8> will speed up several
-of them and is highly recommended.
+The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
+mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
+will speed up several of them and is highly recommended.
 
 =head1 CONSTRUCTORS
 
@@ -149,7 +149,7 @@ This is like C<append> with a C<binmode> of C<:unix> for fast, unbuffered, raw w
 
 This is like C<append> with a C<binmode> of C<:unix:encoding(UTF-8)>.
 
-If L<Unicode::UTF8> is installed, a raw append will be done instead on the data
+If L<Unicode::UTF8> 0.58+ is installed, a raw append will be done instead on the data
 encoded with C<Unicode::UTF8>.
 
 =head2 basename
@@ -281,7 +281,7 @@ of C<:unix> so PerlIO buffering can manage reading by line.
 
 This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
 
-If L<Unicode::UTF8> is installed, a raw UTF-8 slurp will be done and then the
+If L<Unicode::UTF8> 0.58+ is installed, a raw UTF-8 slurp will be done and then the
 lines will be split.  This is actually faster than relying on C<:encoding(UTF-8)>,
 though a bit memory intensive.  If memory use is a concern, consider C<openr_utf8>
 and iterating directly on the handle.
@@ -391,7 +391,7 @@ a fast, unbuffered, raw read.
 
 This is like C<slurp> with a C<binmode> of C<:unix:encoding(UTF-8)>.
 
-If L<Unicode::UTF8> is installed, a raw slurp will be done instead and the
+If L<Unicode::UTF8> 0.58+ is installed, a raw slurp will be done instead and the
 result decoded with C<Unicode::UTF8>.  This is is just as strict and is roughly
 an order of magnitude faster than using C<:encoding(UTF-8)>.
 
@@ -417,7 +417,7 @@ This is like C<spew> with a C<binmode> of C<:unix> for a fast, unbuffered, raw w
 
 This is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
 
-If L<Unicode::UTF8> is installed, a raw spew will be done instead on the data
+If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on the data
 encoded with C<Unicode::UTF8>.
 
 =head2 stat
@@ -462,9 +462,9 @@ which is strict against the Unicode spec and disallows illegal Unicode
 codepoints or UTF-8 sequences.
 
 Unfortunately, C<:encoding(UTF-8)> is very, very slow.  If you install
-L<Unicode::UTF8>, that module will be used by some C<*_utf8> methods to encode
-or decode data after a raw, binary input/output operation, which is much
-faster.
+L<Unicode::UTF8> 0.58 or later, that module will be used by some C<*_utf8>
+methods to encode or decode data after a raw, binary input/output operation,
+which is much faster.
 
 If you need the performance and can accept the security risk,
 C<< slurp({binmode => ":unix:utf8"}) >> will be faster than C<:unix:encoding(UTF-8)>

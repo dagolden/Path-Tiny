@@ -76,7 +76,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.006"
+         "version" : "0.007"
       }
    },
    "release_status" : "stable",
@@ -91,6 +91,6 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.006"
+   "version" : "0.007"
 }
 
