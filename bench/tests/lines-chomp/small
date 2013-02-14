@@ -1,0 +1,15 @@
+my $size = $test->basename;
+my $file = $corpus->child("ascii-$size");
+die "Couldn't find $file" unless $file->exists;
+
+$result = timethese (
+    $count,
+    {
+        'Path::Tiny'  => sub { my @s = path($file)->lines( {chomp => 1} ) },
+        'Path::Class' => sub { my @s = file($file)->slurp( chomp => 1 ) },
+        'IO::All'     => sub { my @s = io($file)->chomp->slurp },
+        'File::Fu'    => sub { my @s = File::Fu->file($file)->read( {chomp => 1} ) },
+    },
+    "none"
+);
+

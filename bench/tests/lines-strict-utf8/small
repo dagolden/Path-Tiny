@@ -1,0 +1,15 @@
+my $size = $test->basename;
+my $file = $corpus->child("uni-$size");
+die "Couldn't find $file" unless $file->exists;
+
+$result = timethese (
+    $count,
+    {
+        'Path::Tiny'  => sub { my @s = path($file)->lines_utf8 },
+        'Path::Class' => sub { my @s = file($file)->slurp(iomode => "<:encoding(UTF-8)") },
+        'IO::All'     => sub { my @s = io($file)->binmode(":encoding(UTF-8)")->slurp },
+        'File::Fu'    => sub { my @s = File::Fu->file($file)->read({binmode => ":encoding(UTF-8)"}) },
+    },
+    "none"
+);
+
