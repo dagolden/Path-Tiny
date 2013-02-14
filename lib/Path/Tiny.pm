@@ -180,7 +180,6 @@ sub append {
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     print {$fh} $_ for @data;
-    flock( $fh, LOCK_UN );
     close $fh;                # force immediate flush
 }
 
@@ -435,14 +434,14 @@ sub lines {
     my @lines;
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
-        @lines = map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
+        return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
+    }
+    elsif ( $chomp ) {
+        return map { chomp; $_ } <$fh>;
     }
     else {
-        @lines = $chomp ? ( map { chomp if $chomp; $_ } <$fh> ) : <$fh>;
+        return <$fh>;
     }
-    flock( $fh, LOCK_UN );
-    close $fh;
-    return @lines;
 }
 
 =method lines_raw
@@ -669,16 +668,15 @@ sub slurp {
     $args = {} unless ref $args eq 'HASH';
     my $fh = $self->filehandle( "<", $args->{binmode} );
     flock( $fh, LOCK_SH );
-    my $buf;
     if ( ( $args->{binmode} // "" ) eq ":unix" and my $size = -s $fh ) {
+        my $buf;
         read $fh, $buf, $size; # File::Slurp in a nutshell
+        return $buf;
     }
     else {
-        $buf = do { local $/; <$fh> };
+        local $/;
+        return scalar <$fh>;
     }
-    flock( $fh, LOCK_UN );
-    close $fh;
-    return $buf;
 }
 
 =method slurp_raw
