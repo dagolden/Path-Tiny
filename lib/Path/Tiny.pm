@@ -433,6 +433,7 @@ sub lines {
     flock( $fh, LOCK_SH );
     my $chomp = $args->{chomp};
     my @lines;
+    # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
         @lines = map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
@@ -455,8 +456,13 @@ of C<:unix> so PerlIO buffering can manage reading by line.
 
 sub lines_raw {
     $_[1] = {} unless ref $_[1] eq 'HASH';
-    $_[1]->{binmode} = ":raw";
-    goto &lines;
+    if ( $_[1]->{chomp} && !$_[1]->{count} ) {
+        return split /\n/, slurp_raw( $_[0] ); ## no critic
+    }
+    else {
+        $_[1]->{binmode} = ":raw";
+        goto &lines;
+    }
 }
 
 =method lines_utf8
