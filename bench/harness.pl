@@ -4,6 +4,7 @@ use strict;
 use warnings;
 use Getopt::Lucid qw/:all/;
 use JSON -convert_blessed_universally;
+use lib "../lib";
 use Path::Tiny;
 use aliased 'Path::Iterator::Rule' => 'PIR';
 
