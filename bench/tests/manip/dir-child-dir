@@ -1,4 +1,4 @@
-my $tmpdir = Path::Tiny->tempdir;
+$tmpdir = Path::Tiny->tempdir;
 my $path = "$tmpdir";
 
 $result = timethese(
