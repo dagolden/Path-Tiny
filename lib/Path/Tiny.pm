@@ -476,12 +476,8 @@ sub lines_utf8 {
     $_[1] = {} unless ref $_[1] eq 'HASH';
     if ( ( $HAS_UU //= _check_UU() ) && !$_[1]->{count} ) {
         # when we split, we lose the \n, so put *back* the \n if not chomping
-        if( $_[1]->{chomp} ) {
-            return  split /\n/, slurp_utf8( $_[0] );
-        }
-        else {
-            return split /(?<=\n)/, slurp_utf8( $_[0] );
-        }
+        return map { $_[1]->{chomp} ? $_ : ( $_ .= "\n" ) } split /\n/,
+          slurp_utf8( $_[0] ); ## no critic
     }
     else {
         $_[1]->{binmode} = ":raw:encoding(UTF-8)";

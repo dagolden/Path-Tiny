@@ -9,10 +9,6 @@ Revision history for Path-Tiny
     - Unicode::UTF8 0.58 is necessary for optional faster
       Unicode processing
 
-    [CHANGED]
-
-    - More efficient lines() with Unicode::UTF8 if not chomping
-
 0.006     2013-02-11 13:22:18 America/New_York
 
     [FIXED]
