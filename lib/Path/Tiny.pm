@@ -13,7 +13,7 @@ use Exporter   (qw/import/);
 use Fcntl      (qw/:flock SEEK_END/);
 use File::Copy ();
 use File::stat ();
-use File::Path 2.07 ();
+{ no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 use File::Spec 3.40 ();
 use File::Temp 0.18 ();
 
