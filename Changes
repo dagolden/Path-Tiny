@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.009     2013-02-15 16:05:39 America/New_York
+
     [CHANGED]
 
     - Dropped use of '//' to allow Path::Tiny to run on Perl 5.008
