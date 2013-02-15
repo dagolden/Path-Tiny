@@ -1,4 +1,4 @@
-use v5.10;
+use 5.008001;
 use strict;
 use warnings;
 
@@ -62,8 +62,8 @@ automatically by default.
 =cut
 
 sub path {
-    my $path = shift // ".";
-    $path = "." unless length $path;
+    my $path = shift;
+    $path = "." unless defined $path && length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
@@ -159,7 +159,7 @@ resolved, you must call the more expensive C<realpath> method instead.
 sub absolute {
     my ( $self, $base ) = @_;
     return $self if $self->is_absolute;
-    return path( join "/", $base // Cwd::getcwd, $_[0]->[PATH] );
+    return path( join "/", ( defined($base) ? $base : Cwd::getcwd ), $_[0]->[PATH] );
 }
 
 =method append
@@ -205,7 +205,7 @@ encoded with C<Unicode::UTF8>.
 =cut
 
 sub append_utf8 {
-    if ( $HAS_UU //= _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
         my $self = shift;
         append( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
     }
@@ -330,8 +330,8 @@ See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
 sub filehandle {
     my ( $self, $mode, $binmode ) = @_;
-    $mode    //= "<";
-    $binmode //= "";
+    $mode    = "<" unless defined $mode;
+    $binmode = ""  unless defined $binmode;
     open my $fh, "$mode$binmode", $self->[PATH];
     return $fh;
 }
@@ -436,7 +436,7 @@ sub lines {
     if ( $args->{count} ) {
         return map { chomp if $chomp; $_ } map { scalar <$fh> } 1 .. $args->{count};
     }
-    elsif ( $chomp ) {
+    elsif ($chomp) {
         return map { chomp; $_ } <$fh>;
     }
     else {
@@ -479,7 +479,10 @@ and iterating directly on the handle.
 
 sub lines_utf8 {
     $_[1] = {} unless ref $_[1] eq 'HASH';
-    if ( ( $HAS_UU //= _check_UU() ) && $_[1]->{chomp} && !$_[1]->{count} ) {
+    if (   ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() )
+        && $_[1]->{chomp}
+        && !$_[1]->{count} )
+    {
         return split /\n/, slurp_utf8( $_[0] ); ## no critic
     }
     else {
@@ -668,7 +671,9 @@ sub slurp {
     $args = {} unless ref $args eq 'HASH';
     my $fh = $self->filehandle( "<", $args->{binmode} );
     flock( $fh, LOCK_SH );
-    if ( ( $args->{binmode} // "" ) eq ":unix" and my $size = -s $fh ) {
+    if ( ( defined( $args->{binmode} ) ? $args->{binmode} : "" ) eq ":unix"
+        and my $size = -s $fh )
+    {
         my $buf;
         read $fh, $buf, $size; # File::Slurp in a nutshell
         return $buf;
@@ -703,7 +708,7 @@ an order of magnitude faster than using C<:encoding(UTF-8)>.
 =cut
 
 sub slurp_utf8 {
-    if ( $HAS_UU //= _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
         return Unicode::UTF8::decode_utf8( slurp( $_[0], { binmode => ":unix" } ) );
     }
     else {
@@ -761,7 +766,7 @@ encoded with C<Unicode::UTF8>.
 =cut
 
 sub spew_utf8 {
-    if ( $HAS_UU //= _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
         my $self = shift;
         spew( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
     }
