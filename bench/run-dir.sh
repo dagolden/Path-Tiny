@@ -1,4 +1,4 @@
 #!/bin/bash
 dir=$1
-./harness.pl -t $dir
-./chart-results.pl --sort=min -o $(basename $dir).png
+./dumbharness.pl -t $dir
+./dumbchart.pl --sort=tiny -o $(basename $dir).png

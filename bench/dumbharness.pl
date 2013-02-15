@@ -53,11 +53,10 @@ TEST: for my $t ( map { path($_) } PIR->new->file->all($tests) ) {
     warn $@ if $@;
     my $bench     = Dumbbench->new(
         variability_measure => 'std_dev',
-        dry => 0,
-        target_rel_precision => 0.005, # seek ~0.5%
+        target_rel_precision => 0.01, # seek ~0.5%
         initial_runs         => 50,   # the higher the more reliable
         max_iteratiions => 10000,
-        verbosity => 2,
+        verbosity => 1,
     );
     $bench->add_instances(@$instances);
     $bench->run;
@@ -66,8 +65,7 @@ TEST: for my $t ( map { path($_) } PIR->new->file->all($tests) ) {
             say "Bad result for " . $i->name;
             warn get_histogram( $i->timings );
             path("log-bad.txt")->spew( join("\n", @{$i->timings}) );
-            die "HALTING";
-##            redo TEST;
+            redo TEST;
         }
         $results{ $t->basename }{ $i->name } = $i->result->number;
     }
