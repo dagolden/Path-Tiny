@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'touchpath' method combining 'mkpath' and 'touch'
+
 0.007     2013-02-12 17:41:44 America/New_York
 
     [FIXED]

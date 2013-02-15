@@ -91,12 +91,13 @@ my $tmpdir = Path::Tiny->tempdir;
 
     ok $dir->child('file.x')->touch;
     ok $dir->child('0')->touch;
+    ok $dir->child('foo/bar/baz.txt')->touchpath;
     my @contents;
     my $iter = $dir->iterator;
     while ( my $file = $iter->() ) {
         push @contents, $file;
     }
-    is scalar @contents, 3
+    is scalar @contents, 4
       or diag explain \@contents;
     is( $iter->(), undef, "exhausted iterator is undef" );
 

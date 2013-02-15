@@ -814,6 +814,22 @@ sub touch {
     }
 }
 
+=method touchpath
+
+    path("bar/baz/foo.txt")->touchpath;
+
+Combines C<mkpath> and C<touch>.  Creates the parent directory if it doesn't exist,
+before touching the file.
+
+=cut
+
+sub touchpath {
+    my ($self) = @_;
+    my $parent = $self->parent;
+    $parent->mkpath unless $parent->exists;
+    $self->touch;
+}
+
 =method volume
 
     $vol = path("/tmp/foo.txt")->volume;

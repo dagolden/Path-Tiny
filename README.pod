@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.007
+version 0.008
 
 =head1 SYNOPSIS
 
@@ -440,6 +440,13 @@ returns the path standardized with Unix-style C</> directory separators.
 
 Like the Unix C<touch> utility.  Creates the file if it doesn't exist, or else
 changes the modification and access times to the current time.
+
+=head2 touchpath
+
+    path("bar/baz/foo.txt")->touchpath;
+
+Combines C<mkpath> and C<touch>.  Creates the parent directory if it doesn't exist,
+before touching the file.
 
 =head2 volume
 
