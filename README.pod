@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.009
+version 0.010
 
 =head1 SYNOPSIS
 
@@ -101,11 +101,18 @@ picky for C<path("/")>.
     $temp = Path::Tiny->tempfile( @options );
 
 This passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
-object with the file name.  If you want a template, you must use a C<TEMPLATE>
-named argument.  The C<TMPDIR> option is enabled by default.
+object with the file name.  The C<TMPDIR> option is enabled by default.
 
 The resulting C<File::Temp> object is cached. When the C<Path::Tiny> object is
 destroyed, the C<File::Temp> object will be as well.
+
+C<File::Temp> annoyingly requires you to specify a custom template in slightly
+different ways depending on which function or method you call, but
+C<Path::Tiny> lets you ignore that and can take either a leading template or a
+C<TEMPLATE> option and does the right thing.
+
+    $temp = Path::Tiny->tempfile( "customXXXXXXXX" );             # ok
+    $temp = Path::Tiny->tempfile( TEMPLATE => "customXXXXXXXX" ); # ok
 
 =head2 tempdir
 

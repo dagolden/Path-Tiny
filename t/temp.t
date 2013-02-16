@@ -23,6 +23,26 @@ subtest "tempfile" => sub {
     ok( !-e $string, "tempfile destroyed" );
 };
 
+subtest "tempdir w/ TEMPLATE" => sub {
+    my $tempdir = Path::Tiny->tempdir( TEMPLATE => "helloXXXXX" );
+    like ( $tempdir, qr/hello/, "found template" );
+};
+
+subtest "tempfile w/ TEMPLATE" => sub {
+    my $tempfile = Path::Tiny->tempfile( TEMPLATE => "helloXXXXX" );
+    like ( $tempfile, qr/hello/, "found template" );
+};
+
+subtest "tempdir w/ leading template" => sub {
+    my $tempdir = Path::Tiny->tempdir( "helloXXXXX" );
+    like ( $tempdir, qr/hello/, "found template" );
+};
+
+subtest "tempfile w/ leading template" => sub {
+    my $tempfile = Path::Tiny->tempfile( "helloXXXXX" );
+    like ( $tempfile, qr/hello/, "found template" );
+};
+
 subtest "tempfile handle" => sub {
     my $tempfile = Path::Tiny->tempfile;
     my $fh       = $tempfile->filehandle;

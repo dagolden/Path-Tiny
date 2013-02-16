@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - The 'tempdir' and 'tempfile' methods can now both take either leading
+      templates or a TEMPLATE option, so you don't have to remember which
+      one File::Temp wants
+
 0.009     2013-02-15 16:05:39 America/New_York
 
     [CHANGED]
