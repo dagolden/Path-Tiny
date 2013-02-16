@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.010     2013-02-16 10:26:38 America/New_York
+
     [FIXED]
 
     - The 'tempdir' and 'tempfile' methods can now both take either leading
