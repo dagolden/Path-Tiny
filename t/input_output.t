@@ -40,14 +40,16 @@ subtest "spew -> slurp (open hint)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew( _utf8_lines ), "spew" );
     my $got = $file->slurp();
-    ok( utf8::is_utf8($got), "slurp" );
     is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
 };
 
 subtest "spew -> slurp (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
-    is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
+    my $got = $file->slurp_utf8();
+    is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
 };
 
 subtest "spew -> slurp (raw)" => sub {
@@ -65,7 +67,9 @@ subtest "spew -> lines" => sub {
 subtest "spew -> lines (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
-    is( join( '', $file->lines_utf8 ), join( '', _utf8_lines ), "lines" );
+    my $got = join('', $file->lines_utf8());
+    is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
 };
 
 subtest "spew -> lines (raw)" => sub {
@@ -163,6 +167,7 @@ subtest "openw -> openr (UTF-8)" => sub {
         my $fh = $file->openr_utf8;
         my $got = do { local $/, <$fh> };
         is( $got, join( '', _utf8_lines ), "openr & read" );
+        ok( utf8::is_utf8($got), "is UTF8" );
     }
 };
 
