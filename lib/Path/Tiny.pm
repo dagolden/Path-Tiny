@@ -8,14 +8,14 @@ package Path::Tiny;
 
 # Dependencies
 use autodie 2.00;
+use Exporter 5.57   (qw/import/);
+use File::Spec 3.40 ();
+use File::Temp 0.18 ();
 use Cwd        ();
-use Exporter   (qw/import/);
 use Fcntl      (qw/:flock SEEK_END/);
 use File::Copy ();
 use File::stat ();
 { no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
-use File::Spec 3.40 ();
-use File::Temp 0.18 ();
 
 our @EXPORT = qw/path/;
 
