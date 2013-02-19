@@ -138,6 +138,7 @@ resolved, you must call the more expensive C<realpath> method instead.
 =head2 append
 
     path("foo.txt")->append(@data);
+    path("foo.txt")->append(\@data);
     path("foo.txt")->append({binmode => ":raw"}, @data);
 
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
@@ -405,6 +406,7 @@ an order of magnitude faster than using C<:encoding(UTF-8)>.
 =head2 spew
 
     path("foo.txt")->spew(@data);
+    path("foo.txt")->spew(\@data);
     path("foo.txt")->spew({binmode => ":raw"}, @data);
 
 Writes data to a file atomically.  The file is written to a temporary file in

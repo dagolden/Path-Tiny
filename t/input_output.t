@@ -29,6 +29,12 @@ subtest "spew -> slurp (empty)" => sub {
     is( $file->slurp, '', "slurp" );
 };
 
+subtest "spew -> slurp (arrayref)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew([_lines]), "spew" );
+    is( $file->slurp, join( '', _lines ), "slurp" );
+};
+
 subtest "spew -> slurp (binmode)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew( { binmode => ":utf8" }, _utf8_lines ), "spew" );
@@ -129,6 +135,12 @@ subtest "append -> slurp (empty)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append, "append" );
     is( $file->slurp, "", "slurp" );
+};
+
+subtest "append -> slurp (arrayref)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append([_lines]), "append" );
+    is( $file->slurp, join( '', _lines ), "slurp" );
 };
 
 subtest "append -> slurp (piecemeal)" => sub {

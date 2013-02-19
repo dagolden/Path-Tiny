@@ -194,6 +194,7 @@ sub absolute {
 =method append
 
     path("foo.txt")->append(@data);
+    path("foo.txt")->append(\@data);
     path("foo.txt")->append({binmode => ":raw"}, @data);
 
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
@@ -210,7 +211,7 @@ sub append {
     my $fh = $self->filehandle( ">>", $binmode );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
-    print {$fh} $_ for @data;
+    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh;                # force immediate flush
 }
 
@@ -761,6 +762,7 @@ sub slurp_utf8 {
 =method spew
 
     path("foo.txt")->spew(@data);
+    path("foo.txt")->spew(\@data);
     path("foo.txt")->spew({binmode => ":raw"}, @data);
 
 Writes data to a file atomically.  The file is written to a temporary file in
@@ -781,7 +783,7 @@ sub spew {
     flock( $fh, LOCK_EX );
     seek( $fh, 0, 0 );
     truncate( $fh, 0 );
-    print {$fh} @data;
+    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     flock( $fh, LOCK_UN );
     close $fh;
     $temp->move( $self->[PATH] );
