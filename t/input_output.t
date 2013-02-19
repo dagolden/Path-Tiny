@@ -35,6 +35,15 @@ subtest "spew -> slurp (binmode)" => sub {
     is( $file->slurp( { binmode => ":utf8" } ), join( '', _utf8_lines ), "slurp" );
 };
 
+subtest "spew -> slurp (open hint)" => sub {
+    use open IO => ":utf8";
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew( _utf8_lines ), "spew" );
+    my $got = $file->slurp();
+    ok( utf8::is_utf8($got), "slurp" );
+    is( $got, join( '', _utf8_lines ), "slurp" );
+};
+
 subtest "spew -> slurp (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );

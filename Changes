@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - slurp/spew/etc and openr/openw/etc now repect default layers
+      set by -C or the open pragma
+
 0.010     2013-02-16 10:26:38 America/New_York
 
     [FIXED]

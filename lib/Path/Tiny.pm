@@ -205,7 +205,9 @@ C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    my $fh = $self->filehandle( ">>", $args->{binmode} );
+    my $binmode = $args->{binmode};
+    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
+    my $fh = $self->filehandle( ">>", $binmode );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, SEEK_END ); # ensure SEEK_END after flock
     print {$fh} $_ for @data;
@@ -457,7 +459,9 @@ of lines (and throw away the data).
 sub lines {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $fh = $self->filehandle( "<", $args->{binmode} );
+    my $binmode = $args->{binmode};
+    $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
+    my $fh = $self->filehandle( "<", $binmode );
     flock( $fh, LOCK_SH );
     my $chomp = $args->{chomp};
     my @lines;
@@ -588,7 +592,13 @@ my %opens = (
 
 while ( my ( $k, $v ) = each %opens ) {
     no strict 'refs';
-    *{$k}             = sub { $_[0]->filehandle( $v, $_[1] ) };
+    # must check for lexical IO mode hint
+    *{$k} = sub {
+        my ( $self, $binmode ) = @_;
+        $binmode = ( ( caller(0) )[10] || {} )->{ 'open' . substr( $v, -1, 1 ) }
+          unless defined $binmode;
+        $self->filehandle( $v, $binmode );
+    };
     *{ $k . "_raw" }  = sub { $_[0]->filehandle( $v, ":raw" ) };
     *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":raw:encoding(UTF-8)" ) };
 }
@@ -698,9 +708,11 @@ C<binmode()> on the handle used for reading.
 sub slurp {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
-    my $fh = $self->filehandle( "<", $args->{binmode} );
+    my $binmode = $args->{binmode};
+    $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
+    my $fh = $self->filehandle( "<", $binmode );
     flock( $fh, LOCK_SH );
-    if ( ( defined( $args->{binmode} ) ? $args->{binmode} : "" ) eq ":unix"
+    if ( ( defined($binmode) ? $binmode : "" ) eq ":unix"
         and my $size = -s $fh )
     {
         my $buf;
@@ -762,8 +774,10 @@ C<binmode()> on the handle used for writing.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
+    my $binmode = $args->{binmode};
+    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
-    my $fh   = $temp->filehandle( ">", $args->{binmode} );
+    my $fh = $temp->filehandle( ">", $binmode );
     flock( $fh, LOCK_EX );
     seek( $fh, 0, 0 );
     truncate( $fh, 0 );
@@ -975,6 +989,14 @@ input/output methods with an appropriate binmode:
 Consider L<PerlIO::utf8_strict> for a faster L<PerlIO> layer alternative to
 C<:encoding(UTF-8)>, though it does not appear to be as fast as the
 C<Unicode::UTF8> approach.
+
+=head2 Default IO layers and the open pragma
+
+File input/output methods (C<slurp>, C<spew>, etc.) and high-level handle
+opening methods ( C<openr>, C<openw>, etc. but not C<filehandle>) respect
+default encodings set by the C<-C> switch or lexical L<open> settings of the
+caller.  For UTF-8, this is almost certainly slower than using the dedicated
+C<_utf8> methods if you have L<Unicode::UTF8>.
 
 =head1 TYPE CONSTRAINTS AND COERCION
 
