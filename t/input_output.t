@@ -36,9 +36,10 @@ subtest "spew -> slurp (binmode)" => sub {
 };
 
 subtest "spew -> slurp (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
     use open IO => ":utf8";
     my $file = Path::Tiny->tempfile;
-    ok( $file->spew( _utf8_lines ), "spew" );
+    ok( $file->spew(_utf8_lines), "spew" );
     my $got = $file->slurp();
     is( $got, join( '', _utf8_lines ), "slurp" );
     ok( utf8::is_utf8($got), "is UTF8" );
@@ -64,10 +65,20 @@ subtest "spew -> lines" => sub {
     is( join( '', $file->lines ), join( '', _lines ), "lines" );
 };
 
+subtest "spew -> lines (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ":utf8";
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_utf8_lines), "spew" );
+    my $got = join( '', $file->lines() );
+    is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
+};
+
 subtest "spew -> lines (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
-    my $got = join('', $file->lines_utf8());
+    my $got = join( '', $file->lines_utf8() );
     is( $got, join( '', _utf8_lines ), "slurp" );
     ok( utf8::is_utf8($got), "is UTF8" );
 };
@@ -90,8 +101,8 @@ subtest "spew -> lines (count, chomp)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     my @exp = map { chomp; $_ } _lines;
-    is( join( '', $file->lines( { chomp => 1, count => 2 } ) ), join( '', @exp[ 0 .. 1 ] ),
-        "lines" );
+    is( join( '', $file->lines( { chomp => 1, count => 2 } ) ),
+        join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
 
 subtest "spew -> lines (count, UTF-8)" => sub {
@@ -122,7 +133,7 @@ subtest "append -> slurp (empty)" => sub {
 
 subtest "append -> slurp (piecemeal)" => sub {
     my $file = Path::Tiny->tempfile;
-    ok( $file->append($_), "piecemeal append") for _lines;
+    ok( $file->append($_), "piecemeal append" ) for _lines;
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 
@@ -130,6 +141,14 @@ subtest "append -> slurp (binmode)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append( { binmode => ":utf8" }, _utf8_lines ), "append" );
     is( $file->slurp( { binmode => ":utf8" } ), join( '', _utf8_lines ), "slurp" );
+};
+
+subtest "append -> slurp (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ':utf8';
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append(_utf8_lines), "append" );
+    is( $file->slurp, join( '', _utf8_lines ), "slurp" );
 };
 
 subtest "append -> slurp (UTF-8)" => sub {
@@ -154,6 +173,22 @@ subtest "openw -> openr" => sub {
         my $fh = $file->openr;
         my $got = do { local $/, <$fh> };
         is( $got, join( '', _lines ), "openr & read" );
+    }
+};
+
+subtest "openw -> openr (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ':utf8';
+    my $file = Path::Tiny->tempfile;
+    {
+        my $fh = $file->openw;
+        ok( ( print {$fh} _utf8_lines ), "openw & print" );
+    }
+    {
+        my $fh = $file->openr;
+        my $got = do { local $/, <$fh> };
+        is( $got, join( '', _utf8_lines ), "openr & read" );
+        ok( utf8::is_utf8($got), "is UTF8" );
     }
 };
 
@@ -202,6 +237,27 @@ subtest "opena -> openr" => sub {
     }
 };
 
+subtest "opena -> openr (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ':utf8';
+    my $file  = Path::Tiny->tempfile;
+    my @lines = _utf8_lines;
+    {
+        my $fh = $file->openw;
+        ok( ( print {$fh} shift @lines ), "openw & print one line" );
+    }
+    {
+        my $fh = $file->opena;
+        ok( ( print {$fh} @lines ), "opena & print rest of lines" );
+    }
+    {
+        my $fh = $file->openr;
+        my $got = do { local $/, <$fh> };
+        is( $got, join( '', _utf8_lines ), "openr & read" );
+        ok( utf8::is_utf8($got), "is UTF8" );
+    }
+};
+
 subtest "opena -> openr (UTF-8)" => sub {
     my $file  = Path::Tiny->tempfile;
     my @lines = _utf8_lines;
@@ -217,6 +273,7 @@ subtest "opena -> openr (UTF-8)" => sub {
         my $fh = $file->openr_utf8;
         my $got = do { local $/, <$fh> };
         is( $got, join( '', _utf8_lines ), "openr & read" );
+        ok( utf8::is_utf8($got), "is UTF8" );
     }
 };
 
@@ -247,6 +304,18 @@ subtest "openrw" => sub {
     is( $got, join( '', _lines ), "openr & read" );
 };
 
+subtest "openrw (open hint)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ':utf8';
+    my $file = Path::Tiny->tempfile;
+    my $fh   = $file->openrw;
+    ok( ( print {$fh} _utf8_lines ), "openrw & print" );
+    ok( seek( $fh, 0, 0 ), "seek back to start" );
+    my $got = do { local $/, <$fh> };
+    is( $got, join( '', _utf8_lines ), "openr & read" );
+    ok( utf8::is_utf8($got), "is UTF8" );
+};
+
 subtest "openrw (UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     my $fh   = $file->openrw_utf8;
@@ -254,6 +323,7 @@ subtest "openrw (UTF-8)" => sub {
     ok( seek( $fh, 0, 0 ), "seek back to start" );
     my $got = do { local $/, <$fh> };
     is( $got, join( '', _utf8_lines ), "openr & read" );
+    ok( utf8::is_utf8($got), "is UTF8" );
 };
 
 subtest "openrw (raw)" => sub {
