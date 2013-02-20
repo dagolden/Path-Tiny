@@ -129,6 +129,9 @@ C<TEMPLATE> option and does the right thing.
     $temp = Path::Tiny->tempfile( "customXXXXXXXX" );             # ok
     $temp = Path::Tiny->tempfile( TEMPLATE => "customXXXXXXXX" ); # ok
 
+The tempfile path object will normalized to have an absolute path, even if
+created in a relative directory using C<DIR>.
+
 =cut
 
 sub tempfile {
@@ -138,7 +141,7 @@ sub tempfile {
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
-    my $self = path($temp);
+    my $self = path($temp)->absolute;
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
 }
@@ -156,7 +159,7 @@ sub tempdir {
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->newdir demands leading template
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
-    my $self = path($temp);
+    my $self = path($temp)->absolute;
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
 }

@@ -4,6 +4,7 @@ use warnings;
 use Test::More 0.96;
 use Test::Deep '!blessed';
 use File::Spec::Unix;
+use File::pushd qw/tempd/;
 
 use Path::Tiny;
 
@@ -48,6 +49,12 @@ subtest "tempfile handle" => sub {
     my $fh       = $tempfile->filehandle;
     is( ref $tempfile->[5], 'File::Temp', "cached File::Temp object" );
     is( fileno $tempfile->[5], undef, "cached handle is closed" );
+};
+
+subtest "survives absolute" => sub {
+    my $wd = tempd;
+    my $tempdir = Path::Tiny->tempdir( DIR => '.' )->absolute;
+    ok( -d $tempdir, "exists" );
 };
 
 done_testing;

@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Temporary files and directories are always created with an
+      absolute path.
+
 0.012     2013-02-20 09:34:50 America/New_York
 
     [REMOVED]
