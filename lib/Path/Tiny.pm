@@ -692,7 +692,7 @@ C<< File::Spec->abs2rel() >>.
 # Easy to get wrong, so wash it through File::Spec (sigh)
 sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
-=method remove
+=method remove (deprecated)
 
     # directory
     path("foo/bar/baz")->remove;
@@ -700,6 +700,9 @@ sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
     # file
     path("foo.txt")->remove;
+
+B<This method is deprecated and will be replaced in a future release with
+file-specific and directory-specific methods instead of being polymorphic>.
 
 For directories, this is like like calling C<remove_tree> from L<File::Path>.  An
 optional hash reference is passed through to C<remove_tree>.

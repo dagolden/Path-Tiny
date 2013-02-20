@@ -14,6 +14,11 @@ Revision history for Path-Tiny
     - Added Path::Tiny->cwd as a contructor to give an absolute
       path to the current working directory
 
+    [DEPRECATED]
+
+    - The 'remove' function is deprecated and will be replaced with
+      directory-specific and file-specific methods in a future release
+
 0.011     2013-02-19 11:08:44 America/New_York
 
     [CHANGED]
