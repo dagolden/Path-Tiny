@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.012
+version 0.013
 
 =head1 SYNOPSIS
 
@@ -126,6 +126,9 @@ C<TEMPLATE> option and does the right thing.
 
     $temp = Path::Tiny->tempfile( "customXXXXXXXX" );             # ok
     $temp = Path::Tiny->tempfile( TEMPLATE => "customXXXXXXXX" ); # ok
+
+The tempfile path object will normalized to have an absolute path, even if
+created in a relative directory using C<DIR>.
 
 =head2 tempdir
 
