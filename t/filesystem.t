@@ -67,7 +67,7 @@ ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
 
 ok $dir->remove, "Removed $dir";
 ok !-e $dir, "$dir no longer exists";
-ok $dir->remove, "Removing non-existent dir returns true";
+ok !$dir->remove, "Removing non-existent dir returns false";
 
 my $tmpdir = Path::Tiny->tempdir;
 
@@ -157,7 +157,7 @@ my $tmpdir = Path::Tiny->tempdir;
 
     ok( $file->remove, "removing file" );
     ok !-e $file, "file is gone";
-    ok $file->remove, "removing file again returns true";
+    ok !$file->remove, "removing file again returns false";
 }
 
 {
