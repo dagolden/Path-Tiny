@@ -707,18 +707,22 @@ file-specific and directory-specific methods instead of being polymorphic>.
 For directories, this is like like calling C<remove_tree> from L<File::Path>.  An
 optional hash reference is passed through to C<remove_tree>.
 
-For files, the file is unlinked if it exists.  Unlike C<unlink>, if the file
-does not exist, this silently does nothing and returns a true value anyway.
+For files, the file is unlinked if it exists.
+
+If the path does not exist, it returns false.
 
 =cut
 
 sub remove {
     my ( $self, $opts ) = @_;
-    if ( -d $self->[PATH] ) {
+    if ( !-e $self->[PATH] ) {
+        return 0;
+    }
+    elsif ( -d $self->[PATH] ) {
         return File::Path::remove_tree( $self->[PATH], ref($opts) eq 'HASH' ? $opts : () );
     }
     else {
-        return ( -e $self->[PATH] ) ? unlink $self->[PATH] : 1;
+        return unlink $self->[PATH];
     }
 }
 
