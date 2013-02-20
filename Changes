@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.012     2013-02-20 09:34:50 America/New_York
+
     [REMOVED]
 
     - The 'remove' function no longer works on directories.  The new
