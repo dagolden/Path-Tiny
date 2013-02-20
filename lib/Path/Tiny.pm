@@ -62,7 +62,7 @@ automatically by default.
 
 The first argument must be defined and have non-zero length or an exception
 will be thrown.  This prevents subtle, dangerous errors with code like
-C<< path( maybe_undef() )->remove >>.
+C<< path( maybe_undef() )->remove_tree >>.
 
 =cut
 
@@ -692,38 +692,40 @@ C<< File::Spec->abs2rel() >>.
 # Easy to get wrong, so wash it through File::Spec (sigh)
 sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
-=method remove (deprecated)
+=method remove
+
+    path("foo.txt")->remove;
+
+B<Note: as of 0.012, remove only works on files>.
+
+This is just like C<unlink>, except if the path does not exist, it returns
+false rather than throwing an exception.
+
+=cut
+
+sub remove { return -e $_[0]->[PATH] ? unlink $_[0]->[PATH] : 0 }
+
+=method remove_tree
 
     # directory
     path("foo/bar/baz")->remove;
     path("foo/bar/baz")->remove( \%options );
 
-    # file
-    path("foo.txt")->remove;
-
-B<This method is deprecated and will be replaced in a future release with
-file-specific and directory-specific methods instead of being polymorphic>.
-
-For directories, this is like like calling C<remove_tree> from L<File::Path>.  An
-optional hash reference is passed through to C<remove_tree>.
-
-For files, the file is unlinked if it exists.
+Like calling C<remove_tree> from L<File::Path>.  An optional hash reference
+is passed through to C<remove_tree>.
 
 If the path does not exist, it returns false.
 
+If you want to remove a directory only if it is empty, use the built-in
+C<rmdir> function instead.
+
+    rmdir path("foo/bar/baz/");
+
 =cut
 
-sub remove {
-    my ( $self, $opts ) = @_;
-    if ( !-e $self->[PATH] ) {
-        return 0;
-    }
-    elsif ( -d $self->[PATH] ) {
-        return File::Path::remove_tree( $self->[PATH], ref($opts) eq 'HASH' ? $opts : () );
-    }
-    else {
-        return unlink $self->[PATH];
-    }
+sub remove_tree {
+    return unless -e $_[0]->[PATH];
+    File::Path::remove_tree( $_[0]->[PATH], ref $_[1] eq 'HASH' ? $_[1] : () );
 }
 
 =method slurp
@@ -993,6 +995,8 @@ as appropriate.
 The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
 mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
 will speed up several of them and is highly recommended.
+
+It uses L<autodie> internally, so most failures will be thrown as exceptions.
 
 =head1 CAVEATS
 

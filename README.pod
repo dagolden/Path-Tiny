@@ -69,6 +69,8 @@ The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
 mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
 will speed up several of them and is highly recommended.
 
+It uses L<autodie> internally, so most failures will be thrown as exceptions.
+
 =head1 CONSTRUCTORS
 
 =head2 path
@@ -84,7 +86,7 @@ automatically by default.
 
 The first argument must be defined and have non-zero length or an exception
 will be thrown.  This prevents subtle, dangerous errors with code like
-C<< path( maybe_undef() )->remove >>.
+C<< path( maybe_undef() )->remove_tree >>.
 
 =head2 new
 
@@ -375,18 +377,28 @@ C<< File::Spec->abs2rel() >>.
 
 =head2 remove
 
+    path("foo.txt")->remove;
+
+B<Note: as of 0.012, remove only works on files>.
+
+This is just like C<unlink>, except if the path does not exist, it returns
+false rather than throwing an exception.
+
+=head2 remove_tree
+
     # directory
     path("foo/bar/baz")->remove;
     path("foo/bar/baz")->remove( \%options );
 
-    # file
-    path("foo.txt")->remove;
+Like calling C<remove_tree> from L<File::Path>.  An optional hash reference
+is passed through to C<remove_tree>.
 
-For directories, this is like like calling C<remove_tree> from L<File::Path>.  An
-optional hash reference is passed through to C<remove_tree>.
+If the path does not exist, it returns false.
 
-For files, the file is unlinked if it exists.  Unlike C<unlink>, if the file
-does not exist, this silently does nothing and returns a true value anyway.
+If you want to remove a directory only if it is empty, use the built-in
+C<rmdir> function instead.
+
+    rmdir path("foo/bar/baz/");
 
 =head2 slurp
 

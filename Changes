@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [REMOVED]
+
+    - The 'remove' function no longer works on directories.  The new
+      'remove_tree' method should be used instead.
+
     [CHANGED]
 
     - path() now requires a defined, positive-length argument to keep you
@@ -11,13 +16,11 @@ Revision history for Path-Tiny
 
     [ADDED]
 
-    - Added Path::Tiny->cwd as a contructor to give an absolute
+    - Added Path::Tiny->cwd as a constructor to give an absolute
       path to the current working directory
 
-    [DEPRECATED]
-
-    - The 'remove' function is deprecated and will be replaced with
-      directory-specific and file-specific methods in a future release
+    - Added 'remove_tree' as a method for recursively removing
+      a directory
 
 0.011     2013-02-19 11:08:44 America/New_York
 

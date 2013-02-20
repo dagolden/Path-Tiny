@@ -65,21 +65,21 @@ ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
     ok scalar grep { /foo\.x/ } @files;
 }
 
-ok $dir->remove, "Removed $dir";
+ok $dir->remove_tree, "Removed $dir";
 ok !-e $dir, "$dir no longer exists";
-ok !$dir->remove, "Removing non-existent dir returns false";
+ok !$dir->remove_tree, "Removing non-existent dir returns false";
 
 my $tmpdir = Path::Tiny->tempdir;
 
 {
     $dir = path( $tmpdir, 'foo', 'bar' );
-    $dir->parent->remove if -e $dir->parent;
+    $dir->parent->remove_tree if -e $dir->parent;
 
     ok $dir->mkpath, "Created $dir";
     ok -d $dir, "$dir is a directory";
 
     $dir = $dir->parent;
-    ok $dir->remove( { safe => 1 } ); # check that we pass through args
+    ok $dir->remove_tree( { safe => 1 } ); # check that we pass through args
     ok !-e $dir;
 }
 
@@ -113,7 +113,7 @@ my $tmpdir = Path::Tiny->tempdir;
     ok $file;
     is -d $file, '';
 
-    ok $dir->remove;
+    ok $dir->remove_tree;
     ok !-e $dir;
 
     # Try again with directory called '0', in curdir
@@ -133,7 +133,7 @@ my $tmpdir = Path::Tiny->tempdir;
     ok grep { $_ eq '0' } @contents;
 
     ok chdir($orig);
-    ok $dir->remove;
+    ok $dir->remove_tree;
     ok !-e $dir;
 }
 
