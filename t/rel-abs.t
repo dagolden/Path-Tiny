@@ -5,7 +5,7 @@ use Test::More 0.96;
 
 use Path::Tiny;
 
-my $rel1 = path();
+my $rel1 = path(".");
 my $abs1 = $rel1->absolute;
 is ( $abs1->absolute, $abs1, "absolute of absolute is identity" );
 

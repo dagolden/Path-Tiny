@@ -117,11 +117,11 @@ my $tmpdir = Path::Tiny->tempdir;
     ok !-e $dir;
 
     # Try again with directory called '0', in curdir
-    my $orig = path()->absolute;
+    my $orig = Path::Tiny->cwd;
 
     ok $dir->mkpath;
     ok chdir($dir);
-    my $dir2 = path();
+    my $dir2 = path(".");
     ok $dir2->child('0')->mkpath;
     ok -d $dir2->child('0');
 
@@ -202,7 +202,7 @@ my $tmpdir = Path::Tiny->tempdir;
 
 {
     # Make sure we can make an absolute/relative roundtrip
-    my $cwd = path();
+    my $cwd = path(".");
     is $cwd, $cwd->absolute->relative,
       "from $cwd to " . $cwd->absolute . " to " . $cwd->absolute->relative;
 }

@@ -43,6 +43,7 @@
             "Unicode::UTF8" : "0.58"
          },
          "requires" : {
+            "Carp" : "0",
             "Cwd" : "0",
             "Exporter" : "5.57",
             "Fcntl" : "0",
@@ -77,7 +78,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.011"
+         "version" : "0.012"
       }
    },
    "release_status" : "stable",
@@ -92,6 +93,6 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.011"
+   "version" : "0.012"
 }
 

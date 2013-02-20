@@ -2,6 +2,18 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - path() now requires a defined, positive-length argument to keep you
+      safe from subtle bugs in your code that pass an undef or empty
+      argument to path suddenly having you operating in the current
+      directory.
+
+    [ADDED]
+
+    - Added Path::Tiny->cwd as a contructor to give an absolute
+      path to the current working directory
+
 0.011     2013-02-19 11:08:44 America/New_York
 
     [CHANGED]

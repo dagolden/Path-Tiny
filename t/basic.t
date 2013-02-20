@@ -2,6 +2,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
+use Test::Fatal;
 use File::Spec;
 use Path::Tiny;
 use Cwd;
@@ -80,11 +81,11 @@ is $file->parent, '/foo/baz';
 
 {
   # Special cases
-  is path(''), '.';
-  is path(), '.';
-  is path('', 'var', 'tmp'), 'var/tmp';
-  is path()->absolute, path(Cwd::getcwd());
-  is path(undef), '.';
+  for my $bad ( [''], [undef], [], ['','var', 'tmp'] ) {
+      like( exception { path(@$bad) }, qr/positive-length/, "exception");
+  }
+  is( Path::Tiny->cwd, path(Cwd::getcwd()));
+  is( path('.')->absolute, path(Cwd::getcwd()));
 }
 
 {

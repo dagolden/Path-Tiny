@@ -11,6 +11,7 @@ use autodie 2.00;
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use File::Temp 0.18 ();
+use Carp       ();
 use Cwd        ();
 use Fcntl      (qw/:flock SEEK_END/);
 use File::Copy ();
@@ -51,19 +52,24 @@ sub _check_UU {
 =construct path
 
     $path = path("foo/bar");
-    $path = path("/tmp/file.txt");
-    $path = path(); # like path(".")
+    $path = path("/tmp", "file.txt"); # list
+    $path = path(".");                # cwd
 
 Constructs a C<Path::Tiny> object.  It doesn't matter if you give a file or
 directory path.  It's still up to you to call directory-like methods only on
 directories and file-like methods only on files.  This function is exported
 automatically by default.
 
+The first argument must be defined and have non-zero length or an exception
+will be thrown.  This prevents subtle, dangerous errors with code like
+C<< path( maybe_undef() )->remove >>.
+
 =cut
 
 sub path {
     my $path = shift;
-    $path = "." unless defined $path && length $path;
+    Carp::croak("path() requires a defined, positive-length argument")
+      unless defined $path && length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
@@ -82,6 +88,17 @@ do that?)
 =cut
 
 sub new { shift; path(@_) }
+
+=construct cwd
+
+    $path = Path::Tiny->cwd; # path( Cwd::getcwd )
+
+Gives you the absolute path to the current directory as a C<Path::Tiny> object.
+This is slightly faster than C<< path(".")->absolute >>.
+
+=cut
+
+sub cwd { shift; path(Cwd::getcwd) }
 
 =construct rootdir
 
@@ -316,7 +333,9 @@ Copies a file using L<File::Copy>'s C<copy> function.
 =cut
 
 # XXX do recursively for directories?
-sub copy { File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or die "Copy failed: $!" }
+sub copy {
+    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("Copy failed: $!");
+}
 
 =method dirname
 
@@ -624,7 +643,7 @@ sub parent {
             return path( $self->[PATH] . "/.." );
         }
         else {
-            return path( $self->[VOL] . $self->[DIR] );
+            return path( _non_empty( $self->[VOL] . $self->[DIR] ) );
         }
     }
     elsif ( length $self->[DIR] ) {
@@ -638,8 +657,13 @@ sub parent {
         }
     }
     else {
-        return path( $self->[VOL] );
+        return path( _non_empty( $self->[VOL] ) );
     }
+}
+
+sub _non_empty {
+    my ($string) = shift;
+    return ( ( defined($string) && length($string) ) ? $string : "." );
 }
 
 =method realpath
