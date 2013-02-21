@@ -7,7 +7,7 @@ package Path::Tiny;
 # VERSION
 
 # Dependencies
-use autodie 2.00;
+use autodie 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use File::Temp 0.18 ();
@@ -38,6 +38,8 @@ use overload (
 my $TID = 0; # for thread safe atomic writes
 
 sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
+
+sub DOES { return $_[1] eq 'autodie::skip' } # report errors like croak
 
 my $HAS_UU;                        # has Unicode::UTF8; lazily populated
 

@@ -52,7 +52,7 @@
             "File::Spec" : "3.40",
             "File::Temp" : "0.18",
             "File::stat" : "0",
-            "autodie" : "2.00",
+            "autodie" : "2.14",
             "constant" : "0",
             "overload" : "0",
             "perl" : "5.008001",

@@ -7,6 +7,10 @@ Revision history for Path-Tiny
     - Temporary files and directories are always created with an
       absolute path.
 
+    - Failures from autodie are reported from our caller's location
+      (as if we called croak()); bumped autodie prereq to 2.14 for
+      this feature
+
 0.012     2013-02-20 09:34:50 America/New_York
 
     [REMOVED]
