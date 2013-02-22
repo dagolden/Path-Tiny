@@ -2,14 +2,23 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
-    [FIXED]
+    [CHANGED]
+
+    - remove_tree now defaults to safe mode and will not attempt to chmod
+      and remove directories with insufficient permissions
 
     - Temporary files and directories are always created with an
       absolute path.
 
+    [FIXED]
+
     - Failures from autodie are reported from our caller's location
       (as if we called croak()); bumped autodie prereq to 2.14 for
       this feature
+
+    - Failures from mkpath and remove_tree are now trapped and
+      thrown as exceptions.  (Making an existing path or removing
+      a non-existant path return false and are not errors);
 
 0.012     2013-02-20 09:34:50 America/New_York
 

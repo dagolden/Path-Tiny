@@ -322,7 +322,9 @@ Like calling C<lstat> from L<File::stat>.
     path("foo/bar/baz")->mkpath( \%options );
 
 Like calling C<make_path> from L<File::Path>.  An optional hash reference
-is passed through to C<make_path>.
+is passed through to C<make_path>.  Errors will be trapped and an exception
+thrown.  Returns the list of directories created or an empty list if
+the directories already exist, just like C<make_path>.
 
 =head2 move
 
@@ -390,13 +392,14 @@ false rather than throwing an exception.
 =head2 remove_tree
 
     # directory
-    path("foo/bar/baz")->remove;
-    path("foo/bar/baz")->remove( \%options );
+    path("foo/bar/baz")->remove_tree;
+    path("foo/bar/baz")->remove_tree( \%options );
+    path("foo/bar/baz")->remove_tree( { safe => 0 } ); # force remove
 
-Like calling C<remove_tree> from L<File::Path>.  An optional hash reference
-is passed through to C<remove_tree>.
-
-If the path does not exist, it returns false.
+Like calling C<remove_tree> from L<File::Path>, but defaults to C<safe> mode.
+An optional hash reference is passed through to C<remove_tree>.  Errors will be
+trapped and an exception thrown.  Returns the number of directories deleted,
+just like C<remove_tree>.
 
 If you want to remove a directory only if it is empty, use the built-in
 C<rmdir> function instead.
@@ -493,6 +496,7 @@ usually is the empty string on Unix-like operating systems.
 
 =for Pod::Coverage openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
+DOES
 
 =head1 CAVEATS
 

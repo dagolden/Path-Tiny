@@ -961,6 +961,7 @@ sub volume {
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
+DOES
 
 =head1 SYNOPSIS
 
