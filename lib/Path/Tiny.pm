@@ -41,7 +41,7 @@ sub CLONE { $TID = threads->tid }; # if cloning, threads should be loaded
 
 sub DOES { return $_[1] eq 'autodie::skip' } # report errors like croak
 
-my $HAS_UU;                        # has Unicode::UTF8; lazily populated
+my $HAS_UU;                                  # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
@@ -339,7 +339,7 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 # XXX do recursively for directories?
 sub copy {
-    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("Copy failed: $!");
+    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("copy failed: $!");
 }
 
 =method dirname
@@ -565,12 +565,23 @@ sub lstat { File::stat::lstat( $_[0]->[PATH] ) }
     path("foo/bar/baz")->mkpath( \%options );
 
 Like calling C<make_path> from L<File::Path>.  An optional hash reference
-is passed through to C<make_path>.
+is passed through to C<make_path>.  Errors will be trapped and an exception
+thrown.  Returns the list of directories created or an empty list if
+the directories already exist, just like C<make_path>.
 
 =cut
 
 sub mkpath {
-    File::Path::make_path( $_[0]->[PATH], ref $_[1] eq 'HASH' ? $_[1] : () );
+    my ( $self, $args ) = @_;
+    $args = {} unless ref $args eq 'HASH';
+    my $err;
+    $args->{err} = \$err unless defined $args->{err};
+    my @dirs = File::Path::make_path( $self->[PATH], $args );
+    if ( $err && @$err ) {
+        my ( $file, $message ) = %{ $err->[0] };
+        Carp::croak("mkpath failed for $file: $message");
+    }
+    return @dirs;
 }
 
 =method move
@@ -713,13 +724,14 @@ sub remove { return -e $_[0]->[PATH] ? unlink $_[0]->[PATH] : 0 }
 =method remove_tree
 
     # directory
-    path("foo/bar/baz")->remove;
-    path("foo/bar/baz")->remove( \%options );
+    path("foo/bar/baz")->remove_tree;
+    path("foo/bar/baz")->remove_tree( \%options );
+    path("foo/bar/baz")->remove_tree( { safe => 0 } ); # force remove
 
-Like calling C<remove_tree> from L<File::Path>.  An optional hash reference
-is passed through to C<remove_tree>.
-
-If the path does not exist, it returns false.
+Like calling C<remove_tree> from L<File::Path>, but defaults to C<safe> mode.
+An optional hash reference is passed through to C<remove_tree>.  Errors will be
+trapped and an exception thrown.  Returns the number of directories deleted,
+just like C<remove_tree>.
 
 If you want to remove a directory only if it is empty, use the built-in
 C<rmdir> function instead.
@@ -729,8 +741,18 @@ C<rmdir> function instead.
 =cut
 
 sub remove_tree {
-    return unless -e $_[0]->[PATH];
-    File::Path::remove_tree( $_[0]->[PATH], ref $_[1] eq 'HASH' ? $_[1] : () );
+    my ( $self, $args ) = @_;
+    return 0 unless -e $self->[PATH];
+    $args = {} unless ref $args eq 'HASH';
+    my $err;
+    $args->{err}  = \$err unless defined $args->{err};
+    $args->{safe} = 1     unless defined $args->{safe};
+    my $count = File::Path::remove_tree( $self->[PATH], $args );
+    if ( $err && @$err ) {
+        my ( $file, $message ) = %{ $err->[0] };
+        Carp::croak("remove_tree failed for $file: $message");
+    }
+    return $count;
 }
 
 =method slurp
