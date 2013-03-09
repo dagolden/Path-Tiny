@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.013
+version 0.014
 
 =head1 SYNOPSIS
 
@@ -360,8 +360,12 @@ C<:raw:encoding(UTF-8)>, respectively.
     $parent = path("foo/bar/baz")->parent; # foo/bar
     $parent = path("foo/wibble.txt")->parent; # foo
 
-Returns a C<Path::Tiny> object corresponding to the parent
-directory of the original directory or file.
+    $parent = path("foo/bar/baz")->parent(2); # foo
+
+Returns a C<Path::Tiny> object corresponding to the parent directory of the
+original directory or file. An optional positive integer argument is the number
+of parent directories upwards to return.  C<parent> by itself is equivalent to
+C<parent(1)>.
 
 =head2 realpath
 
@@ -598,6 +602,24 @@ L<https://github.com/dagolden/path-tiny>
 =head1 AUTHOR
 
 David Golden <dagolden@cpan.org>
+
+=head1 CONTRIBUTORS
+
+=over 4
+
+=item *
+
+Chris 'BinGOs' Williams <chris@bingosnet.co.uk>
+
+=item *
+
+Karen Etheridge <ether@cpan.org>
+
+=item *
+
+Michael G. Schwern <schwern@pobox.com>
+
+=back
 
 =head1 COPYRIGHT AND LICENSE
 
