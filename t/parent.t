@@ -35,11 +35,16 @@ while (@cases) {
     subtest $label => sub {
         my $path = path( shift @$list );
         while (@$list) {
-            my $expect = shift @$list;
-            my $got    = $path->parent;
-            is( $got, canonical($expect), "$path -> $got" );
-            is( dir("$path")->parent, canonpath($expect), "Path::Class agrees" ) if $DEBUG;
-            $path = $got;
+            for my $i ( undef, 0, 1 .. @$list ) {
+                my $n = (defined $i && $i > 0) ? $i : 1;
+                my $expect = $list->[$n-1];
+                my $got    = $path->parent($i);
+                my $s = defined($i) ? $i : "undef";
+                is( $got, canonical($expect), "parent($s): $path -> $got" );
+                is( dir("$path")->parent, canonpath($expect), "Path::Class agrees" ) if $DEBUG;
+            }
+            $path = $path->parent;
+            shift @$list;
         }
     };
 }

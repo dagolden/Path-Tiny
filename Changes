@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - parent now takes an optional argument to look upwards multiple
+      times in one call.  e.g. $path->parent(2)
+
 0.013     2013-02-22 10:58:05 America/New_York
 
     [CHANGED]

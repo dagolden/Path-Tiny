@@ -644,37 +644,44 @@ while ( my ( $k, $v ) = each %opens ) {
     $parent = path("foo/bar/baz")->parent; # foo/bar
     $parent = path("foo/wibble.txt")->parent; # foo
 
-Returns a C<Path::Tiny> object corresponding to the parent
-directory of the original directory or file.
+    $parent = path("foo/bar/baz")->parent(2); # foo
+
+Returns a C<Path::Tiny> object corresponding to the parent directory of the
+original directory or file. An optional positive integer argument is the number
+of parent directories upwards to return.  C<parent> by itself is equivalent to
+C<parent(1)>.
 
 =cut
 
 # XXX this is ugly and coverage is incomplete.  I think it's there for windows
 # so need to check coverage there and compare
 sub parent {
-    my ($self) = @_;
+    my ($self, $level) = @_;
+    $level = 1 unless defined $level && $level > 0;
     $self->_splitpath unless defined $self->[FILE];
+    my $parent;
     if ( length $self->[FILE] ) {
         if ( $self->[FILE] eq '.' || $self->[FILE] =~ /\.\./ ) {
-            return path( $self->[PATH] . "/.." );
+            $parent = path( $self->[PATH] . "/.." );
         }
         else {
-            return path( _non_empty( $self->[VOL] . $self->[DIR] ) );
+            $parent = path( _non_empty( $self->[VOL] . $self->[DIR] ) );
         }
     }
     elsif ( length $self->[DIR] ) {
         if ( $self->[DIR] =~ /\.\./ ) {
-            return path( $self->[VOL] . $self->[DIR] . "/.." );
+            $parent = path( $self->[VOL] . $self->[DIR] . "/.." );
         }
         else {
-            return path("/") if $self->[DIR] eq "/";
+            $parent = path("/") if $self->[DIR] eq "/";
             ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/$}{/};
-            return path( $self->[VOL] . $dir );
+            $parent = path( $self->[VOL] . $dir );
         }
     }
     else {
-        return path( _non_empty( $self->[VOL] ) );
+        $parent = path( _non_empty( $self->[VOL] ) );
     }
+    return $level == 1 ? $parent : $parent->parent( $level - 1 );
 }
 
 sub _non_empty {
