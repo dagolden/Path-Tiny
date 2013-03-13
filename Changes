@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - touch and touchpath now return the object to allow easy chaining
+      with spew
+
 0.014     2013-03-09 08:54:26 America/New_York
 
     [ADDED]

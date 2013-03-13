@@ -234,6 +234,11 @@ my $tmpdir = Path::Tiny->tempdir;
     }
 }
 
+{
+    $tmpdir->child("subdir", "touched.txt")->touchpath->spew("Hello World\n");
+    is( $tmpdir->child("subdir", "touched.txt")->slurp, "Hello World\n", "touch can chain" );
+}
+
 SKIP: {
     my $newtmp = Path::Tiny->tempdir;
     my $file   = $newtmp->child("foo.txt");
