@@ -14,7 +14,7 @@ use Path::Tiny;
 my $file = path( scalar tmpnam() );
 ok $file, "Got a filename via tmpnam()";
 
-{
+note "openw"; {
     my $fh = $file->openw;
     ok $fh, "Opened $file for writing";
 
@@ -30,12 +30,12 @@ is( $file->volume,   $volume,   "volume cached " );  # for coverage
 is( $file->dirname,  $dirname,  "dirname correct" );
 is( $file->basename, $basename, "basename correct" );
 
-{
+note "openr"; {
     my $fh = $file->openr;
     is scalar <$fh>, "Foo\n", "Read contents of $file correctly";
 }
 
-{
+note "stat"; {
     my $stat = $file->stat;
     ok $stat;
     cmp_ok $stat->mtime, '>', time() - 20;           # Modified within last 20 seconds
@@ -52,22 +52,26 @@ ok $dir;
 ok -d $dir;
 ok $dir->is_dir, "It's a directory!";
 
-$file = $dir->child('foo.x');
-$file->touch;
-ok -e $file;
-utime time - 10, time - 10, $file;
-$file->touch;
-ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
+note "touch"; {
+    $file = $dir->child('foo.x');
+    $file->touch;
+    ok -e $file;
+    utime time - 10, time - 10, $file;
+    $file->touch;
+    ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
+}
 
-{
+note "children"; {
     my @files = $dir->children;
     is scalar @files, 1 or diag explain \@files;
     ok scalar grep { /foo\.x/ } @files;
 }
 
-ok $dir->remove_tree, "Removed $dir";
-ok !-e $dir, "$dir no longer exists";
-ok !$dir->remove_tree, "Removing non-existent dir returns false";
+note "remove_tree"; {
+    ok $dir->remove_tree, "Removed $dir";
+    ok !-e $dir, "$dir no longer exists";
+    ok !$dir->remove_tree, "Removing non-existent dir returns false";
+}
 
 my $tmpdir = Path::Tiny->tempdir;
 
@@ -200,14 +204,13 @@ my $tmpdir = Path::Tiny->tempdir;
     is( $content, "Line1\r\nLine2" );
 }
 
-{
-    # Make sure we can make an absolute/relative roundtrip
+note "absolute/relative roundtrip"; {
     my $cwd = path(".");
     is $cwd, $cwd->absolute->relative,
       "from $cwd to " . $cwd->absolute . " to " . $cwd->absolute->relative;
 }
 
-{
+note "realpath"; {
     # realpath should resolve ..
     my $lib = path("t/../lib");
     my $real = $lib->realpath;
@@ -219,7 +222,7 @@ my $tmpdir = Path::Tiny->tempdir;
 }
 
 
-{
+note "spew/slurp"; {
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
     my $copy = $tmpdir->child("bar.txt");
