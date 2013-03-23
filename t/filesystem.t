@@ -222,7 +222,7 @@ note "realpath"; {
 }
 
 
-note "spew/slurp"; {
+note "copy"; {
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
     my $copy = $tmpdir->child("bar.txt");
@@ -235,6 +235,34 @@ note "spew/slurp"; {
           unless exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
         ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
     }
+}
+
+
+note "move"; {
+    my $tmpdir = Path::Tiny->tempdir;
+
+    my $file = $tmpdir->child("foo.txt");
+    $file->spew("Hello World\n");
+
+    my $move = $tmpdir->child("bar.txt");
+    $file->move($move);
+
+    is( $move->slurp, "Hello World\n", "file moved" );
+    ok( !-e $file,    "  and the original is gone"  );
+}
+
+
+note "move, no arguments"; {
+    my $file = Path::Tiny->tempfile;
+
+    $file->spew("Hello World\n");
+
+    like(
+        exception { $file->move },
+        qr/^Missing destination for move\(\) at \Q$0 line/,
+        "move with no argument throws an error"
+    );
+    is( $file->slurp, "Hello World\n",        "  and the file is unaffected" );
 }
 
 {

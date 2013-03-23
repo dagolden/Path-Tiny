@@ -592,7 +592,10 @@ Just like C<rename>.
 
 =cut
 
-sub move { rename $_[0]->[PATH], $_[1] }
+sub move {
+    Carp::croak("Missing destination for move()")            if @_ == 1;
+    File::Copy::move( $_[0]->[PATH], "$_[1]" ) or Carp::croak("Can't move('$_[0]', '$_[1]'): $!");
+}
 
 =method openr, openw, openrw, opena
 
