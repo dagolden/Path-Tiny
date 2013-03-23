@@ -11,7 +11,6 @@ use autodie::exception 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp       ();
-use Cwd        ();
 use File::stat ();
 { no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
@@ -109,7 +108,10 @@ This is slightly faster than C<< path(".")->absolute >>.
 
 =cut
 
-sub cwd { shift; path(Cwd::getcwd) }
+sub cwd {
+    require Cwd;
+    return path(Cwd::getcwd());
+}
 
 =construct rootdir
 
@@ -223,7 +225,9 @@ resolved, you must call the more expensive C<realpath> method instead.
 sub absolute {
     my ( $self, $base ) = @_;
     return $self if $self->is_absolute;
-    return path( join "/", ( defined($base) ? $base : Cwd::getcwd ), $_[0]->[PATH] );
+
+    require Cwd;
+    return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
 =method append
@@ -758,7 +762,10 @@ more expensive as it must actually consult the filesystem.
 
 =cut
 
-sub realpath { return path( Cwd::realpath( $_[0]->[PATH] ) ) }
+sub realpath {
+    require Cwd;
+    return path( Cwd::realpath( $_[0]->[PATH] ) );
+}
 
 =method relative
 
