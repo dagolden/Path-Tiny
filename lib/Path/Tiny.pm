@@ -13,8 +13,7 @@ use File::Spec 3.40 ();
 use File::Temp 0.18 ();
 use Carp       ();
 use Cwd        ();
-use Fcntl      (qw/:flock :seek/);
-use File::Copy ();
+use Fcntl      (qw/:flock SEEK_END/);
 use File::stat ();
 { no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
@@ -359,6 +358,7 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 # XXX do recursively for directories?
 sub copy {
+    require File::Copy;
     File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("copy failed: $!");
 }
 
