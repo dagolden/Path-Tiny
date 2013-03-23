@@ -11,7 +11,6 @@ use autodie::exception 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp       ();
-{ no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
 our @EXPORT = qw/path/;
 
@@ -632,6 +631,7 @@ sub mkpath {
     $args = {} unless ref $args eq 'HASH';
     my $err;
     $args->{err} = \$err unless defined $args->{err};
+    require File::Path;
     my @dirs = File::Path::make_path( $self->[PATH], $args );
     if ( $err && @$err ) {
         my ( $file, $message ) = %{ $err->[0] };
@@ -823,6 +823,7 @@ sub remove_tree {
     my $err;
     $args->{err}  = \$err unless defined $args->{err};
     $args->{safe} = 1     unless defined $args->{safe};
+    require File::Path;
     my $count = File::Path::remove_tree( $self->[PATH], $args );
     if ( $err && @$err ) {
         my ( $file, $message ) = %{ $err->[0] };
