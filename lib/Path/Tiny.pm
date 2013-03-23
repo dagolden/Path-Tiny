@@ -339,7 +339,8 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 # XXX do recursively for directories?
 sub copy {
-    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("copy failed: $!");
+    Carp::croak("Missing destination for copy()")            if @_ == 1;
+    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("Can't copy('$_[0]', '$_[1]'): $!");
 }
 
 =method dirname
@@ -592,7 +593,10 @@ Just like C<rename>.
 
 =cut
 
-sub move { rename $_[0]->[PATH], $_[1] }
+sub move {
+    Carp::croak("Missing destination for move()")            if @_ == 1;
+    File::Copy::move( $_[0]->[PATH], "$_[1]" ) or Carp::croak("Can't move('$_[0]', '$_[1]'): $!");
+}
 
 =method openr, openw, openrw, opena
 
