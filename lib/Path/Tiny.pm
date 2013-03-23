@@ -9,7 +9,6 @@ package Path::Tiny;
 # Dependencies
 use autodie 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
-use File::Spec 3.40 ();
 use Carp       ();
 
 our @EXPORT = qw/path/;
@@ -68,6 +67,7 @@ sub path {
       unless defined $path && length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
+    require File::Spec;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/];                               # unix convention enforced
     $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
@@ -108,7 +108,10 @@ picky for C<path("/")>.
 
 =cut
 
-sub rootdir { path( File::Spec->rootdir ) }
+sub rootdir {
+    require File::Spec;
+    return path( File::Spec->rootdir );
+}
 
 =construct tempfile
 
@@ -186,7 +189,8 @@ sub _parse_file_temp_args {
 
 sub _splitpath {
     my ($self) = @_;
-    @{$self}[ VOL, DIR, FILE ] = File::Spec->splitpath( $self->[PATH] );
+    require File::Spec;
+    return @{$self}[ VOL, DIR, FILE ] = File::Spec->splitpath( $self->[PATH] );
 }
 
 #--------------------------------------------------------------------------#
@@ -728,7 +732,10 @@ C<< File::Spec->abs2rel() >>.
 =cut
 
 # Easy to get wrong, so wash it through File::Spec (sigh)
-sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
+sub relative {
+    require File::Spec;
+    return path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) );
+}
 
 =method remove
 
