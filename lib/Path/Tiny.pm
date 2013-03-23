@@ -11,7 +11,6 @@ use autodie 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp       ();
-use File::stat ();
 { no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
 our @EXPORT = qw/path/;
@@ -567,7 +566,10 @@ Like calling C<lstat> from L<File::stat>.
 
 =cut
 
-sub lstat { File::stat::lstat( $_[0]->[PATH] ) }
+sub lstat {
+    require File::stat;
+    File::stat::lstat( $_[0]->[PATH] )
+}
 
 =method mkpath
 
@@ -914,7 +916,10 @@ Like calling C<stat> from L<File::stat>.
 =cut
 
 # XXX break out individual stat() components as subs?
-sub stat { File::stat::stat( $_[0]->[PATH] ) }
+sub stat {
+    require File::stat;
+    File::stat::stat( $_[0]->[PATH] );
+}
 
 =method stringify
 
