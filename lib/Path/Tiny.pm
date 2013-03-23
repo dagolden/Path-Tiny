@@ -10,7 +10,6 @@ package Path::Tiny;
 use autodie 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
-use File::Temp 0.18 ();
 use Carp       ();
 use Cwd        ();
 use File::stat ();
@@ -139,6 +138,8 @@ sub tempfile {
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
+
+    require File::Temp;
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
     my $self = path($temp)->absolute;
@@ -157,7 +158,9 @@ This is just like C<tempfile>, except it calls C<< File::Temp->newdir >> instead
 sub tempdir {
     my $class = shift;
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
+
     # File::Temp->newdir demands leading template
+    require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = path($temp)->absolute;
     $self->[TEMP] = $temp; # keep object alive while we are
