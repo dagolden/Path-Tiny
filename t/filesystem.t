@@ -233,8 +233,26 @@ note "copy"; {
         skip "No exception if run as root", 1 if $> == 0;
         skip "No exception writing to read-only file", 1
           unless exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
-        ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
+        like(
+            exception { $file->copy($copy) },
+            qr/^Can't copy\('\Q$file\E', '\Q$copy\E'\): /,
+            "copy throws error if permission denied"
+        );
     }
+}
+
+
+note "copy, no arguments"; {
+    my $file = Path::Tiny->tempfile;
+
+    $file->spew("Hello World\n");
+
+    like(
+        exception { $file->copy },
+        qr/^Missing destination for copy\(\) at \Q$0 line/,
+        "copy with no argument throws an error"
+    );
+    is( $file->slurp, "Hello World\n",        "  and the file is unaffected" );
 }
 
 
