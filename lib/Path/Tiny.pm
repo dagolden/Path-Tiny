@@ -13,7 +13,6 @@ use File::Spec 3.40 ();
 use File::Temp 0.18 ();
 use Carp       ();
 use Cwd        ();
-use Fcntl      (qw/:flock SEEK_END/);
 use File::stat ();
 { no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
@@ -243,10 +242,11 @@ sub append {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $fh = $self->filehandle( ">>", $binmode );
 
-    flock( $fh, LOCK_EX ) or _throw( 'flock', [ $fh, LOCK_EX ] );
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_EX() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_EX() ] );
 
     # Ensure we're at the end after the lock
-    seek( $fh, 0, SEEK_END ) or _throw( 'seek', [ $fh, 0, SEEK_END ] );
+    seek( $fh, 0, Fcntl::SEEK_END() ) or _throw( 'seek', [ $fh, 0, Fcntl::SEEK_END() ] );
 
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
 
@@ -532,8 +532,8 @@ sub lines {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or _throw( 'flock', [ $fh, LOCK_SH ] );
-
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_SH() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_SH() ] );
     my $chomp = $args->{chomp};
     my @lines;
     # XXX more efficient to read @lines then chomp(@lines) vs map?
@@ -840,8 +840,8 @@ sub slurp {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or _throw( 'flock', [ $fh, LOCK_SH ] );
-
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_SH() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_SH() ] );
     if ( ( defined($binmode) ? $binmode : "" ) eq ":unix"
         and my $size = -s $fh )
     {
@@ -909,18 +909,13 @@ sub spew {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh = $temp->filehandle( ">", $binmode );
-    flock( $fh, LOCK_EX ) or _throw( 'flock', [ $fh, LOCK_EX ] );
-
-    seek( $fh, 0, SEEK_SET ) or _throw( 'seek', [ $fh, 0, SEEK_SET ] );
-
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_EX() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_EX() ] );
+    seek( $fh, 0, Fcntl::SEEK_SET() ) or _throw( 'seek', [ $fh, 0, Fcntl::SEEK_SET() ] );
     truncate( $fh, 0 ) or _throw( 'truncate', [ $fh, 0 ] );
-
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-
-    flock( $fh, LOCK_UN ) or _throw( 'flock', [ $fh, LOCK_UN ] );
-
+    flock( $fh, Fcntl::LOCK_UN() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_UN() ] );
     close $fh or _throw( 'close', [$fh] );
-
     return $temp->move( $self->[PATH] );
 }
 
