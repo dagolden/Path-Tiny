@@ -35,13 +35,19 @@ is( $file->basename, $basename, "basename correct" );
     is scalar <$fh>, "Foo\n", "Read contents of $file correctly";
 }
 
-{
+note "stat"; {
     my $stat = $file->stat;
     ok $stat;
     cmp_ok $stat->mtime, '>', time() - 20;           # Modified within last 20 seconds
 
     $stat = $file->parent->stat;
     ok $stat;
+}
+
+note "stat/lstat with no file"; {
+    my $file = "i/do/not/exist";
+    ok exception { path( $file )->stat };
+    ok exception { path( $file )->lstat };
 }
 
 1 while unlink $file;
