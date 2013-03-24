@@ -10,13 +10,7 @@ package Path::Tiny;
 use autodie::exception;
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
-use File::Temp 0.18 ();
 use Carp       ();
-use Cwd        ();
-use Fcntl      (qw/:flock :seek/);
-use File::Copy ();
-use File::stat ();
-{ no warnings; use File::Path 2.07 (); } # avoid "2.07_02 isn't numeric"
 
 our @EXPORT = qw/path/;
 
@@ -100,7 +94,10 @@ This is slightly faster than C<< path(".")->absolute >>.
 
 =cut
 
-sub cwd { shift; path(Cwd::getcwd) }
+sub cwd {
+    require Cwd;
+    return path(Cwd::getcwd());
+}
 
 =construct rootdir
 
@@ -141,6 +138,8 @@ sub tempfile {
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
+
+    require File::Temp;
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
     my $self = path($temp)->absolute;
@@ -159,7 +158,9 @@ This is just like C<tempfile>, except it calls C<< File::Temp->newdir >> instead
 sub tempdir {
     my $class = shift;
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
+
     # File::Temp->newdir demands leading template
+    require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = path($temp)->absolute;
     $self->[TEMP] = $temp; # keep object alive while we are
@@ -210,7 +211,9 @@ resolved, you must call the more expensive C<realpath> method instead.
 sub absolute {
     my ( $self, $base ) = @_;
     return $self if $self->is_absolute;
-    return path( join "/", ( defined($base) ? $base : Cwd::getcwd ), $_[0]->[PATH] );
+
+    require Cwd;
+    return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
 =method append
@@ -232,8 +235,9 @@ sub append {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $fh = $self->filehandle( ">>", $binmode );
 
-    flock( $fh, LOCK_EX ) or die autodie::exception->new(
-        args     => [$fh, LOCK_EX],
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_EX() ) or die autodie::exception->new(
+        args     => [$fh, Fcntl::LOCK_EX()],
         function => 'CORE::flock',
         return   => undef,
         errno    => $!,
@@ -241,8 +245,8 @@ sub append {
     );
 
     # Ensure we're at the end after the lock
-    seek( $fh, 0, SEEK_END ) or die autodie::exception->new(
-        args     => [$fh, 0, SEEK_END],
+    seek( $fh, 0, Fcntl::SEEK_END() ) or die autodie::exception->new(
+        args     => [$fh, 0, Fcntl::SEEK_END()],
         function => 'CORE::seek',
         return   => undef,
         errno    => $!,
@@ -379,6 +383,7 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 # XXX do recursively for directories?
 sub copy {
+    require File::Copy;
     File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("copy failed: $!");
 }
 
@@ -537,8 +542,10 @@ sub lines {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or die autodie::exception->new(
-        args     => [$fh, LOCK_SH],
+
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_SH() ) or die autodie::exception->new(
+        args     => [$fh, Fcntl::LOCK_SH()],
         function => 'CORE::flock',
         return   => undef,
         errno    => $!,
@@ -617,6 +624,7 @@ Like calling C<lstat> from L<File::stat>.
 sub lstat {
     my $self = shift;
 
+    require File::stat;
     return File::stat::lstat( $self->[PATH] ) || die autodie::exception->new(
         args     => [$self->[PATH]],
         function => 'CORE::lstat',
@@ -624,7 +632,6 @@ sub lstat {
         errno    => $!,
         context  => 'scalar',
     );
-
 }
 
 =method mkpath
@@ -644,6 +651,7 @@ sub mkpath {
     $args = {} unless ref $args eq 'HASH';
     my $err;
     $args->{err} = \$err unless defined $args->{err};
+    require File::Path;
     my @dirs = File::Path::make_path( $self->[PATH], $args );
     if ( $err && @$err ) {
         my ( $file, $message ) = %{ $err->[0] };
@@ -778,7 +786,10 @@ more expensive as it must actually consult the filesystem.
 
 =cut
 
-sub realpath { return path( Cwd::realpath( $_[0]->[PATH] ) ) }
+sub realpath {
+    require Cwd;
+    return path( Cwd::realpath( $_[0]->[PATH] ) );
+}
 
 =method relative
 
@@ -845,6 +856,7 @@ sub remove_tree {
     my $err;
     $args->{err}  = \$err unless defined $args->{err};
     $args->{safe} = 1     unless defined $args->{safe};
+    require File::Path;
     my $count = File::Path::remove_tree( $self->[PATH], $args );
     if ( $err && @$err ) {
         my ( $file, $message ) = %{ $err->[0] };
@@ -870,8 +882,10 @@ sub slurp {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or die autodie::exception->new(
-        args     => [$fh, LOCK_SH],
+
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_SH() ) or die autodie::exception->new(
+        args     => [$fh, Fcntl::LOCK_SH()],
         function => 'CORE::flock',
         return   => undef,
         errno    => $!,
@@ -945,16 +959,18 @@ sub spew {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh = $temp->filehandle( ">", $binmode );
-    flock( $fh, LOCK_EX ) or die autodie::exception->new(
-        args     => [$fh, LOCK_EX],
+
+    require Fcntl;
+    flock( $fh, Fcntl::LOCK_EX() ) or die autodie::exception->new(
+        args     => [$fh, Fcntl::LOCK_EX()],
         function => 'CORE::flock',
         return   => undef,
         errno    => $!,
         context  => 'scalar',
     );
 
-    seek( $fh, 0, SEEK_SET ) or die autodie::exception->new(
-        args     => [$fh, 0, SEEK_SET],
+    seek( $fh, 0, Fcntl::SEEK_SET() ) or die autodie::exception->new(
+        args     => [$fh, 0, Fcntl::SEEK_SET()],
         function => 'CORE::seek',
         return   => undef,
         errno    => $!,
@@ -978,8 +994,8 @@ sub spew {
         context  => 'scalar',
     );
 
-    flock( $fh, LOCK_UN ) or die autodie::exception->new(
-        args     => [$fh, LOCK_UN],
+    flock( $fh, Fcntl::LOCK_UN() ) or die autodie::exception->new(
+        args     => [$fh, Fcntl::LOCK_UN()],
         function => 'CORE::flock',
         return   => undef,
         errno    => $!,
@@ -1041,6 +1057,7 @@ Like calling C<stat> from L<File::stat>.
 sub stat {
     my $self = shift;
 
+    require File::stat;
     return File::stat::stat( $self->[PATH] ) || die autodie::exception->new(
         args     => [$self->[PATH]],
         function => 'CORE::stat',
