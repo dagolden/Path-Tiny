@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - The iterator now has an optional recursive mode
+
 0.015     2013-03-13 13:20:38 America/New_York
 
     [CHANGED]

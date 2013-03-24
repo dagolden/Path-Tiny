@@ -436,29 +436,50 @@ sub is_relative { substr( $_[0]->dirname, 0, 1 ) ne '/' }
 
 =method iterator
 
+    $iter = path("/tmp")->iterator( \%options );
+
+Returns a code reference that walks a directory lazily.  Each invocation
+returns a C<Path::Tiny> object or undef when the iterator is exhausted.
+
     $iter = path("/tmp")->iterator;
     while ( $path = $iter->() ) {
         ...
     }
 
-Returns a code reference that walks a directory lazily.  Each invocation
-returns a C<Path::Tiny> object or undef when the iterator is exhausted.
+The current and parent directory entries ("." and "..") will not
+be included.
 
-This iterator is B<not> recursive.  For recursive iteration, use
-L<Path::Iterator::Rule> instead.
+If the C<recurse> option is true, the iterator will walk the directory
+recursively, breadth-first.  If the C<follow_symlinks> option is also true,
+directory links will be recursed.  There is no protection against loops when
+following links.
+
+For a more powerful, recursive iterator with built-in loop avoidance, see
+L<Path::Iterator::Rule>.
 
 =cut
 
 sub iterator {
-    my ($self) = @_;
-    opendir( my $dh, $self->[PATH] );
+    my ( $self, $args ) = @_;
+    my @dirs = $self;
+    my $current;
     return sub {
-        return unless $dh;
         my $next;
-        while ( defined( $next = readdir $dh ) ) {
-            return $self->child($next) if $next ne '.' && $next ne '..';
+        while (@dirs) {
+            if ( ref $dirs[0] eq 'Path::Tiny' ) {
+                $current = $dirs[0];
+                opendir( my $dh, $current->[PATH] );
+                $dirs[0] = $dh;
+            }
+            while ( defined( $next = readdir $dirs[0] ) ) {
+                next if $next eq '.' || $next eq '..';
+                my $path = $current->child($next);
+                push @dirs, $path
+                  if $args->{recurse} && -d $path && !( !$args->{follow_symlinks} && -l $path );
+                return $path;
+            }
+            shift @dirs;
         }
-        undef $dh;
         return;
     };
 }
@@ -1082,28 +1103,21 @@ L<MooseX::Types::Path::Tiny>.
 
 =head1 SEE ALSO
 
-=for :list
+These are other file/path utilities, which may offer a different feature
+set than C<Path::Tiny>.
+
 * L<File::Fu>
 * L<IO::All>
 * L<Path::Class>
 
-Probably others.  Let me know if you want me to add a module to the list.
+These iterators may be slightly faster than the recursive iterator in
+C<Path::Tiny>:
 
-=head1 BENCHMARKING
+* L<Path::Iterator::Rule>
+* L<File::Next>
 
-I benchmarked a naive file-finding task: finding all C<*.pm> files in C<@INC>.
-I tested L<Path::Iterator::Rule> and different subclasses of it that do file
-manipulations using file path helpers L<Path::Class>, L<IO::All>, L<File::Fu>
-and C<Path::Tiny>.
-
-    Path::Iterator::Rule    0.474s (no objects)
-    Path::Tiny::Rule        0.938s (not on CPAN)
-    IO::All::Rule           1.355s
-    File::Fu::Rule          1.437s (not on CPAN)
-    Path::Class::Rule       4.673s
-
-This benchmark heavily stressed object creation and determination of
-a file's basename.
+There are probably comparable, non-Tiny tools.  Let me know if you want me to
+add a module to the list.
 
 =cut
 
