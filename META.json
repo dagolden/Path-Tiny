@@ -80,7 +80,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.016"
+         "version" : "0.017"
       }
    },
    "release_status" : "stable",
@@ -95,11 +95,11 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.016",
+   "version" : "0.017",
    "x_contributors" : [
-      "Chris 'BinGOs' Williams <chris@bingosnet.co.uk>",
+      "Chris Williams <bingos@cpan.org>",
       "Karen Etheridge <ether@cpan.org>",
-      "Michael G. Schwern <schwern@pobox.com>"
+      "Michael G. Schwern <mschwern@cpan.org>"
    ]
 }
 

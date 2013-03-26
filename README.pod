@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.016
+version 0.017
 
 =head1 SYNOPSIS
 
@@ -605,7 +605,7 @@ David Golden <dagolden@cpan.org>
 
 =item *
 
-Chris 'BinGOs' Williams <chris@bingosnet.co.uk>
+Chris Williams <bingos@cpan.org>
 
 =item *
 
@@ -613,7 +613,7 @@ Karen Etheridge <ether@cpan.org>
 
 =item *
 
-Michael G. Schwern <schwern@pobox.com>
+Michael G. Schwern <mschwern@cpan.org>
 
 =back
 
