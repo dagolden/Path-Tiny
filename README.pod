@@ -6,7 +6,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.015
+version 0.016
 
 =head1 SYNOPSIS
 
@@ -265,16 +265,26 @@ Boolean for whether the path appears relative or not.
 
 =head2 iterator
 
+    $iter = path("/tmp")->iterator( \%options );
+
+Returns a code reference that walks a directory lazily.  Each invocation
+returns a C<Path::Tiny> object or undef when the iterator is exhausted.
+
     $iter = path("/tmp")->iterator;
     while ( $path = $iter->() ) {
         ...
     }
 
-Returns a code reference that walks a directory lazily.  Each invocation
-returns a C<Path::Tiny> object or undef when the iterator is exhausted.
+The current and parent directory entries ("." and "..") will not
+be included.
 
-This iterator is B<not> recursive.  For recursive iteration, use
-L<Path::Iterator::Rule> instead.
+If the C<recurse> option is true, the iterator will walk the directory
+recursively, breadth-first.  If the C<follow_symlinks> option is also true,
+directory links will be recursed.  There is no protection against loops when
+following links.
+
+For a more powerful, recursive iterator with built-in loop avoidance, see
+L<Path::Iterator::Rule>.
 
 =head2 lines
 
@@ -550,39 +560,21 @@ L<MooseX::Types::Path::Tiny>.
 
 =head1 SEE ALSO
 
-=over 4
+These are other file/path utilities, which may offer a different feature
+set than C<Path::Tiny>.
 
-=item *
+* L<File::Fu>
+* L<IO::All>
+* L<Path::Class>
 
-L<File::Fu>
+These iterators may be slightly faster than the recursive iterator in
+C<Path::Tiny>:
 
-=item *
+* L<Path::Iterator::Rule>
+* L<File::Next>
 
-L<IO::All>
-
-=item *
-
-L<Path::Class>
-
-=back
-
-Probably others.  Let me know if you want me to add a module to the list.
-
-=head1 BENCHMARKING
-
-I benchmarked a naive file-finding task: finding all C<*.pm> files in C<@INC>.
-I tested L<Path::Iterator::Rule> and different subclasses of it that do file
-manipulations using file path helpers L<Path::Class>, L<IO::All>, L<File::Fu>
-and C<Path::Tiny>.
-
-    Path::Iterator::Rule    0.474s (no objects)
-    Path::Tiny::Rule        0.938s (not on CPAN)
-    IO::All::Rule           1.355s
-    File::Fu::Rule          1.437s (not on CPAN)
-    Path::Class::Rule       4.673s
-
-This benchmark heavily stressed object creation and determination of
-a file's basename.
+There are probably comparable, non-Tiny tools.  Let me know if you want me to
+add a module to the list.
 
 =for :stopwords cpan testmatrix url annocpan anno bugtracker rt cpants kwalitee diff irc mailto metadata placeholders metacpan
 

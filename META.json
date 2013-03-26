@@ -4,7 +4,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300030, CPAN::Meta::Converter version 2.120921",
+   "generated_by" : "Dist::Zilla version 4.300031, CPAN::Meta::Converter version 2.120921",
    "license" : [
       "apache_2_0"
    ],
@@ -52,7 +52,7 @@
             "File::Spec" : "3.40",
             "File::Temp" : "0.18",
             "File::stat" : "0",
-            "autodie" : "2.14",
+            "autodie::exception" : "2.14",
             "constant" : "0",
             "overload" : "0",
             "perl" : "5.008001",
@@ -62,6 +62,7 @@
       },
       "test" : {
          "requires" : {
+            "Config" : "0",
             "Devel::Hide" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Find" : "0",
@@ -79,7 +80,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.015"
+         "version" : "0.016"
       }
    },
    "release_status" : "stable",
@@ -94,7 +95,7 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.015",
+   "version" : "0.016",
    "x_contributors" : [
       "Chris 'BinGOs' Williams <chris@bingosnet.co.uk>",
       "Karen Etheridge <ether@cpan.org>",
