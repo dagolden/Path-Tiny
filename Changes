@@ -12,6 +12,9 @@ Revision history for Path-Tiny
       own autodie::exceptions on error.  This avoids the overhead
       of wrapping built-ins with function calls.
 
+    - Most dependencies are now loaded on demand, reducing startup
+      time.
+
 0.015     2013-03-13 13:20:38 America/New_York
 
     [CHANGED]
