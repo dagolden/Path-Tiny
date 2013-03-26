@@ -480,8 +480,8 @@ be included.
 
 If the C<recurse> option is true, the iterator will walk the directory
 recursively, breadth-first.  If the C<follow_symlinks> option is also true,
-directory links will be recursed.  There is no protection against loops when
-following links.
+directory links will be followed recursively.  There is no protection against
+loops when following links.
 
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
