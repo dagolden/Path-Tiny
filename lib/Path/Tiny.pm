@@ -7,7 +7,7 @@ package Path::Tiny;
 # VERSION
 
 # Dependencies
-use autodie::exception;
+use autodie::exception 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use File::Temp 0.18 ();
