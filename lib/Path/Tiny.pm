@@ -47,6 +47,18 @@ sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
 }
 
+# we do our own autodie::exceptions to avoid wrapping built-in functions
+sub _throw {
+    my ( $function, $args ) = @_;
+    die autodie::exception->new(
+        function => "CORE::$function",
+        args     => $args,
+        errno    => $!,
+        context  => 'scalar',
+        return   => undef,
+    );
+}
+
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -232,42 +244,16 @@ sub append {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $fh = $self->filehandle( ">>", $binmode );
 
-    flock( $fh, LOCK_EX ) or die autodie::exception->new(
-        args     => [$fh, LOCK_EX],
-        function => 'CORE::flock',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    flock( $fh, LOCK_EX ) or _throw( 'flock', [ $fh, LOCK_EX ] );
 
     # Ensure we're at the end after the lock
-    seek( $fh, 0, SEEK_END ) or die autodie::exception->new(
-        args     => [$fh, 0, SEEK_END],
-        function => 'CORE::seek',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    seek( $fh, 0, SEEK_END ) or _throw( 'seek', [ $fh, 0, SEEK_END ] );
 
-    my $ret = print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-    $ret or die autodie::exception->new(
-        args     => [$fh, map { ref eq 'ARRAY' ? @$_ : $_ } @data],
-        function => 'CORE::print',
-        return   => $ret,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
 
     # For immediate flush
-    close $fh or die autodie::exception->new(
-        args     => [$fh],
-        function => 'CORE::close',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    close $fh or _throw( 'close', [$fh] );
 }
-
 
 =method append_raw
 
@@ -357,16 +343,10 @@ within a directory.  Excludes "." and ".." automatically.
 sub children {
     my ($self) = @_;
     my $dh;
-    opendir $dh, $self->[PATH] or die autodie::exception->new(
-        args     => [$dh, $self->[PATH]],
-        function => 'CORE::opendir',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    opendir $dh, $self->[PATH] or _throw( 'opendir', [ $dh, $self->[PATH] ] );
 
     return
-       map { path( $self->[PATH] . "/$_" ) } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
+      map { path( $self->[PATH] . "/$_" ) } grep { $_ ne '.' && $_ ne '..' } readdir $dh;
 }
 
 =method copy
@@ -431,13 +411,7 @@ sub filehandle {
 
     my $mode = $opentype . $binmode;
     my $fh;
-    open $fh, $mode, $self->[PATH] or die autodie::exception->new(
-        args     => [$fh, $mode, $self->[PATH]],
-        function => 'CORE::open',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    open $fh, $mode, $self->[PATH] or _throw( 'open', [ $fh, $mode, $self->[PATH] ] );
 
     return $fh;
 }
@@ -558,13 +532,7 @@ sub lines {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or die autodie::exception->new(
-        args     => [$fh, LOCK_SH],
-        function => 'CORE::flock',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    flock( $fh, LOCK_SH ) or _throw( 'flock', [ $fh, LOCK_SH ] );
 
     my $chomp = $args->{chomp};
     my @lines;
@@ -638,13 +606,7 @@ Like calling C<lstat> from L<File::stat>.
 sub lstat {
     my $self = shift;
 
-    return File::stat::lstat( $self->[PATH] ) || die autodie::exception->new(
-        args     => [$self->[PATH]],
-        function => 'CORE::lstat',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    return File::stat::lstat( $self->[PATH] ) || _throw( 'lstat', [ $self->[PATH] ] );
 
 }
 
@@ -682,15 +644,9 @@ Just like C<rename>.
 =cut
 
 sub move {
-    my( $self, $dst ) = @_;
+    my ( $self, $dst ) = @_;
 
-    return rename( $self->[PATH], $dst ) || die autodie::exception->new(
-        args     => [$self->[PATH], $dst],
-        function => 'CORE::rename',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    return rename( $self->[PATH], $dst ) || _throw( 'rename', [ $self->[PATH], $dst ] );
 }
 
 =method openr, openw, openrw, opena
@@ -830,14 +786,7 @@ sub remove {
 
     return 0 if !-e $self->[PATH];
 
-    return unlink $self->[PATH] || die autodie::exception->new(
-        args     => [$self->[PATH]],
-        function => 'CORE::unlink',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
-
+    return unlink $self->[PATH] || _throw( 'unlink', [ $self->[PATH] ] );
 }
 
 =method remove_tree
@@ -891,13 +840,7 @@ sub slurp {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
-    flock( $fh, LOCK_SH ) or die autodie::exception->new(
-        args     => [$fh, LOCK_SH],
-        function => 'CORE::flock',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    flock( $fh, LOCK_SH ) or _throw( 'flock', [ $fh, LOCK_SH ] );
 
     if ( ( defined($binmode) ? $binmode : "" ) eq ":unix"
         and my $size = -s $fh )
@@ -966,54 +909,17 @@ sub spew {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh = $temp->filehandle( ">", $binmode );
-    flock( $fh, LOCK_EX ) or die autodie::exception->new(
-        args     => [$fh, LOCK_EX],
-        function => 'CORE::flock',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    flock( $fh, LOCK_EX ) or _throw( 'flock', [ $fh, LOCK_EX ] );
 
-    seek( $fh, 0, SEEK_SET ) or die autodie::exception->new(
-        args     => [$fh, 0, SEEK_SET],
-        function => 'CORE::seek',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    seek( $fh, 0, SEEK_SET ) or _throw( 'seek', [ $fh, 0, SEEK_SET ] );
 
-    truncate( $fh, 0 ) or die autodie::exception->new(
-        args     => [$fh, 0],
-        function => 'CORE::truncate',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    truncate( $fh, 0 ) or _throw( 'truncate', [ $fh, 0 ] );
 
-    my $ret = print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-    $ret or die autodie::exception->new(
-        args     => [$fh, map { ref eq 'ARRAY' ? @$_ : $_ } @data],
-        function => 'CORE::print',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
 
-    flock( $fh, LOCK_UN ) or die autodie::exception->new(
-        args     => [$fh, LOCK_UN],
-        function => 'CORE::flock',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    flock( $fh, LOCK_UN ) or _throw( 'flock', [ $fh, LOCK_UN ] );
 
-    close $fh or die autodie::exception->new(
-        args     => [$fh],
-        function => 'CORE::close',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    close $fh or _throw( 'close', [$fh] );
 
     return $temp->move( $self->[PATH] );
 }
@@ -1062,13 +968,7 @@ Like calling C<stat> from L<File::stat>.
 sub stat {
     my $self = shift;
 
-    return File::stat::stat( $self->[PATH] ) || die autodie::exception->new(
-        args     => [$self->[PATH]],
-        function => 'CORE::stat',
-        return   => undef,
-        errno    => $!,
-        context  => 'scalar',
-    );
+    return File::stat::stat( $self->[PATH] ) || _throw( 'stat', [ $self->[PATH] ] );
 }
 
 =method stringify
@@ -1100,23 +1000,11 @@ sub touch {
     my ($self) = @_;
     if ( -e $self->[PATH] ) {
         my $now = time();
-        utime $now, $now, $self->[PATH] or die autodie::exception->new(
-            args     => [$now, $now, $self->[PATH]],
-            function => 'CORE::utime',
-            return   => undef,
-            errno    => $!,
-            context  => 'scalar',
-        );
+        utime $now, $now, $self->[PATH] or _throw( 'utime', [ $now, $now, $self->[PATH] ] );
     }
     else {
         my $fh = $self->openw;
-        close $fh or die autodie::exception->new(
-            args     => [$fh],
-            function => 'CORE::close',
-            return   => undef,
-            errno    => $!,
-            context  => 'scalar',
-        );
+        close $fh or _throw( 'close', [$fh] );
     }
     return $self;
 }
