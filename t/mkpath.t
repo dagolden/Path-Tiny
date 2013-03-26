@@ -2,7 +2,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
-use File::Temp 0.18 ();
+use File::Temp ();
 
 use Path::Tiny;
 

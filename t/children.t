@@ -3,7 +3,7 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::Deep '!blessed';
-use File::Temp 0.18 ();
+use File::Temp ();
 use File::Spec::Unix;
 
 use Path::Tiny;
