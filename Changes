@@ -6,6 +6,12 @@ Revision history for Path-Tiny
 
     - The iterator now has an optional recursive mode
 
+    [CHANGED]
+
+    - We no longer use autodie directly, but we throw our
+      own autodie::exceptions on error.  This avoids the overhead
+      of wrapping built-ins with function calls.
+
 0.015     2013-03-13 13:20:38 America/New_York
 
     [CHANGED]
