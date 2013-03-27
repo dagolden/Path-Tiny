@@ -111,4 +111,33 @@ is $file->parent, '/foo/baz';
     is( path(qw/foo bar baz/), Path::Tiny->new(qw/foo bar baz/), "path() vs new" );
     is( path(qw/foo bar baz/), path("foo/bar/baz"), "path(a,b,c) vs path('a/b/c')" );
 }
+
+# tilde processing
+{
+    my ($homedir) = glob('~');
+    my $dir = path('~');
+    is ($dir, $homedir, 'Test my homedir');
+    $dir = path('~/');
+    is ($dir, $homedir, 'Test my homedir with trailing "/"');
+    $dir = path('~/foo/bar');
+    is ($dir, $homedir . '/foo/bar', 'Test my homedir with longer path');
+    $dir = path('~/foo/bar/');
+    is ($dir, $homedir . '/foo/bar', 'Test my homedir, longer path and trailing "/"');
+
+    my ($root_homedir) = glob('~root');
+    $dir = path('~root');
+    is ($dir, $root_homedir, 'Test root homedir');
+    $dir = path('~root');
+    is ($dir, $root_homedir, 'Test root homedir with trailing /');
+    $dir = path('~root/foo/bar');
+    is ($dir, $root_homedir . '/foo/bar', 'Test root homedir with longer path');
+    $dir = path('~root/foo/bar/');
+    is ($dir, $root_homedir . '/foo/bar', 'Test root homedir, longer path and trailing "/"');
+
+    my ($missing_homedir) = glob('~idontthinkso');
+    $dir = path('~idontthinkso');
+    is ($dir, '~idontthinkso', 'Test homedir of nonexistant user');
+    is ($dir, $missing_homedir, 'Test homedir of nonexistant user (via glob)');
+}
+
 done_testing();
