@@ -87,12 +87,12 @@ sub path {
       unless defined $path && length $path;
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
+    my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
+    $path =~ tr[\\][/];                               # unix convention enforced
     if ($path =~ m{^(~[^/]*).*}) {
         my ($homedir) = glob($1); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
-    my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/];                               # unix convention enforced
     $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
     bless [ $path, $cpath ], __PACKAGE__;
 }
