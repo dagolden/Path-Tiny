@@ -82,6 +82,7 @@ sub _called_as {
     $path = path("foo/bar");
     $path = path("/tmp", "file.txt"); # list
     $path = path(".");                # cwd
+    $path = path("~user/file.txt");   # tilde processing
 
 Constructs a C<Path::Tiny> object.  It doesn't matter if you give a file or
 directory path.  It's still up to you to call directory-like methods only on
@@ -91,6 +92,12 @@ automatically by default.
 The first argument must be defined and have non-zero length or an exception
 will be thrown.  This prevents subtle, dangerous errors with code like
 C<< path( maybe_undef() )->remove_tree >>.
+
+If the first component of the path is a tilde ('~') then the component will be
+replaced with the output of C<glob('~')>.  If the first component of the path
+is a tilde followed by a user name then the component will be replaced with
+output of C<glob('~username')>.  Behaviour for non-existent users depends on
+the output of C<glob> on the system.
 
 =cut
 
@@ -102,6 +109,10 @@ sub path {
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/];                               # unix convention enforced
+    if ($path =~ m{^(~[^/]*).*}) {                    # expand a tilde
+        my ($homedir) = glob($1); # glob without list context == heisenbug!
+        $path =~ s{^(~[^/]*)}{$homedir};
+    }
     $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
     bless [ $path, $cpath ], __PACKAGE__;
 }
