@@ -10,7 +10,7 @@ package Path::Tiny;
 use autodie::exception 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
-use Carp       ();
+use Carp ();
 
 our @EXPORT = qw/path/;
 
@@ -108,7 +108,7 @@ This is slightly faster than C<< path(".")->absolute >>.
 
 sub cwd {
     require Cwd;
-    return path(Cwd::getcwd());
+    return path( Cwd::getcwd() );
 }
 
 =construct rootdir
@@ -825,6 +825,7 @@ sub remove_tree {
     $args->{safe} = 1     unless defined $args->{safe};
     require File::Path;
     my $count = File::Path::remove_tree( $self->[PATH], $args );
+
     if ( $err && @$err ) {
         my ( $file, $message ) = %{ $err->[0] };
         Carp::croak("remove_tree failed for $file: $message");
