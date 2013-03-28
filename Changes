@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - path() constructor now glob-expands tildes (~)
+
     [CHANGED]
 
     - Improved options validation; invalid options now throw errors

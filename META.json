@@ -98,6 +98,7 @@
    "version" : "0.017",
    "x_contributors" : [
       "Chris Williams <bingos@cpan.org>",
+      "George Hartzell <hartzell@cpan.org>",
       "Karen Etheridge <ether@cpan.org>",
       "Michael G. Schwern <mschwern@cpan.org>"
    ]
