@@ -9,7 +9,7 @@ use Path::Tiny;
 my $err;
 
 $err = exception { path("aljfakdlfadks")->slurp };
-like( $err, qr/at $0/, "exception reported at caller's package" );
+like( $err, qr/at \Q$0\E/, "exception reported at caller's package" );
 
 for my $m ( qw/append iterator lines lines_raw lines_utf8 slurp spew/ ) {
     $err = exception { path("foo")->$m({ wibble => 1 }) };
