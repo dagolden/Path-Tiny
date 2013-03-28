@@ -89,7 +89,7 @@ sub path {
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/];                               # unix convention enforced
-    if ($path =~ m{^(~[^/]*).*}) {
+    if ($path =~ m{^(~[^/]*).*}) {                    # expand a tilde
         my ($homedir) = glob($1); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
