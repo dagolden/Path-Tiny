@@ -53,6 +53,26 @@ sub _throw {
     );
 }
 
+# cheapo option validation
+sub _get_args {
+    my ( $raw, @valid ) = @_;
+    Carp::croak("Options for @{[_called_as()]} must be a hash reference")
+      if defined($raw) && ref($raw) ne 'HASH';
+    my $cooked = {};
+    for my $k (@valid) {
+        $cooked->{$k} = delete $raw->{$k} if exists $raw->{$k};
+    }
+    Carp::croak( "Invalid option(s) for @{[_called_as()]}: " . join( ", ", keys %$raw ) )
+      if keys %$raw;
+    return $cooked;
+}
+
+sub _called_as {
+    my ( undef, undef, undef, $method ) = caller(2);
+    $method =~ s{^.*::}{};
+    return $method;
+}
+
 #--------------------------------------------------------------------------#
 # Constructors
 #--------------------------------------------------------------------------#
@@ -243,6 +263,7 @@ C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
+    $args = _get_args( $args, qw/binmode/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $fh = $self->filehandle( ">>", $binmode );
@@ -489,7 +510,8 @@ L<Path::Iterator::Rule>.
 =cut
 
 sub iterator {
-    my ( $self, $args ) = @_;
+    my $self = shift;
+    my $args = _get_args( shift, qw/recurse follow_symlinks/ );
     my @dirs = $self;
     my $current;
     return sub {
@@ -532,8 +554,8 @@ of lines (and throw away the data).
 =cut
 
 sub lines {
-    my ( $self, $args ) = @_;
-    $args = {} unless ref $args eq 'HASH';
+    my $self    = shift;
+    my $args    = _get_args( shift, qw/binmode chomp count/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
@@ -563,13 +585,14 @@ of C<:unix> so PerlIO buffering can manage reading by line.
 =cut
 
 sub lines_raw {
-    $_[1] = {} unless ref $_[1] eq 'HASH';
-    if ( $_[1]->{chomp} && !$_[1]->{count} ) {
-        return split /\n/, slurp_raw( $_[0] ); ## no critic
+    my $self = shift;
+    my $args = _get_args( shift, qw/binmode chomp count/ );
+    if ( $args->{chomp} && !$args->{count} ) {
+        return split /\n/, slurp_raw($self); ## no critic
     }
     else {
-        $_[1]->{binmode} = ":raw";
-        goto &lines;
+        $args->{binmode} = ":raw";
+        return lines( $self, $args );
     }
 }
 
@@ -587,16 +610,17 @@ and iterating directly on the handle.
 =cut
 
 sub lines_utf8 {
-    $_[1] = {} unless ref $_[1] eq 'HASH';
+    my $self = shift;
+    my $args = _get_args( shift, qw/binmode chomp count/ );
     if (   ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() )
-        && $_[1]->{chomp}
-        && !$_[1]->{count} )
+        && $args->{chomp}
+        && !$args->{count} )
     {
         return split /\n/, slurp_utf8( $_[0] ); ## no critic
     }
     else {
-        $_[1]->{binmode} = ":raw:encoding(UTF-8)";
-        goto &lines;
+        $args->{binmode} = ":raw:encoding(UTF-8)";
+        return lines( $self, $args );
     }
 }
 
@@ -845,8 +869,8 @@ C<binmode()> on the handle used for reading.
 =cut
 
 sub slurp {
-    my ( $self, $args ) = @_;
-    $args = {} unless ref $args eq 'HASH';
+    my $self    = shift;
+    my $args    = _get_args( shift, qw/binmode/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
@@ -915,6 +939,7 @@ C<binmode()> on the handle used for writing.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
+    $args = _get_args( $args, qw/binmode/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );

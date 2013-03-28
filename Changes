@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - Improved options validation; invalid options now throw errors
+
 0.016     2013-03-26 14:59:36 America/New_York
 
     [ADDED]
