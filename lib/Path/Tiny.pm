@@ -406,15 +406,22 @@ sub dirname {
     return length $self->[DIR] ? $self->[DIR] : ".";
 }
 
-=method exists
+=method exists, is_file, is_dir
 
     if ( path("/tmp")->exists ) { ... }
+    if ( path("/tmp")->is_file ) { ... }
+    if ( path("/tmp")->is_dir ) { ... }
 
-Just like C<-e>.
+Just like C<-e>, C<-f> or C<-d>.  This means the file or directory actually has to
+exist on the filesystem.  Until then, it's just a path.
 
 =cut
 
 sub exists { -e $_[0]->[PATH] }
+
+sub is_file { -f $_[0]->[PATH] }
+
+sub is_dir { -d $_[0]->[PATH] }
 
 =method filehandle
 
@@ -443,45 +450,16 @@ sub filehandle {
     return $fh;
 }
 
-=method is_absolute
+=method is_absolute, is_relative
 
     if ( path("/tmp")->is_absolute ) { ... }
+    if ( path("/tmp")->is_relative ) { ... }
 
-Boolean for whether the path appears absolute or not.
+Booleans for whether the path appears absolute or relative.
 
 =cut
 
 sub is_absolute { substr( $_[0]->dirname, 0, 1 ) eq '/' }
-
-=method is_dir
-
-    if ( path("/tmp")->is_dir ) { ... }
-
-Just like C<-d>.  This means it actually has to exist on the filesystem.
-Until then, it's just a path.
-
-=cut
-
-sub is_dir { -d $_[0]->[PATH] }
-
-=method is_file
-
-    if ( path("/tmp")->is_file ) { ... }
-
-Just like C<-f>.  This means it actually has to exist on the filesystem.
-Until then, it's just a path.
-
-=cut
-
-sub is_file { -f $_[0]->[PATH] }
-
-=method is_relative
-
-    if ( path("/tmp")->is_relative ) { ... }
-
-Boolean for whether the path appears relative or not.
-
-=cut
 
 sub is_relative { substr( $_[0]->dirname, 0, 1 ) ne '/' }
 
@@ -613,20 +591,6 @@ sub lines_utf8 {
         $args->{binmode} = ":raw:encoding(UTF-8)";
         return lines( $self, $args );
     }
-}
-
-=method lstat
-
-    $stat = path("/some/symlink")->lstat;
-
-Like calling C<lstat> from L<File::stat>.
-
-=cut
-
-sub lstat {
-    my $self = shift;
-    require File::stat;
-    return File::stat::lstat( $self->[PATH] ) || _throw( 'lstat', [ $self->[PATH] ] );
 }
 
 =method mkpath
@@ -957,11 +921,12 @@ sub spew_utf8 {
     }
 }
 
-=method stat
+=method stat, lstat
 
     $stat = path("foo.txt")->stat;
+    $stat = path("/some/symlink")->lstat;
 
-Like calling C<stat> from L<File::stat>.
+Like calling C<stat> or C<lstat> from L<File::stat>.
 
 =cut
 
@@ -970,6 +935,12 @@ sub stat {
     my $self = shift;
     require File::stat;
     return File::stat::stat( $self->[PATH] ) || _throw( 'stat', [ $self->[PATH] ] );
+}
+
+sub lstat {
+    my $self = shift;
+    require File::stat;
+    return File::stat::lstat( $self->[PATH] ) || _throw( 'lstat', [ $self->[PATH] ] );
 }
 
 =method stringify
