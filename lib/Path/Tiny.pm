@@ -259,15 +259,24 @@ sub absolute {
     return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
-=method append
+=method append, append_raw, append_utf8
 
     path("foo.txt")->append(@data);
     path("foo.txt")->append(\@data);
     path("foo.txt")->append({binmode => ":raw"}, @data);
+    path("foo.txt")->append_raw(@data);
+    path("foo.txt")->append_utf8(@data);
 
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
 optional hash reference may be used to pass options.  The only option is
 C<binmode>, which is passed to C<binmode()> on the handle used for writing.
+
+C<append_raw> is like C<append> with a C<binmode> of C<:unix> for fast,
+unbuffered, raw write.
+
+C<append_utf8> is like C<append> with a C<binmode> of
+C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+append will be done instead on the data encoded with C<Unicode::UTF8>.
 
 =cut
 
@@ -291,26 +300,7 @@ sub append {
     close $fh or _throw( 'close', [$fh] );
 }
 
-=method append_raw
-
-    path("foo.txt")->append_raw(@data);
-
-This is like C<append> with a C<binmode> of C<:unix> for fast, unbuffered, raw write.
-
-=cut
-
 sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
-
-=method append_utf8
-
-    path("foo.txt")->append_utf8(@data);
-
-This is like C<append> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw append will be done instead on the data
-encoded with C<Unicode::UTF8>.
-
-=cut
 
 sub append_utf8 {
     if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
@@ -546,10 +536,12 @@ sub iterator {
     };
 }
 
-=method lines
+=method lines, lines_raw, lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines;
     @contents = path("/tmp/foo.txt")->lines(\%options);
+    @contents = path("/tmp/foo.txt")->lines_raw;
+    @contents = path("/tmp/foo.txt")->lines_utf8;
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
@@ -561,6 +553,16 @@ Because the return is a list, C<lines> in scalar context will return the number
 of lines (and throw away the data).
 
     $number_of_lines = path("/tmp/foo.txt")->lines;
+
+C<lines_raw> is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw>
+instead of C<:unix> so PerlIO buffering can manage reading by line.
+
+C<lines_utf8> is like C<lines> with a C<binmode> of
+C<:raw:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+UTF-8 slurp will be done and then the lines will be split.  This is
+actually faster than relying on C<:encoding(UTF-8)>, though a bit memory
+intensive.  If memory use is a concern, consider C<openr_utf8> and
+iterating directly on the handle.
 
 =cut
 
@@ -586,15 +588,6 @@ sub lines {
     }
 }
 
-=method lines_raw
-
-    @contents = path("/tmp/foo.txt")->lines_raw;
-
-This is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw> instead
-of C<:unix> so PerlIO buffering can manage reading by line.
-
-=cut
-
 sub lines_raw {
     my $self = shift;
     my $args = _get_args( shift, qw/binmode chomp count/ );
@@ -606,19 +599,6 @@ sub lines_raw {
         return lines( $self, $args );
     }
 }
-
-=method lines_utf8
-
-    @contents = path("/tmp/foo.txt")->lines_utf8;
-
-This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw UTF-8 slurp will be done and then the
-lines will be split.  This is actually faster than relying on C<:encoding(UTF-8)>,
-though a bit memory intensive.  If memory use is a concern, consider C<openr_utf8>
-and iterating directly on the handle.
-
-=cut
 
 sub lines_utf8 {
     my $self = shift;
@@ -868,14 +848,25 @@ sub remove_tree {
     return $count;
 }
 
-=method slurp
+=method slurp, slurp_raw, slurp_utf8
 
     $data = path("foo.txt")->slurp;
     $data = path("foo.txt")->slurp( {binmode => ":raw"} );
+    $data = path("foo.txt")->slurp_raw;
+    $data = path("foo.txt")->slurp_utf8;
 
 Reads file contents into a scalar.  Takes an optional hash reference may be
 used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for reading.
+
+C<slurp_raw> is like C<slurp> with a C<binmode> of C<:unix> for
+a fast, unbuffered, raw read.
+
+C<slurp_utf8> is like C<slurp> with a C<binmode> of
+C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+slurp will be done instead and the result decoded with C<Unicode::UTF8>.
+This is is just as strict and is roughly an order of magnitude faster than
+using C<:encoding(UTF-8)>.
 
 =cut
 
@@ -900,28 +891,7 @@ sub slurp {
     }
 }
 
-=method slurp_raw
-
-    $data = path("foo.txt")->slurp_raw;
-
-This is like C<slurp> with a C<binmode> of C<:unix> for
-a fast, unbuffered, raw read.
-
-=cut
-
 sub slurp_raw { $_[1] = { binmode => ":unix" }; goto &slurp }
-
-=method slurp_utf8
-
-    $data = path("foo.txt")->slurp_utf8;
-
-This is like C<slurp> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw slurp will be done instead and the
-result decoded with C<Unicode::UTF8>.  This is is just as strict and is roughly
-an order of magnitude faster than using C<:encoding(UTF-8)>.
-
-=cut
 
 sub slurp_utf8 {
     if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
@@ -933,16 +903,25 @@ sub slurp_utf8 {
     }
 }
 
-=method spew
+=method spew, spew_raw, spew_utf8
 
     path("foo.txt")->spew(@data);
     path("foo.txt")->spew(\@data);
     path("foo.txt")->spew({binmode => ":raw"}, @data);
+    path("foo.txt")->spew_raw(@data);
+    path("foo.txt")->spew_utf8(@data);
 
 Writes data to a file atomically.  The file is written to a temporary file in
 the same directory, then renamed over the original.  An optional hash reference
 may be used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for writing.
+
+C<spew_raw> is like C<spew> with a C<binmode> of C<:unix> for a fast,
+unbuffered, raw write.
+
+C<spew_utf8> is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
+If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on
+the data encoded with C<Unicode::UTF8>.
 
 =cut
 
@@ -965,26 +944,7 @@ sub spew {
     return $temp->move( $self->[PATH] );
 }
 
-=method spew_raw
-
-    path("foo.txt")->spew_raw(@data);
-
-This is like C<spew> with a C<binmode> of C<:unix> for a fast, unbuffered, raw write.
-
-=cut
-
 sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
-
-=method spew_utf8
-
-    path("foo.txt")->spew_utf8(@data);
-
-This is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on the data
-encoded with C<Unicode::UTF8>.
-
-=cut
 
 sub spew_utf8 {
     if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
