@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.017
+version 0.018
 
 =head1 SYNOPSIS
 
@@ -160,30 +160,24 @@ This will not resolve upward directories ("foo/../bar") unless C<canonpath>
 in L<File::Spec> would normally do so on your platform.  If you need them
 resolved, you must call the more expensive C<realpath> method instead.
 
-=head2 append
+=head2 append, append_raw, append_utf8
 
     path("foo.txt")->append(@data);
     path("foo.txt")->append(\@data);
     path("foo.txt")->append({binmode => ":raw"}, @data);
+    path("foo.txt")->append_raw(@data);
+    path("foo.txt")->append_utf8(@data);
 
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
 optional hash reference may be used to pass options.  The only option is
 C<binmode>, which is passed to C<binmode()> on the handle used for writing.
 
-=head2 append_raw
+C<append_raw> is like C<append> with a C<binmode> of C<:unix> for fast,
+unbuffered, raw write.
 
-    path("foo.txt")->append_raw(@data);
-
-This is like C<append> with a C<binmode> of C<:unix> for fast, unbuffered, raw write.
-
-=head2 append_utf8
-
-    path("foo.txt")->append_utf8(@data);
-
-This is like C<append> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw append will be done instead on the data
-encoded with C<Unicode::UTF8>.
+C<append_utf8> is like C<append> with a C<binmode> of
+C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+append will be done instead on the data encoded with C<Unicode::UTF8>.
 
 =head2 basename
 
@@ -295,10 +289,12 @@ loops when following links.
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
 
-=head2 lines
+=head2 lines, lines_raw, lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines;
     @contents = path("/tmp/foo.txt")->lines(\%options);
+    @contents = path("/tmp/foo.txt")->lines_raw;
+    @contents = path("/tmp/foo.txt")->lines_utf8;
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
@@ -311,23 +307,15 @@ of lines (and throw away the data).
 
     $number_of_lines = path("/tmp/foo.txt")->lines;
 
-=head2 lines_raw
+C<lines_raw> is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw>
+instead of C<:unix> so PerlIO buffering can manage reading by line.
 
-    @contents = path("/tmp/foo.txt")->lines_raw;
-
-This is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw> instead
-of C<:unix> so PerlIO buffering can manage reading by line.
-
-=head2 lines_utf8
-
-    @contents = path("/tmp/foo.txt")->lines_utf8;
-
-This is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw UTF-8 slurp will be done and then the
-lines will be split.  This is actually faster than relying on C<:encoding(UTF-8)>,
-though a bit memory intensive.  If memory use is a concern, consider C<openr_utf8>
-and iterating directly on the handle.
+C<lines_utf8> is like C<lines> with a C<binmode> of
+C<:raw:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+UTF-8 slurp will be done and then the lines will be split.  This is
+actually faster than relying on C<:encoding(UTF-8)>, though a bit memory
+intensive.  If memory use is a concern, consider C<openr_utf8> and
+iterating directly on the handle.
 
 =head2 lstat
 
@@ -429,57 +417,45 @@ C<rmdir> function instead.
 
     rmdir path("foo/bar/baz/");
 
-=head2 slurp
+=head2 slurp, slurp_raw, slurp_utf8
 
     $data = path("foo.txt")->slurp;
     $data = path("foo.txt")->slurp( {binmode => ":raw"} );
+    $data = path("foo.txt")->slurp_raw;
+    $data = path("foo.txt")->slurp_utf8;
 
 Reads file contents into a scalar.  Takes an optional hash reference may be
 used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for reading.
 
-=head2 slurp_raw
-
-    $data = path("foo.txt")->slurp_raw;
-
-This is like C<slurp> with a C<binmode> of C<:unix> for
+C<slurp_raw> is like C<slurp> with a C<binmode> of C<:unix> for
 a fast, unbuffered, raw read.
 
-=head2 slurp_utf8
+C<slurp_utf8> is like C<slurp> with a C<binmode> of
+C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
+slurp will be done instead and the result decoded with C<Unicode::UTF8>.
+This is is just as strict and is roughly an order of magnitude faster than
+using C<:encoding(UTF-8)>.
 
-    $data = path("foo.txt")->slurp_utf8;
-
-This is like C<slurp> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw slurp will be done instead and the
-result decoded with C<Unicode::UTF8>.  This is is just as strict and is roughly
-an order of magnitude faster than using C<:encoding(UTF-8)>.
-
-=head2 spew
+=head2 spew, spew_raw, spew_utf8
 
     path("foo.txt")->spew(@data);
     path("foo.txt")->spew(\@data);
     path("foo.txt")->spew({binmode => ":raw"}, @data);
+    path("foo.txt")->spew_raw(@data);
+    path("foo.txt")->spew_utf8(@data);
 
 Writes data to a file atomically.  The file is written to a temporary file in
 the same directory, then renamed over the original.  An optional hash reference
 may be used to pass options.  The only option is C<binmode>, which is passed to
 C<binmode()> on the handle used for writing.
 
-=head2 spew_raw
+C<spew_raw> is like C<spew> with a C<binmode> of C<:unix> for a fast,
+unbuffered, raw write.
 
-    path("foo.txt")->spew_raw(@data);
-
-This is like C<spew> with a C<binmode> of C<:unix> for a fast, unbuffered, raw write.
-
-=head2 spew_utf8
-
-    path("foo.txt")->spew_utf8(@data);
-
-This is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
-
-If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on the data
-encoded with C<Unicode::UTF8>.
+C<spew_utf8> is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
+If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on
+the data encoded with C<Unicode::UTF8>.
 
 =head2 stat
 
