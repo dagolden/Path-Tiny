@@ -153,11 +153,12 @@ picky for C<path("/")>.
 
 sub rootdir { path( File::Spec->rootdir ) }
 
-=construct tempfile
+=construct tempfile, tempdir
 
     $temp = Path::Tiny->tempfile( @options );
+    $temp = Path::Tiny->tempdir( @options );
 
-This passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
+C<tempfile> passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
 object with the file name.  The C<TMPDIR> option is enabled by default.
 
 The resulting C<File::Temp> object is cached. When the C<Path::Tiny> object is
@@ -174,6 +175,9 @@ C<TEMPLATE> option and does the right thing.
 The tempfile path object will normalized to have an absolute path, even if
 created in a relative directory using C<DIR>.
 
+C<tempdir> is just like C<tempfile>, except it calls
+C<< File::Temp->newdir >> instead.
+
 =cut
 
 sub tempfile {
@@ -189,14 +193,6 @@ sub tempfile {
     $self->[TEMP] = $temp; # keep object alive while we are
     return $self;
 }
-
-=construct tempdir
-
-    $temp = Path::Tiny->tempdir( @options );
-
-This is just like C<tempfile>, except it calls C<< File::Temp->newdir >> instead.
-
-=cut
 
 sub tempdir {
     my $class = shift;
