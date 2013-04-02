@@ -494,7 +494,9 @@ sub iterator {
         while (@dirs) {
             if ( ref $dirs[0] eq 'Path::Tiny' ) {
                 $current = $dirs[0];
-                opendir( my $dh, $current->[PATH] );
+                my $dh;
+                opendir( $dh, $current->[PATH] )
+                    or _throw( 'opendir', [$dh, $current->[PATH]] );
                 $dirs[0] = $dh;
                 if ( -l $dirs[0] && ! $args->{follow_symlinks} ) {
                     # Symlink attack! It was a real dir, but is now a symlink!
