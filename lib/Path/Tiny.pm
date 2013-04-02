@@ -496,6 +496,11 @@ sub iterator {
                 $current = $dirs[0];
                 opendir( my $dh, $current->[PATH] );
                 $dirs[0] = $dh;
+                if ( -l $dirs[0] && ! $args->{follow_symlinks} ) {
+                    # Symlink attack! It was a real dir, but is now a symlink!
+                    # N.B. we check *after* opendir so we don't have a race
+                    shift @dirs and next;
+                }
             }
             while ( defined( $next = readdir $dirs[0] ) ) {
                 next if $next eq '.' || $next eq '..';
