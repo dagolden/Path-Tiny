@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.018     2013-04-08 12:44:31 America/New_York
+
     [ADDED]
 
     - cwd, rootdir, tempfile and tempdir can now be exported on request
