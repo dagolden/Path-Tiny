@@ -107,21 +107,31 @@ do that?)
 =head2 cwd
 
     $path = Path::Tiny->cwd; # path( Cwd::getcwd )
+    $path = cwd; # optional export
 
 Gives you the absolute path to the current directory as a C<Path::Tiny> object.
 This is slightly faster than C<< path(".")->absolute >>.
 
+C<cwd> may be exported on request and used as a function instead of as a
+method.
+
 =head2 rootdir
 
     $path = Path::Tiny->rootdir; # /
+    $path = rootdir;             # optional export 
 
 Gives you C<< File::Spec->rootdir >> as a C<Path::Tiny> object if you're too
 picky for C<path("/")>.
+
+C<rootdir> may be exported on request and used as a function instead of as a
+method.
 
 =head2 tempfile, tempdir
 
     $temp = Path::Tiny->tempfile( @options );
     $temp = Path::Tiny->tempdir( @options );
+    $temp = tempfile( @options ); # optional export
+    $temp = tempdir( @options );  # optional export
 
 C<tempfile> passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
 object with the file name.  The C<TMPDIR> option is enabled by default.
@@ -142,6 +152,9 @@ created in a relative directory using C<DIR>.
 
 C<tempdir> is just like C<tempfile>, except it calls
 C<< File::Temp->newdir >> instead.
+
+Both C<tempfile> and C<tempdir> may be exported on request and used as
+functions instead of as methods.
 
 =head1 METHODS
 
