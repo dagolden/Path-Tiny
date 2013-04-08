@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - cwd, rootdir, tempfile and tempdir can now be exported on request
+      and used as functions instead of as methods
+
     [FIXED]
 
     - Fixed regression in lines() where it no longer returned count

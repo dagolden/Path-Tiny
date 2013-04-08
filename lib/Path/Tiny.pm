@@ -13,6 +13,7 @@ use File::Spec 3.40 ();
 use Carp ();
 
 our @EXPORT = qw/path/;
+our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
 
 use constant {
     PATH  => 0,
@@ -131,9 +132,13 @@ sub new { shift; path(@_) }
 =construct cwd
 
     $path = Path::Tiny->cwd; # path( Cwd::getcwd )
+    $path = cwd; # optional export
 
 Gives you the absolute path to the current directory as a C<Path::Tiny> object.
 This is slightly faster than C<< path(".")->absolute >>.
+
+C<cwd> may be exported on request and used as a function instead of as a
+method.
 
 =cut
 
@@ -145,9 +150,13 @@ sub cwd {
 =construct rootdir
 
     $path = Path::Tiny->rootdir; # /
+    $path = rootdir;             # optional export 
 
 Gives you C<< File::Spec->rootdir >> as a C<Path::Tiny> object if you're too
 picky for C<path("/")>.
+
+C<rootdir> may be exported on request and used as a function instead of as a
+method.
 
 =cut
 
@@ -157,6 +166,8 @@ sub rootdir { path( File::Spec->rootdir ) }
 
     $temp = Path::Tiny->tempfile( @options );
     $temp = Path::Tiny->tempdir( @options );
+    $temp = tempfile( @options ); # optional export
+    $temp = tempdir( @options );  # optional export
 
 C<tempfile> passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
 object with the file name.  The C<TMPDIR> option is enabled by default.
@@ -178,10 +189,13 @@ created in a relative directory using C<DIR>.
 C<tempdir> is just like C<tempfile>, except it calls
 C<< File::Temp->newdir >> instead.
 
+Both C<tempfile> and C<tempdir> may be exported on request and used as
+functions instead of as methods.
+
 =cut
 
 sub tempfile {
-    my $class = shift;
+    shift if $_[0] eq 'Path::Tiny'; # called as method
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
@@ -195,7 +209,7 @@ sub tempfile {
 }
 
 sub tempdir {
-    my $class = shift;
+    shift if $_[0] eq 'Path::Tiny'; # called as method
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
 
     # File::Temp->newdir demands leading template
