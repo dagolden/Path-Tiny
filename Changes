@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed regression in lines() where it no longer returned count
+      of lines in scalar context
+
 0.017     2013-03-28 16:49:15 America/New_York
 
     [ADDED]

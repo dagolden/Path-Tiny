@@ -69,6 +69,7 @@ subtest "spew -> lines" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     is( join( '', $file->lines ), join( '', _lines ), "lines" );
+    is( scalar $file->lines, my $cnt =()= _lines, "lines (scalar)" );
 };
 
 subtest "spew -> lines (open hint)" => sub {
@@ -87,6 +88,7 @@ subtest "spew -> lines (UTF-8)" => sub {
     my $got = join( '', $file->lines_utf8() );
     is( $got, join( '', _utf8_lines ), "slurp" );
     ok( utf8::is_utf8($got), "is UTF8" );
+    is( scalar $file->lines, my $cnt =()= _utf8_lines, "lines (scalar)" );
 };
 
 subtest "spew -> lines (raw)" => sub {

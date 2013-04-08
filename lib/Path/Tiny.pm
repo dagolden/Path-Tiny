@@ -565,7 +565,7 @@ sub lines {
         return map { chomp; $_ } <$fh>;
     }
     else {
-        return <$fh>;
+        return wantarray ? <$fh> : (my $count =()= <$fh>);
     }
 }
 
