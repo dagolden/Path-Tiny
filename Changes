@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed warning about -l on dirhandle in iterator()
+
 0.018     2013-04-08 12:44:31 America/New_York
 
     [ADDED]

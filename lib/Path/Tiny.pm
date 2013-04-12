@@ -512,9 +512,11 @@ sub iterator {
                 opendir( $dh, $current->[PATH] )
                     or _throw( 'opendir', [$dh, $current->[PATH]] );
                 $dirs[0] = $dh;
-                if ( -l $dirs[0] && ! $args->{follow_symlinks} ) {
+                if ( -l $current->[PATH] && ! $args->{follow_symlinks} ) {
                     # Symlink attack! It was a real dir, but is now a symlink!
-                    # N.B. we check *after* opendir so we don't have a race
+                    # N.B. we check *after* opendir so the attacker has to win
+                    # two races: replace dir with symlink before opendir and
+                    # replace symlink with dir before -l check above
                     shift @dirs and next;
                 }
             }
