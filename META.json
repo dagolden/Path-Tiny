@@ -81,7 +81,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.018"
+         "version" : "0.019"
       }
    },
    "release_status" : "stable",
@@ -96,7 +96,7 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.018",
+   "version" : "0.019",
    "x_contributors" : [
       "Chris Williams <bingos@cpan.org>",
       "George Hartzell <hartzell@cpan.org>",
