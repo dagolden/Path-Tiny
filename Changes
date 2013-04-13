@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - More descriptive error message if copy() fails
+
 0.019     2013-04-12 06:58:18 Europe/London
 
     [FIXED]

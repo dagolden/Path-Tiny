@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.019
+version 0.020
 
 =head1 SYNOPSIS
 
@@ -585,6 +585,10 @@ Chris Williams <bingos@cpan.org>
 =item *
 
 George Hartzell <hartzell@cpan.org>
+
+=item *
+
+Goro Fuji <gfuji@cpan.org>
 
 =item *
 
