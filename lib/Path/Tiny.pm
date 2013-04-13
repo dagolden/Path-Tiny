@@ -395,8 +395,9 @@ Copies a file using L<File::Copy>'s C<copy> function.
 
 # XXX do recursively for directories?
 sub copy {
+    my($self, $dest) = @_;
     require File::Copy;
-    File::Copy::copy( $_[0]->[PATH], "$_[1]" ) or Carp::croak("copy failed: $!");
+    File::Copy::copy( $self->[PATH], $dest ) or Carp::croak("copy failed for $self to $dest: $!");
 }
 
 =method dirname

@@ -236,7 +236,10 @@ my $tmpdir = Path::Tiny->tempdir;
         skip "No exception if run as root", 1 if $> == 0;
         skip "No exception writing to read-only file", 1
           unless exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
-        ok( exception { $file->copy($copy) }, "copy throws error if permission denied" );
+        my $error = exception { $file->copy($copy) };
+        ok( $error,  "copy throws error if permission denied" );
+        like( $error, qr/\Q$file/, "error messages includes the source file name" );
+        like( $error, qr/\Q$copy/, "error messages includes the destination file name" );
     }
 }
 
