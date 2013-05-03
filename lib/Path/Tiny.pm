@@ -849,7 +849,7 @@ a fast, unbuffered, raw read.
 C<slurp_utf8> is like C<slurp> with a C<binmode> of
 C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
 slurp will be done instead and the result decoded with C<Unicode::UTF8>.
-This is is just as strict and is roughly an order of magnitude faster than
+This is just as strict and is roughly an order of magnitude faster than
 using C<:encoding(UTF-8)>.
 
 =cut
