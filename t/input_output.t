@@ -120,6 +120,22 @@ subtest "spew -> lines (count, UTF-8)" => sub {
     is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ), "lines" );
 };
 
+subtest "spew -> lines (count, chomp, UTF-8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my @exp = map { chomp; $_ } _utf8_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1, count => 2 } ) ),
+        join( '', @exp[ 0 .. 1 ] ), "lines" );
+};
+
+subtest "spew -> lines (chomp, UTF-8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my @exp = map { chomp; $_ } _utf8_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1 } ) ),
+        join( '', @exp ), "lines" );
+};
+
 subtest "spew -> lines (count, raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_lines), "spew" );

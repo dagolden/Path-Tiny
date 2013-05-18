@@ -605,7 +605,7 @@ sub lines_utf8 {
         && $args->{chomp}
         && !$args->{count} )
     {
-        return split /\n/, slurp_utf8( $_[0] ); ## no critic
+        return split /\n/, slurp_utf8( $self ); ## no critic
     }
     else {
         $args->{binmode} = ":raw:encoding(UTF-8)";
