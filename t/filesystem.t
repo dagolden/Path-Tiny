@@ -61,9 +61,12 @@ ok $dir->is_dir, "It's a directory!";
 $file = $dir->child('foo.x');
 $file->touch;
 ok -e $file;
-utime time - 10, time - 10, $file;
+my $epoch = time - 10;
+utime $epoch, $epoch, $file;
 $file->touch;
-ok( $file->stat->mtime > ( time - 10 ), "touch sets utime" );
+ok( $file->stat->mtime > $epoch, "touch sets utime as current time" );
+$file->touch($epoch);
+ok( $file->stat->mtime == $epoch, "touch sets utime as 10 secs before" );
 
 {
     my @files = $dir->children;
