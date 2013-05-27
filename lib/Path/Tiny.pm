@@ -978,9 +978,11 @@ sub stringify { $_[0]->[PATH] }
 =method touch
 
     path("foo.txt")->touch;
+    path("foo.txt")->touch($epoch_secs);
 
 Like the Unix C<touch> utility.  Creates the file if it doesn't exist, or else
-changes the modification and access times to the current time.
+changes the modification and access times to the current time.  If the first
+argument is the epoch seconds then it will be used.
 
 Returns the path object so it can be easily chained with spew:
 
@@ -989,15 +991,14 @@ Returns the path object so it can be easily chained with spew:
 =cut
 
 sub touch {
-    my ($self) = @_;
-    if ( -e $self->[PATH] ) {
-        my $now = time();
-        utime $now, $now, $self->[PATH] or _throw( 'utime', [ $now, $now, $self->[PATH] ] );
-    }
-    else {
+    my ( $self, $epoch ) = @_;
+    if ( ! -e $self->[PATH] ) {
         my $fh = $self->openw;
         close $fh or _throw( 'close', [$fh] );
     }
+    $epoch = defined($epoch) ? $epoch : time();
+    utime $epoch, $epoch, $self->[PATH]
+        or _throw( 'utime', [ $epoch, $epoch, $self->[PATH] ] );
     return $self;
 }
 
