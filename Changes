@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - The 'touch' method can now take an epoch secs argument
+
 0.021     2013-05-17 22:53:18 America/New_York
 
     [FIXED]
