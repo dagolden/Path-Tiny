@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Removing dangling symlinks now works
+
 0.022     2013-05-28 11:57:15 America/New_York
 
     [ADDED]
