@@ -81,7 +81,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.023"
+         "version" : "0.024"
       }
    },
    "release_status" : "stable",
@@ -96,14 +96,13 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.023",
+   "version" : "0.024",
    "x_contributors" : [
       "Chris Williams <bingos@cpan.org>",
       "David Steinbrunner <dsteinbrunner@pobox.com>",
       "George Hartzell <hartzell@cpan.org>",
       "Goro Fuji <gfuji@cpan.org>",
       "Karen Etheridge <ether@cpan.org>",
-      "Keedi Kim <keedi.k@gmail.com>",
       "Keedi Kim <keedi@cpan.org>",
       "Michael G. Schwern <mschwern@cpan.org>"
    ]
