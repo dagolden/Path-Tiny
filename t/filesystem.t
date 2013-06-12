@@ -259,6 +259,39 @@ SKIP: {
     eval { symlink $file => $link };
     skip "symlink unavailable", 1 if $@;
     ok( $link->lstat->size, "lstat" );
+
+    ok $link->remove, 'remove symbolic link';
+    ok $file->remove;
+
+    $file = $newtmp->child("foo.txt");
+    $link = $newtmp->child("bar.txt");
+    $file->spew("Hello World\n");
+    ok symlink $file => $link;
+
+    ok $file->remove;
+    ok $link->remove, 'remove broken symbolic link';
+
+    my $dir = $newtmp->child('foo');
+    $link = $newtmp->child("bar");
+    ok $dir->mkpath;
+    ok -d $dir;
+    $file = $dir->child("baz.txt");
+    $file->spew("Hello World\n");
+    ok symlink $dir => $link;
+
+    ok $link->remove_tree, 'remove_tree symbolic link';
+    ok $dir->remove_tree;
+
+    my $dir = $newtmp->child('foo');
+    $link = $newtmp->child("bar");
+    ok $dir->mkpath;
+    ok -d $dir;
+    $file = $dir->child("baz.txt");
+    $file->spew("Hello World\n");
+    ok symlink $dir => $link;
+
+    ok $dir->remove_tree;
+    ok $link->remove_tree, 'remove_tree broken symbolic link';
 }
 
 # We don't have subsume so comment these out.  Keep in case we
