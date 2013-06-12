@@ -791,7 +791,7 @@ false rather than throwing an exception.
 sub remove {
     my $self = shift;
 
-    return 0 if !-e $self->[PATH];
+    return 0 if !-e $self->[PATH] && !-l $self->[PATH];
 
     return unlink $self->[PATH] || _throw( 'unlink', [ $self->[PATH] ] );
 }
@@ -817,7 +817,7 @@ C<rmdir> function instead.
 
 sub remove_tree {
     my ( $self, $args ) = @_;
-    return 0 unless -e $self->[PATH];
+    return 0 if !-e $self->[PATH] && !-l $self->[PATH];
     $args = {} unless ref $args eq 'HASH';
     my $err;
     $args->{err}  = \$err unless defined $args->{err};
