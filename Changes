@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.024     2013-06-17 18:12:36 America/New_York
+
     [FIXED]
 
     - Win32 pseudo-forks don't load threads.pm, so we do that
