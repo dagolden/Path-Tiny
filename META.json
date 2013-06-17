@@ -57,6 +57,7 @@
             "overload" : "0",
             "perl" : "5.008001",
             "strict" : "0",
+            "threads" : "0",
             "warnings" : "0"
          }
       },
