@@ -282,7 +282,7 @@ SKIP: {
     ok $link->remove_tree, 'remove_tree symbolic link';
     ok $dir->remove_tree;
 
-    my $dir = $newtmp->child('foo');
+    $dir = $newtmp->child('foo');
     $link = $newtmp->child("bar");
     ok $dir->mkpath;
     ok -d $dir;
