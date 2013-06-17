@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Win32 pseudo-forks don't load threads.pm, so we do that
+      in CLONE to ensure we get the thread ID
+
 0.023     2013-06-12 07:18:31 America/New_York
 
     [FIXED]
