@@ -403,6 +403,24 @@ sub copy {
       or Carp::croak("copy failed for $self to $dest: $!");
 }
 
+=method digest
+
+    $obj = path("/tmp/foo.txt")->digest;        # SHA-256
+    $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
+
+Returns a hexadecimal digest for a file.  Any arguments are passed to the
+constructor for L<Digest> to select an algorithm.  If no arguments are given,
+the default is SHA-256.
+
+=cut
+
+sub digest {
+    my ($self, $alg, @args) = @_;
+    $alg = 'SHA-256' unless defined $alg;
+    require Digest;
+    return Digest->new($alg, @args)->add( $self->slurp_raw )->hexdigest;
+}
+
 =method dirname
 
     $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
