@@ -927,7 +927,12 @@ sub spew {
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     flock( $fh, Fcntl::LOCK_UN() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_UN() ] );
     close $fh or _throw( 'close', [$fh] );
-    return $temp->move( $self->[PATH] );
+
+    # spewing need to follow the link
+    # and replace the destination instead
+    my $resolved_path = $self->[PATH];
+    $resolved_path = readlink $resolved_path while -l $resolved_path;
+    return $temp->move($resolved_path);
 }
 
 sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
