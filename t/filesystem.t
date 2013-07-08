@@ -292,6 +292,18 @@ SKIP: {
 
     ok $dir->remove_tree;
     ok $link->remove_tree, 'remove_tree broken symbolic link';
+
+    $file = $newtmp->child("foo.txt");
+    $link = $newtmp->child("bar.txt");
+    my $link2 = $newtmp->child("baz.txt");
+    $file->spew("Hello World\n");
+    ok symlink $file => $link;
+    ok symlink $link => $link2;
+    $link2->spew("Hello Perl\n");
+    ok -l $link2, 'path is still symbolic link after spewing';
+    is readlink($link2), $link, 'symbolic link is available after spewing';
+    is readlink($link), $file, 'symbolic link is available after spewing';
+    is $file->slurp, "Hello Perl\n", 'spewing follows the link and replace the destination instead';
 }
 
 # We don't have subsume so comment these out.  Keep in case we
