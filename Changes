@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Spew to an existing symlink now atomically replaces
+      the resolved destination, not the symlink
+
 0.024     2013-06-17 18:12:36 America/New_York
 
     [FIXED]
