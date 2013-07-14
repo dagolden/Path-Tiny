@@ -544,6 +544,8 @@ sub iterator {
     @contents = path("/tmp/foo.txt")->lines_raw;
     @contents = path("/tmp/foo.txt")->lines_utf8;
 
+    @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
+
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
 is provided, it will be set on the handle prior to reading.  If C<count> is
