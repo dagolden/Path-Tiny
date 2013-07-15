@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.026     2013-07-14 21:25:22 America/New_York
+
     [FIXED]
 
     - Fixed bug where lines() with a count longer than the
