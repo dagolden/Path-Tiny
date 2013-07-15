@@ -105,6 +105,20 @@ subtest "spew -> lines (count)" => sub {
         "lines" );
 };
 
+subtest "spew -> lines (count, less than)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my @exp = _lines;
+    is( join( '', $file->lines( { count => 1 } ) ), $exp[0], "lines" );
+};
+
+subtest "spew -> lines (count, more than)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my @exp = _lines;
+    is( join( '|', $file->lines( { count => 3 } ) ), join("|",@exp), "lines" );
+};
+
 subtest "spew -> lines (count, chomp)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
