@@ -12,29 +12,19 @@ my $file = $dir->child('foo.bin');
 my $chunk = pack("Z*", "Hello Path::Tiny\nThis is packed binary string\n");
 ok( $file->spew_raw($chunk), "created test file with packed binary string" );
 
-# Digest::SHA was first released with perl v5.9.3.
-# And Digest::SHA2 is not a core module.
-SKIP: {
-    eval { require Digest::SHA; 1 };
-    if ($@) {
-        eval { require Digest::SHA2; 1 };
-        skip "cannot find neither Digest::SHA nor Digest::SHA2", 1 if $@;
-    }
+is(
+    $file->digest,
+    'a98e605049836e8adb36d351abb95a09e9e5e200703576ecdaec0e697d17d626',
+    'digest SHA-256 (hardcoded)',
+);
 
-    is(
-        $file->digest,
-        'a98e605049836e8adb36d351abb95a09e9e5e200703576ecdaec0e697d17d626',
-        'digest SHA-256 (hardcoded)',
-    );
-
-    my $sha = Digest->new('SHA-256');
-    $sha->add($chunk);
-    is(
-        $file->digest,
-        $sha->hexdigest,
-        'digest SHA-256',
-    );
-}
+my $sha = Digest->new('SHA-256');
+$sha->add($chunk);
+is(
+    $file->digest,
+    $sha->hexdigest,
+    'digest SHA-256',
+);
 
 is(
     $file->digest('MD5'),
