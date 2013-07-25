@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.026
+version 0.027
 
 =head1 SYNOPSIS
 
@@ -226,6 +226,15 @@ within a directory.  Excludes "." and ".." automatically.
 
 Copies a file using L<File::Copy>'s C<copy> function.
 
+=head2 digest
+
+    $obj = path("/tmp/foo.txt")->digest;        # SHA-256
+    $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
+
+Returns a hexadecimal digest for a file.  Any arguments are passed to the
+constructor for L<Digest> to select an algorithm.  If no arguments are given,
+the default is SHA-256.
+
 =head2 dirname
 
     $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
@@ -290,6 +299,8 @@ L<Path::Iterator::Rule>.
     @contents = path("/tmp/foo.txt")->lines(\%options);
     @contents = path("/tmp/foo.txt")->lines_raw;
     @contents = path("/tmp/foo.txt")->lines_utf8;
+
+    @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
@@ -587,6 +598,10 @@ Chris Williams <bingos@cpan.org>
 =item *
 
 David Steinbrunner <dsteinbrunner@pobox.com>
+
+=item *
+
+Gabor Szabo <szabgab@gmail.com>
 
 =item *
 

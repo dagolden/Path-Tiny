@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added the 'digest' method to produce a hexadecimal SHA-256
+      (or user-specified) digest of a file
+
 0.026     2013-07-14 21:25:22 America/New_York
 
     [FIXED]
