@@ -551,15 +551,36 @@ L<MooseX::Types::Path::Tiny>.
 These are other file/path utilities, which may offer a different feature
 set than C<Path::Tiny>.
 
-* L<File::Fu>
-* L<IO::All>
-* L<Path::Class>
+=over 4
+
+=item *
+
+L<File::Fu>
+
+=item *
+
+L<IO::All>
+
+=item *
+
+L<Path::Class>
+
+=back
 
 These iterators may be slightly faster than the recursive iterator in
 C<Path::Tiny>:
 
-* L<Path::Iterator::Rule>
-* L<File::Next>
+=over 4
+
+=item *
+
+L<Path::Iterator::Rule>
+
+=item *
+
+L<File::Next>
+
+=back
 
 There are probably comparable, non-Tiny tools.  Let me know if you want me to
 add a module to the list.
@@ -601,7 +622,7 @@ David Steinbrunner <dsteinbrunner@pobox.com>
 
 =item *
 
-Gabor Szabo <szabgab@gmail.com>
+Gabor Szabo <szabgab@cpan.org>
 
 =item *
 

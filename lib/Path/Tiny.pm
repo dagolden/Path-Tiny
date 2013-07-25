@@ -1184,6 +1184,7 @@ L<MooseX::Types::Path::Tiny>.
 These are other file/path utilities, which may offer a different feature
 set than C<Path::Tiny>.
 
+=for :list
 * L<File::Fu>
 * L<IO::All>
 * L<Path::Class>
@@ -1191,6 +1192,7 @@ set than C<Path::Tiny>.
 These iterators may be slightly faster than the recursive iterator in
 C<Path::Tiny>:
 
+=for :list
 * L<Path::Iterator::Rule>
 * L<File::Next>
 
