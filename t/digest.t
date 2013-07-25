@@ -6,11 +6,11 @@ use Test::More 0.96;
 use Path::Tiny;
 use Digest;
 
-my $file = path('foo.bin');
-ok $file;
+my $dir = Path::Tiny->tempdir;
+my $file = $dir->child('foo.bin');
 
 my $chunk = pack("Z*", "Hello Path::Tiny\nThis is packed binary string\n");
-ok( $file->spew_raw($chunk) );
+ok( $file->spew_raw($chunk), "created test file with packed binary string" );
 
 # Digest::SHA was first released with perl v5.9.3.
 # And Digest::SHA2 is not a core module.
