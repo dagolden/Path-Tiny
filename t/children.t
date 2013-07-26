@@ -29,9 +29,9 @@ cmp_deeply(
     "children correct with Regexp argument"
 );
 
-path($tempdir)->child('apple')->spew_raw("1\n2\n3\n4\n5\n");
-path($tempdir)->child('banana')->spew_raw("1\n2\n");
-path($tempdir)->child('carrot')->spew_raw("1\n2\n3\n");
+path($tempdir)->child('apple')->spew_raw("1$/2$/3$/4$/5$/");
+path($tempdir)->child('banana')->spew_raw("1$/2$/");
+path($tempdir)->child('carrot')->spew_raw("1$/2$/3$/");
 my $coderef = sub {
     my ( $parent, $child ) = @_;
     return 1 if $parent->child($child)->lines > 2;
