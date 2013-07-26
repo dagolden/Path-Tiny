@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::Deep '!blessed';
+use File::Basename ();
 use File::Temp ();
 use File::Spec::Unix;
 
@@ -20,6 +21,29 @@ cmp_deeply(
     [ sort @expected ],
     "children correct"
 );
+
+my $regexp = qr/.a/;
+cmp_deeply(
+    [ sort { $a cmp $b } path($tempdir)->children($regexp) ],
+    [ sort grep { my $child = File::Basename::basename($_); $child =~ /$regexp/ } @expected ],
+    "children correct with Regexp argument"
+);
+
+path($tempdir)->child('apple')->spew_raw("1\n2\n3\n4\n5\n");
+path($tempdir)->child('banana')->spew_raw("1\n2\n");
+path($tempdir)->child('carrot')->spew_raw("1\n2\n3\n");
+my $coderef = sub {
+    my ( $parent, $child ) = @_;
+    return 1 if $parent->child($child)->lines > 2;
+};
+cmp_deeply(
+    [ sort { $a cmp $b } path($tempdir)->children($coderef) ],
+    [ sort grep { $coderef->( path($tempdir), File::Basename::basename($_) ) } @expected ],
+    "children correct with code reference argument"
+);
+
+eval { path($tempdir)->children(q{}) };
+like $@, qr/Invalid argument for children()/, 'children with invalid argument';
 
 done_testing;
 # COPYRIGHT
