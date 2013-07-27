@@ -33,12 +33,18 @@ path($tempdir)->child('apple')->spew_raw("1$/2$/3$/4$/5$/");
 path($tempdir)->child('banana')->spew_raw("1$/2$/");
 path($tempdir)->child('carrot')->spew_raw("1$/2$/3$/");
 my $coderef = sub {
-    my ( $parent, $child ) = @_;
-    return 1 if $parent->child($child)->lines > 2;
+    my $parent = shift;
+    return 1 if $parent->child($_)->lines > 2;
 };
 cmp_deeply(
     [ sort { $a cmp $b } path($tempdir)->children($coderef) ],
-    [ sort grep { $coderef->( path($tempdir), File::Basename::basename($_) ) } @expected ],
+    [
+        sort
+        grep {
+            local $_ = File::Basename::basename($_);
+            $coderef->( path($tempdir) );
+        } @expected
+    ],
     "children correct with code reference argument"
 );
 

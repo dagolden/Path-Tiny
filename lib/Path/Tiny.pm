@@ -372,7 +372,7 @@ sub child {
 
     @paths = path("/tmp")->children;
     @paths = path("/tmp")->children( qr/\.txt$/ );
-    @paths = path("/tmp")->children( sub { -s $_[1] > 100 && $_[1] =~ /^\./ } );
+    @paths = path("/tmp")->children( sub { /^\./ && -f path("$_[0]/$_") } );
 
 Returns a list of C<Path::Tiny> objects for all file and directories
 within a directory.  Excludes "." and ".." automatically.
@@ -380,9 +380,9 @@ Optionally takes a argument C<qr//> or a code reference to filter the result.
 If C<qr//> is provided, returns the objects which are matched by given
 regular expression.  If code reference is provided, uses it as test code
 and its return value will be used to filter the objects.  In the code
-reference you can access the original C<Path::Tiny> object as C<$_[0]>
-and child name string as C<$_[1]>.  C<$_[1]> is not a C<Path::Tiny> object
-due to avoid some object creation/stringification overhead.
+reference you can access child name string as C<$_>, the original C<Path::Tiny>
+object as C<$_[0]>.  C<$_> is not a C<Path::Tiny> object but a string due to
+avoid some object creation/stringification overhead.
 
 =cut
 
@@ -397,7 +397,10 @@ sub children {
         @children = grep { $_ ne '.' && $_ ne '..' } @children;
     }
     elsif ( $filter && ref($filter) eq 'CODE' ) {
-        @children = grep { $_ ne '.' && $_ ne '..' && $filter->( $self, $_ ) } @children;
+        @children = grep {
+            local $_ = $_;
+            $_ ne '.' && $_ ne '..' && $filter->($self);
+        } @children;
     }
     elsif ( $filter && ref($filter) eq 'Regexp' ) {
         @children = grep { $_ ne '.' && $_ ne '..' && /$filter/ } @children;
