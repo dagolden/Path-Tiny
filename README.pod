@@ -226,7 +226,7 @@ names that match the given regular expression.  Only the base name is used
 for matching:
 
     @paths = path("/tmp")->children( qr/^foo/ );
-    # matches like the glob /tmp/foo*
+    # matches children like the glob foo*
 
 =head2 copy
 
