@@ -29,27 +29,9 @@ cmp_deeply(
     "children correct with Regexp argument"
 );
 
-path($tempdir)->child('apple')->spew_raw("1$/2$/3$/4$/5$/");
-path($tempdir)->child('banana')->spew_raw("1$/2$/");
-path($tempdir)->child('carrot')->spew_raw("1$/2$/3$/");
-my $coderef = sub {
-    my $parent = shift;
-    return 1 if $parent->child($_)->lines > 2;
-};
-cmp_deeply(
-    [ sort { $a cmp $b } path($tempdir)->children($coderef) ],
-    [
-        sort
-        grep {
-            local $_ = File::Basename::basename($_);
-            $coderef->( path($tempdir) );
-        } @expected
-    ],
-    "children correct with code reference argument"
-);
-
-eval { path($tempdir)->children(q{}) };
-like $@, qr/Invalid argument for children()/, 'children with invalid argument';
+my $arrayref = [];
+eval { path($tempdir)->children($arrayref) };
+like $@, qr/Invalid argument '\Q$arrayref\E' for children()/, 'children with invalid argument';
 
 done_testing;
 # COPYRIGHT
