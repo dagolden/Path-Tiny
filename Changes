@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.029     2013-08-19 11:52:24 America/New_York
+
     [FIXED]
 
     - On Win32, "C:/" no longer is changed to "C:".  Also, "C:" is
