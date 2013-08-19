@@ -44,6 +44,12 @@ sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
 }
 
+# notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
+my $SLASH = qr{[\\/]};
+my $NOTSLASH = qr{[^\\/]};
+my $IS_ROOT = $^O ne 'MSWin32' ? qr{^/$}
+  : qr[^(?: $SLASH{2} $NOTSLASH $SLASH $NOTSLASH $SLASH | [a-z]:$SLASH | $SLASH )$]ix;
+
 # we do our own autodie::exceptions to avoid wrapping built-in functions
 sub _throw {
     my ( $function, $args ) = @_;
@@ -116,7 +122,7 @@ sub path {
         my ($homedir) = glob($1); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
-    $path =~ s{/$}{} if $path ne "/"; # hack to make splitpath give us a basename
+    $path =~ s{/$}{} if $path !~ $IS_ROOT; # hack to make splitpath give us a basename
     bless [ $path, $cpath ], __PACKAGE__;
 }
 
