@@ -59,21 +59,17 @@ sub _throw {
 # cheapo option validation
 sub _get_args {
     my ( $raw, @valid ) = @_;
-    Carp::croak("Options for @{[_called_as()]} must be a hash reference")
+    my ( undef, undef, undef, $called_as ) = caller(1);
+    $called_as =~ s{^.*::}{};
+    Carp::croak("Options for $called_as must be a hash reference")
       if defined($raw) && ref($raw) ne 'HASH';
     my $cooked = {};
     for my $k (@valid) {
         $cooked->{$k} = delete $raw->{$k} if exists $raw->{$k};
     }
-    Carp::croak( "Invalid option(s) for @{[_called_as()]}: " . join( ", ", keys %$raw ) )
+    Carp::croak( "Invalid option(s) for $called_as: " . join( ", ", keys %$raw ) )
       if keys %$raw;
     return $cooked;
-}
-
-sub _called_as {
-    my ( undef, undef, undef, $method ) = caller(2);
-    $method =~ s{^.*::}{};
-    return $method;
 }
 
 #--------------------------------------------------------------------------#
