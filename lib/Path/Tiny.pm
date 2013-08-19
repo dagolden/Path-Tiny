@@ -46,7 +46,7 @@ sub _check_UU {
 
 # notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
 my $SLASH = qr{[\\/]};
-my $NOTSLASH = qr{[^\\/]};
+my $NOTSLASH = qr{[^\\/]+};
 my $DRV_VOL = qr{[a-z]:}i;
 my $UNC_VOL = qr{$SLASH $SLASH $NOTSLASH $SLASH $NOTSLASH}x;
 my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
@@ -135,11 +135,6 @@ sub path {
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/];                               # unix convention enforced
-    if ( $path =~ m{^(~[^/]*).*} ) {                  # expand a tilde
-        my ($homedir) = glob($1); # glob without list context == heisenbug!
-        $path =~ s{^(~[^/]*)}{$homedir};
-    }
     if ( $^O eq 'MSWin32' ) {
         $path = _normalize_win32_path($path)
     }
@@ -147,6 +142,11 @@ sub path {
         # hack to make splitpath give us a basename; might not be necessary
         # since canonpath should do this for non-root paths, but I don't trust it
         $path =~ s{/$}{} if $path ne '/';
+    }
+    $path =~ tr[\\][/];                               # unix convention enforced
+    if ( $path =~ m{^(~[^/]*).*} ) {                  # expand a tilde
+        my ($homedir) = glob($1); # glob without list context == heisenbug!
+        $path =~ s{^(~[^/]*)}{$homedir};
     }
     bless [ $path, $cpath ], __PACKAGE__;
 }

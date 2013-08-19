@@ -5,6 +5,7 @@ use warnings;
 use Test::More 0.96;
 
 use Path::Tiny;
+use Cwd;
 
 my $IS_WIN32 = $^O eq 'MSWin32';
 
@@ -68,7 +69,6 @@ my @win32_tests = (
     [ "path('/', '..\\')",          '/' ],
     [ "path('\\', '../')",          '/' ],
     [ "path('\\', '..\\')",         '/' ],
-    [ "path('//d1','d2')",          '//d1/d2' ],
     [ "path('\\d1\\','d2')",        '/d1/d2' ],
     [ "path('\\d1','d2')",          '/d1/d2' ],
     [ "path('\\d1','\\d2')",        '/d1/d2' ],
@@ -79,7 +79,7 @@ my @win32_tests = (
     [ "path('A:/d1','d2','d3','')", 'A:/d1/d2/d3' ],
     #[ "path('A:/d1','B:/d2','d3','')", 'A:/d1/d2/d3'     ],
     [ "path('A:/d1','B:/d2','d3','')", 'A:/d1/B:/d2/d3' ],
-    [ "path('A:/')",                   'A:' ],
+    [ "path('A:/')",                   'A:/' ],
     [ "path('\\', 'foo')",             '/foo' ],
     [ "path('A:', 'foo')",             'A:/foo' ],
     [ "path('a','b','c')",             'a/b/c' ],
@@ -89,9 +89,9 @@ my @win32_tests = (
     [ "path('.\\c')",                  'c' ],
     [ "path('a/..','../b')",           '../b' ],
     [ "path('A:', 'foo')",             'A:/foo' ],
-    [ "path('a:')",                    'A:' ],
+    [ "path('a:/')",                    'A:/' ],
     [ "path('A:f')",                   'A:f' ],
-    [ "path('A:/')",                   'A:' ],
+    [ "path('A:/')",                   'A:/' ],
     [ "path('a\\..\\..\\b\\c')",       '../b/c' ],
     [ "path('//a\\b//c')",             '//a/b/c' ],
     [ "path('/a/..../c')",             '/a/..../c' ],
@@ -111,6 +111,12 @@ my @win32_tests = (
     [ "path('/../')",                  '/' ],
     [ "path('/../')",                  '/' ],
     [ "path('d1/../foo')",             'foo' ],
+    [ "path('C:')",                    path(Cwd::getcwd("C:"))],
+    [ "path('\\\\server\\share\\')",   '//server/share/'],
+    [ "path('\\\\server\\share')",     '//server/share/'],
+    [ "path('//server/share/')",       '//server/share/'],
+    [ "path('//server/share')",        '//server/share/'],
+    [ "path('//d1','d2')",             '//d1/d2/' ],
 );
 
 # XXX not sure how to adapt this sanely for use with Path::Tiny testing, so
