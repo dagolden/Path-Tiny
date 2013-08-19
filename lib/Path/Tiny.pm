@@ -126,6 +126,10 @@ is a tilde followed by a user name then the component will be replaced with
 output of C<glob('~username')>.  Behaviour for non-existent users depends on
 the output of C<glob> on the system.
 
+On Windows, if the path consists of a drive identifier without a path component
+(C<C:> or C<D:>), it will be expanded to the absolute path of the current
+directory on that volume using C<Cwd::getdcwd()>.
+
 =cut
 
 sub path {

@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.028
+version 0.029
 
 =head1 SYNOPSIS
 
@@ -96,6 +96,10 @@ replaced with the output of C<glob('~')>.  If the first component of the path
 is a tilde followed by a user name then the component will be replaced with
 output of C<glob('~username')>.  Behaviour for non-existent users depends on
 the output of C<glob> on the system.
+
+On Windows, if the path consists of a drive identifier without a path component
+(C<C:> or C<D:>), it will be expanded to the absolute path of the current
+directory on that volume using C<Cwd::getdcwd()>.
 
 =head2 new
 

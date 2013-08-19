@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - On Win32, "C:/" no longer is changed to "C:".  Also, "C:" is
+      converted to the absolute path of cwd on the "C:" volume.  UNC paths
+      ("//server/share/") now retain their trailing slash to correctly
+      distinguish volume and directory paths when split
+
 0.028     2013-08-14 13:12:49 America/New_York
 
     [ADDED]
