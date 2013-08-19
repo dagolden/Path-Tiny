@@ -45,22 +45,22 @@ sub _check_UU {
 }
 
 # notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
-my $SLASH = qr{[\\/]};
-my $NOTSLASH = qr{[^\\/]+};
-my $DRV_VOL = qr{[a-z]:}i;
-my $UNC_VOL = qr{$SLASH $SLASH $NOTSLASH $SLASH $NOTSLASH}x;
+my $SLASH      = qr{[\\/]};
+my $NOTSLASH   = qr{[^\\/]+};
+my $DRV_VOL    = qr{[a-z]:}i;
+my $UNC_VOL    = qr{$SLASH $SLASH $NOTSLASH $SLASH $NOTSLASH}x;
 my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 
 sub _normalize_win32_path {
     my ($path) = @_;
-    if ( $path =~ /^$DRV_VOL$/) {
+    if ( $path =~ /^$DRV_VOL$/ ) {
         require Cwd;
         my $fullpath = Cwd::getdcwd($path); # C: -> C:\some\cwd
         # getdcwd on non-existent drive returns empty string
         $path = length $fullpath ? $fullpath : $path . "/";
     }
     elsif ( $path =~ /^$UNC_VOL$/ ) {
-        $path .= "/"; # canonpath currently strips it and we want it
+        $path .= "/";                       # canonpath currently strips it and we want it
     }
     # hack to make splitpath give us a basename; might not be necessary
     # since canonpath should do this for non-root paths, but I don't trust it
@@ -83,7 +83,7 @@ sub _throw {
 # cheapo option validation
 sub _get_args {
     my ( $raw, @valid ) = @_;
-    if (defined($raw) && ref($raw) ne 'HASH') {
+    if ( defined($raw) && ref($raw) ne 'HASH' ) {
         my ( undef, undef, undef, $called_as ) = caller(1);
         $called_as =~ s{^.*::}{};
         Carp::croak("Options for $called_as must be a hash reference");
@@ -92,7 +92,7 @@ sub _get_args {
     for my $k (@valid) {
         $cooked->{$k} = delete $raw->{$k} if exists $raw->{$k};
     }
-    if (keys %$raw) {
+    if ( keys %$raw ) {
         my ( undef, undef, undef, $called_as ) = caller(1);
         $called_as =~ s{^.*::}{};
         Carp::croak( "Invalid option(s) for $called_as: " . join( ", ", keys %$raw ) );
@@ -140,16 +140,16 @@ sub path {
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     if ( $^O eq 'MSWin32' ) {
-        $path = _normalize_win32_path($path)
+        $path = _normalize_win32_path($path);
     }
     else {
         # hack to make splitpath give us a basename; might not be necessary
         # since canonpath should do this for non-root paths, but I don't trust it
         $path =~ s{/$}{} if $path ne '/';
     }
-    $path =~ tr[\\][/];                               # unix convention enforced
-    if ( $path =~ m{^(~[^/]*).*} ) {                  # expand a tilde
-        my ($homedir) = glob($1); # glob without list context == heisenbug!
+    $path =~ tr[\\][/]; # unix convention enforced
+    if ( $path =~ m{^(~[^/]*).*} ) { # expand a tilde
+        my ($homedir) = glob($1);    # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
     bless [ $path, $cpath ], __PACKAGE__;
@@ -468,10 +468,10 @@ the default is SHA-256.
 =cut
 
 sub digest {
-    my ($self, $alg, @args) = @_;
+    my ( $self, $alg, @args ) = @_;
     $alg = 'SHA-256' unless defined $alg;
     require Digest;
-    return Digest->new($alg, @args)->add( $self->slurp_raw )->hexdigest;
+    return Digest->new( $alg, @args )->add( $self->slurp_raw )->hexdigest;
 }
 
 =method dirname
@@ -651,7 +651,7 @@ sub lines {
     my $chomp = $args->{chomp};
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
-        my (@result, $counter);
+        my ( @result, $counter );
         while ( my $line = <$fh> ) {
             chomp $line if $chomp;
             push @result, $line;
