@@ -47,8 +47,26 @@ sub _check_UU {
 # notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
 my $SLASH = qr{[\\/]};
 my $NOTSLASH = qr{[^\\/]};
-my $IS_ROOT = $^O ne 'MSWin32' ? qr{^/$}
-  : qr[^(?: $SLASH{2} $NOTSLASH $SLASH $NOTSLASH $SLASH | [a-z]:$SLASH | $SLASH )$]ix;
+my $DRV_VOL = qr{[a-z]:}i;
+my $UNC_VOL = qr{$SLASH $SLASH $NOTSLASH $SLASH $NOTSLASH}x;
+my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
+
+sub _normalize_win32_path {
+    my ($path) = @_;
+    if ( $path =~ /^$DRV_VOL$/) {
+        require Cwd;
+        my $fullpath = Cwd::getdcwd($path); # C: -> C:\some\cwd
+        # getdcwd on non-existent drive returns empty string
+        $path = length $fullpath ? $fullpath : $path . "/";
+    }
+    elsif ( $path =~ /^$UNC_VOL$/ ) {
+        $path .= "/"; # canonpath currently strips it and we want it
+    }
+    # hack to make splitpath give us a basename; might not be necessary
+    # since canonpath should do this for non-root paths, but I don't trust it
+    $path =~ s{/$}{} if $path !~ /^$WIN32_ROOT$/;
+    return $path;
+}
 
 # we do our own autodie::exceptions to avoid wrapping built-in functions
 sub _throw {
@@ -122,7 +140,14 @@ sub path {
         my ($homedir) = glob($1); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
-    $path =~ s{/$}{} if $path !~ $IS_ROOT; # hack to make splitpath give us a basename
+    if ( $^O eq 'MSWin32' ) {
+        $path = _normalize_win32_path($path)
+    }
+    else {
+        # hack to make splitpath give us a basename; might not be necessary
+        # since canonpath should do this for non-root paths, but I don't trust it
+        $path =~ s{/$}{} if $path ne '/';
+    }
     bless [ $path, $cpath ], __PACKAGE__;
 }
 
