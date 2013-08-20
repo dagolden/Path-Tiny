@@ -111,7 +111,8 @@ my @win32_tests = (
     [ "path('/../')",                  '/' ],
     [ "path('/../')",                  '/' ],
     [ "path('d1/../foo')",             'foo' ],
-    [ "path('C:')",                    path(Cwd::getcwd("C:"))],
+    # if there's no C drive, getdcwd will probably return '', so fake it
+    [ "path('C:')",                    path(Cwd::getdcwd("C:") || "C:/")],
     [ "path('\\\\server\\share\\')",   '//server/share/'],
     [ "path('\\\\server\\share')",     '//server/share/'],
     [ "path('//server/share/')",       '//server/share/'],
