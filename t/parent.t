@@ -20,14 +20,40 @@ sub canonical {
 }
 
 my @cases = (
-    "absolute" => [ "/foo/bar" => "/foo" => "/" => "/" ],
-    "relative" =>
-      [ "foo/bar/baz" => "foo/bar" => "foo" => "." => ".." => "../.." => "../../.." ],
-    "absolute with .." =>
-      [ "/foo/bar/../baz" => "/foo/bar/.." => "/foo/bar/../.." => "/foo/bar/../../.." ],
-    "relative with .." =>
-      [ "foo/bar/../baz" => "foo/bar/.." => "foo/bar/../.." => "foo/bar/../../.." ],
-    "relative with leading .." => [ "../foo/bar" => "../foo" => ".." => "../.." ],
+    #<<< No perltidy
+    "absolute"
+        => [ "/foo/bar" => "/foo" => "/" => "/" ],
+
+    "relative"
+        => [ "foo/bar/baz" => "foo/bar" => "foo" => "." => ".." => "../.." => "../../.." ],
+
+    "absolute with .."
+        => [ "/foo/bar/../baz" => "/foo/bar/.." => "/foo/bar/../.." => "/foo/bar/../../.." ],
+
+    "relative with .."
+        => [ "foo/bar/../baz" => "foo/bar/.." => "foo/bar/../.." => "foo/bar/../../.." ],
+
+    "relative with leading .."
+        => [ "../foo/bar" => "../foo" => ".." => "../.." ],
+
+    "absolute with internal dots"
+        => [ "/foo..bar/baz..bam" => "/foo..bar" => "/" ],
+
+    "relative with internal dots"
+        => [ "foo/bar..baz/wib..wob" => "foo/bar..baz" => "foo" => "." => ".." ],
+
+    "absolute with leading dots"
+        => [ "/..foo/..bar" => "/..foo" => "/" ],
+
+    "relative with leading dots"
+        => [ "..foo/..bar/..wob" => "..foo/..bar" => "..foo" => "." => ".." ],
+
+    "absolute with trailing dots"
+        => [ "/foo../bar.." => "/foo.." => "/" ],
+
+    "relative with trailing dots"
+        => [ "foo../bar../wob.." => "foo../bar.." => "foo.." => "." => ".." ],
+    #>>>
 );
 
 while (@cases) {
@@ -49,8 +75,5 @@ while (@cases) {
     };
 }
 
-my $path = '/foo..bar.txt';
-my $expected = '/';
-is(path($path)->parent, $expected, qq{parent($path): $path => $expected});
 done_testing;
 # COPYRIGHT
