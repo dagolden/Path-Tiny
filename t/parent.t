@@ -49,5 +49,8 @@ while (@cases) {
     };
 }
 
+my $path = '/foo..bar.txt';
+my $expected = '/';
+is(path($path)->parent, $expected, qq{parent($path): $path => $expected});
 done_testing;
 # COPYRIGHT
