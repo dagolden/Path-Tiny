@@ -801,7 +801,7 @@ sub parent {
     $self->_splitpath unless defined $self->[FILE];
     my $parent;
     if ( length $self->[FILE] ) {
-        if ( $self->[FILE] eq '.' || $self->[FILE] =~ /\.\./ ) {
+        if ( $self->[FILE] eq '.' || $self->[FILE] eq ".." ) {
             $parent = path( $self->[PATH] . "/.." );
         }
         else {
@@ -809,7 +809,9 @@ sub parent {
         }
     }
     elsif ( length $self->[DIR] ) {
-        if ( $self->[DIR] =~ /\.\./ ) {
+        # because of symlinks, any internal updir requires us to
+        # just add more updirs at the end
+        if ( $self->[DIR] =~ m{(?:^\.\./|/\.\./|/\.\.$)} ) {
             $parent = path( $self->[VOL] . $self->[DIR] . "/.." );
         }
         else {
