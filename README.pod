@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.030
+version 0.031
 
 =head1 SYNOPSIS
 
@@ -635,6 +635,10 @@ David Steinbrunner <dsteinbrunner@pobox.com>
 =item *
 
 Gabor Szabo <szabgab@cpan.org>
+
+=item *
+
+Gabriel Andrade <gabiruh@gmail.com>
 
 =item *
 

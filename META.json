@@ -65,18 +65,20 @@
       },
       "test" : {
          "requires" : {
+            "Capture::Tiny" : "0",
             "Devel::Hide" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Basename" : "0",
-            "File::Find" : "0",
             "File::Spec::Functions" : "0",
             "File::Spec::Unix" : "0",
+            "File::Temp" : "0",
             "File::pushd" : "0",
             "List::Util" : "0",
             "Test::Deep" : "0",
             "Test::FailWarnings" : "0",
             "Test::Fatal" : "0",
             "Test::More" : "0.96",
+            "blib" : "0",
             "open" : "0"
          }
       }
@@ -84,7 +86,7 @@
    "provides" : {
       "Path::Tiny" : {
          "file" : "lib/Path/Tiny.pm",
-         "version" : "0.030"
+         "version" : "0.031"
       }
    },
    "release_status" : "stable",
@@ -99,12 +101,13 @@
          "web" : "https://github.com/dagolden/path-tiny"
       }
    },
-   "version" : "0.030",
+   "version" : "0.031",
    "x_authority" : "cpan:DAGOLDEN",
    "x_contributors" : [
       "Chris Williams <bingos@cpan.org>",
       "David Steinbrunner <dsteinbrunner@pobox.com>",
       "Gabor Szabo <szabgab@cpan.org>",
+      "Gabriel Andrade <gabiruh@gmail.com>",
       "George Hartzell <hartzell@cpan.org>",
       "Goro Fuji <gfuji@cpan.org>",
       "Karen Etheridge <ether@cpan.org>",
