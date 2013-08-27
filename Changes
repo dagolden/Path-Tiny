@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.031     2013-08-27 10:03:57 America/New_York
+
     [FIXED]
 
     - parent() on paths with internal double dots (e.g. /foo..bar.txt) now works
