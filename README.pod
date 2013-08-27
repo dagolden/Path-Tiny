@@ -8,7 +8,7 @@ Path::Tiny - File path utility
 
 =head1 VERSION
 
-version 0.031
+version 0.032
 
 =head1 SYNOPSIS
 
