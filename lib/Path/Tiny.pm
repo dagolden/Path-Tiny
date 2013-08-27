@@ -815,7 +815,6 @@ sub parent {
             $parent = path( $self->[VOL] . $self->[DIR] . "/.." );
         }
         else {
-            $parent = path("/") if $self->[DIR] eq "/";
             ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/$}{/};
             $parent = path( $self->[VOL] . $dir );
         }
