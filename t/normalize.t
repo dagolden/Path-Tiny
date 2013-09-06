@@ -3,6 +3,9 @@ use strict;
 use warnings;
 use Test::More 0.96;
 
+use lib 't/lib';
+use TestUtils qw/exception/;
+
 use Path::Tiny;
 
 my @cases = (

@@ -5,6 +5,9 @@ use Test::More 0.96;
 use File::Spec::Unix;
 use File::pushd qw/tempd/;
 
+use lib 't/lib';
+use TestUtils qw/exception/;
+
 use Path::Tiny;
 
 subtest "tempdir" => sub {

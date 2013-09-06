@@ -2,10 +2,12 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
-use Test::Fatal;
 use File::Spec;
 use Path::Tiny;
 use Cwd;
+
+use lib 't/lib';
+use TestUtils qw/exception/;
 
 my $file1 = path('foo.txt');
 isa_ok( $file1, "Path::Tiny" );

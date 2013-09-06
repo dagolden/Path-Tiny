@@ -6,6 +6,9 @@ use File::Temp;
 use File::pushd qw/tempd/;
 use Config;
 
+use lib 't/lib';
+use TestUtils qw/exception/;
+
 use Path::Tiny;
 
 #--------------------------------------------------------------------------#

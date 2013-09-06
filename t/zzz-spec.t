@@ -1,8 +1,10 @@
-
 use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
+
+use lib 't/lib';
+use TestUtils qw/exception/;
 
 use Path::Tiny;
 use Cwd;

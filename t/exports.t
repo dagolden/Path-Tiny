@@ -2,8 +2,9 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
-use Test::FailWarnings;
-use Test::Fatal;
+
+use lib 't/lib';
+use TestUtils qw/exception/;
 
 use Path::Tiny qw/path cwd rootdir tempdir tempfile/;
 

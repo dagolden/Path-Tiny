@@ -6,6 +6,9 @@ use File::Basename ();
 use File::Temp ();
 use File::Spec::Unix;
 
+use lib 't/lib';
+use TestUtils qw/exception/;
+
 use Path::Tiny;
 
 my $tempdir = File::Temp->newdir;

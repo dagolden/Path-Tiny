@@ -4,6 +4,9 @@ use warnings;
 use Test::More 0.96;
 use File::Temp ();
 
+use lib 't/lib';
+use TestUtils qw/exception/;
+
 use Path::Tiny;
 
 my $tempdir = File::Temp->newdir;
