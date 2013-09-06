@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [PREREQS]
+
+    - Removed several test dependencies.  Path::Tiny now only needs
+      core modules, though some must be upgraded on old Perls
+
 0.031     2013-08-27 10:03:57 America/New_York
 
     [FIXED]

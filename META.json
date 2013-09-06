@@ -4,7 +4,7 @@
       "David Golden <dagolden@cpan.org>"
    ],
    "dynamic_config" : 0,
-   "generated_by" : "Dist::Zilla version 4.300035, CPAN::Meta::Converter version 2.132140",
+   "generated_by" : "Dist::Zilla version 4.300037, CPAN::Meta::Converter version 2.132140",
    "license" : [
       "apache_2_0"
    ],
@@ -64,21 +64,20 @@
          }
       },
       "test" : {
+         "recommends" : {
+            "Test::FailWarnings" : "0"
+         },
          "requires" : {
-            "Capture::Tiny" : "0",
-            "Devel::Hide" : "0",
             "ExtUtils::MakeMaker" : "0",
             "File::Basename" : "0",
             "File::Spec::Functions" : "0",
             "File::Spec::Unix" : "0",
-            "File::Temp" : "0",
-            "File::pushd" : "0",
+            "File::Temp" : "0.19",
+            "IO::Handle" : "0",
+            "IPC::Open3" : "0",
             "List::Util" : "0",
-            "Test::Deep" : "0",
-            "Test::FailWarnings" : "0",
-            "Test::Fatal" : "0",
             "Test::More" : "0.96",
-            "blib" : "0",
+            "lib" : "0",
             "open" : "0"
          }
       }
@@ -92,13 +91,13 @@
    "release_status" : "stable",
    "resources" : {
       "bugtracker" : {
-         "web" : "https://github.com/dagolden/path-tiny/issues"
+         "web" : "https://github.com/dagolden/Path-Tiny/issues"
       },
-      "homepage" : "https://metacpan.org/release/Path-Tiny",
+      "homepage" : "https://github.com/dagolden/Path-Tiny",
       "repository" : {
          "type" : "git",
-         "url" : "git://github.com/dagolden/path-tiny.git",
-         "web" : "https://github.com/dagolden/path-tiny"
+         "url" : "https://github.com/dagolden/Path-Tiny.git",
+         "web" : "https://github.com/dagolden/Path-Tiny"
       }
    },
    "version" : "0.032",
@@ -112,7 +111,8 @@
       "Goro Fuji <gfuji@cpan.org>",
       "Karen Etheridge <ether@cpan.org>",
       "Keedi Kim <keedi@cpan.org>",
-      "Michael G. Schwern <mschwern@cpan.org>"
+      "Michael G. Schwern <mschwern@cpan.org>",
+      "Toby Inkster <tobyink@cpan.org>"
    ]
 }
 

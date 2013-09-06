@@ -604,7 +604,7 @@ add a module to the list.
 =head2 Bugs / Feature Requests
 
 Please report any bugs or feature requests through the issue tracker
-at L<https://github.com/dagolden/path-tiny/issues>.
+at L<https://github.com/dagolden/Path-Tiny/issues>.
 You will be notified automatically of any progress on your issue.
 
 =head2 Source Code
@@ -612,9 +612,9 @@ You will be notified automatically of any progress on your issue.
 This is open source software.  The code repository is available for
 public review and contribution under the terms of the license.
 
-L<https://github.com/dagolden/path-tiny>
+L<https://github.com/dagolden/Path-Tiny>
 
-  git clone git://github.com/dagolden/path-tiny.git
+  git clone https://github.com/dagolden/Path-Tiny.git
 
 =head1 AUTHOR
 
@@ -659,6 +659,10 @@ Keedi Kim <keedi@cpan.org>
 =item *
 
 Michael G. Schwern <mschwern@cpan.org>
+
+=item *
+
+Toby Inkster <tobyink@cpan.org>
 
 =back
 
