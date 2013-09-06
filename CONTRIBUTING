@@ -10,9 +10,15 @@ at release time (e.g. Makefile.PL).
 ### Getting dependencies
 
 See the included `cpanfile` file for a list of dependencies.  If you have
-`cpanm` installed, you can use it to satisfy dependencies like this:
+App::cpanminus 1.6 or later installed, you can use `cpanm` to satisfy
+dependencies like this:
 
     $ cpanm --installdeps .
+
+Otherwise, you can install Module::CPANfile 1.0002 or later and then satisfy
+dependencies with the regular `cpan` client and `cpanfile-dump`:
+
+    $ cpan `cpanfile-dump`
 
 ### Running tests
 
@@ -36,7 +42,7 @@ documentation you see.
 If you see typos or documentation issues in the generated docs, please
 email or open a bug ticket instead of patching.
 
-#### Learning Dist::Zilla
+### Learning Dist::Zilla
 
 Dist::Zilla is a very powerful authoring tool, but requires a number of
 author-specific plugins.  If you would like to use it for contributing,
