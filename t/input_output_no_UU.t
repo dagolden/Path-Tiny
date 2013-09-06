@@ -3,6 +3,11 @@ use strict;
 use warnings;
 use Test::More 0.96;
 
+BEGIN {
+    eval { require Devel::Hide }
+        or plan skip_all => 'this test requires Devel::Hide';
+};
+
 use Devel::Hide qw/Unicode::UTF8/;
 use Path::Tiny;
 
