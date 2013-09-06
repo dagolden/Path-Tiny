@@ -26,11 +26,11 @@ my @cases = (
 #>>>
 );
 
-for my $c ( @cases ) {
-    my ($in, $out) = @$c;
+for my $c (@cases) {
+    my ( $in, $out ) = @$c;
     my $label = defined($in) ? $in : "undef";
     $label = "empty" unless length $label;
-    is( path($in)->stringify, $out, sprintf("%5s -> %-5s", $label, $out ));
+    is( path($in)->stringify, $out, sprintf( "%5s -> %-5s", $label, $out ) );
 }
 
 done_testing;

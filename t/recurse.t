@@ -42,7 +42,7 @@ subtest 'no symlinks' => sub {
         push @files, "$f";
     }
 
-    is_deeply( [sort @files], [sort @breadth], "Breadth first iteration" )
+    is_deeply( [ sort @files ], [ sort @breadth ], "Breadth first iteration" )
       or diag explain \@files;
 
 };
@@ -98,8 +98,8 @@ subtest 'with symlinks' => sub {
         while ( my $f = $iter->() ) {
             push @files, "$f";
         }
-        is_deeply( [sort @files], [sort @nofollow], "Don't follow symlinks" )
-        or diag explain \@files;
+        is_deeply( [ sort @files ], [ sort @nofollow ], "Don't follow symlinks" )
+          or diag explain \@files;
     };
 
     subtest 'follow' => sub {
@@ -108,8 +108,8 @@ subtest 'with symlinks' => sub {
         while ( my $f = $iter->() ) {
             push @files, "$f";
         }
-        is_deeply( [sort @files], [sort @follow], "Follow symlinks" )
-            or diag explain \@files;
+        is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
+          or diag explain \@files;
     };
 };
 

@@ -38,10 +38,10 @@ sub CLONE { require threads; threads->tid }
 
 sub DOES {
     return 1 if $_[1] eq 'autodie::skip'; # report errors like croak
-    UNIVERSAL->can('DOES') ? $_[0]->SUPER::DOES($_[1]) : $_[0]->isa($_[1]);
+    UNIVERSAL->can('DOES') ? $_[0]->SUPER::DOES( $_[1] ) : $_[0]->isa( $_[1] );
 }
 
-my $HAS_UU;                                  # has Unicode::UTF8; lazily populated
+my $HAS_UU;                               # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };

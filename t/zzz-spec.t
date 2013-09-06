@@ -68,7 +68,7 @@ my @tests = (
 my @win32_tests;
 
 # this is lazy so we don't invoke any calls unless we're on Windows
-if ( $IS_WIN32 ) {
+if ($IS_WIN32) {
     @win32_tests = (
         [ "path('/')",                  '/' ],
         [ "path('/', '../')",           '/' ],
@@ -95,7 +95,7 @@ if ( $IS_WIN32 ) {
         [ "path('.\\c')",                  'c' ],
         [ "path('a/..','../b')",           '../b' ],
         [ "path('A:', 'foo')",             'A:/foo' ],
-        [ "path('a:/')",                    'A:/' ],
+        [ "path('a:/')",                   'A:/' ],
         [ "path('A:f')",                   'A:f' ],
         [ "path('A:/')",                   'A:/' ],
         [ "path('a\\..\\..\\b\\c')",       '../b/c' ],
@@ -118,12 +118,12 @@ if ( $IS_WIN32 ) {
         [ "path('/../')",                  '/' ],
         [ "path('d1/../foo')",             'foo' ],
         # if there's no C drive, getdcwd will probably return '', so fake it
-        [ "path('C:')",                    path(Cwd::getdcwd("C:") || "C:/")],
-        [ "path('\\\\server\\share\\')",   '//server/share/'],
-        [ "path('\\\\server\\share')",     '//server/share/'],
-        [ "path('//server/share/')",       '//server/share/'],
-        [ "path('//server/share')",        '//server/share/'],
-        [ "path('//d1','d2')",             '//d1/d2/' ],
+        [ "path('C:')", path( Cwd::getdcwd("C:") || "C:/" ) ],
+        [ "path('\\\\server\\share\\')", '//server/share/' ],
+        [ "path('\\\\server\\share')",   '//server/share/' ],
+        [ "path('//server/share/')",     '//server/share/' ],
+        [ "path('//server/share')",      '//server/share/' ],
+        [ "path('//d1','d2')",           '//d1/d2/' ],
     );
 }
 

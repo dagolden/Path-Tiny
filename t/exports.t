@@ -9,8 +9,8 @@ use TestUtils qw/exception/;
 use Path::Tiny qw/path cwd rootdir tempdir tempfile/;
 
 isa_ok( path("."), 'Path::Tiny', 'path' );
-isa_ok( cwd, 'Path::Tiny', 'cwd' );
-isa_ok( rootdir, 'Path::Tiny', 'rootdir' );
+isa_ok( cwd,       'Path::Tiny', 'cwd' );
+isa_ok( rootdir,   'Path::Tiny', 'rootdir' );
 isa_ok( tempfile( TEMPLATE => 'tempXXXXXXX' ), 'Path::Tiny', 'tempfile' );
 isa_ok( tempdir( TEMPLATE => 'tempXXXXXXX' ), 'Path::Tiny', 'tempdir' );
 

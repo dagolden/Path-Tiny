@@ -34,7 +34,7 @@ subtest "spew -> slurp (empty)" => sub {
 
 subtest "spew -> slurp (arrayref)" => sub {
     my $file = Path::Tiny->tempfile;
-    ok( $file->spew([_lines]), "spew" );
+    ok( $file->spew( [_lines] ), "spew" );
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 
@@ -119,7 +119,7 @@ subtest "spew -> lines (count, more than)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     my @exp = _lines;
-    is( join( '|', $file->lines( { count => 3 } ) ), join("|",@exp), "lines" );
+    is( join( '|', $file->lines( { count => 3 } ) ), join( "|", @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp)" => sub {
@@ -149,8 +149,7 @@ subtest "spew -> lines (chomp, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     my @exp = map { chomp; $_ } _utf8_lines;
-    is( join( '', $file->lines_utf8( { chomp => 1 } ) ),
-        join( '', @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { chomp => 1 } ) ), join( '', @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, raw)" => sub {
@@ -174,7 +173,7 @@ subtest "append -> slurp (empty)" => sub {
 
 subtest "append -> slurp (arrayref)" => sub {
     my $file = Path::Tiny->tempfile;
-    ok( $file->append([_lines]), "append" );
+    ok( $file->append( [_lines] ), "append" );
     is( $file->slurp, join( '', _lines ), "slurp" );
 };
 

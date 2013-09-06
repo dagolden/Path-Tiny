@@ -37,19 +37,21 @@ is( $file->basename, $basename, "basename correct" );
     is scalar <$fh>, "Foo\n", "Read contents of $file correctly";
 }
 
-note "stat"; {
+note "stat";
+{
     my $stat = $file->stat;
     ok $stat;
-    cmp_ok $stat->mtime, '>', time() - 20;           # Modified within last 20 seconds
+    cmp_ok $stat->mtime, '>', time() - 20; # Modified within last 20 seconds
 
     $stat = $file->parent->stat;
     ok $stat;
 }
 
-note "stat/lstat with no file"; {
+note "stat/lstat with no file";
+{
     my $file = "i/do/not/exist";
-    ok exception { path( $file )->stat };
-    ok exception { path( $file )->lstat };
+    ok exception { path($file)->stat };
+    ok exception { path($file)->lstat };
 }
 
 1 while unlink $file;
@@ -220,15 +222,14 @@ my $tmpdir = Path::Tiny->tempdir;
 
 {
     # realpath should resolve ..
-    my $lib = path("t/../lib");
+    my $lib  = path("t/../lib");
     my $real = $lib->realpath;
     unlike $real, qr/\.\./, "updir gone from realpath";
     my $abs_lib = $lib->absolute;
-    my $abs_t = path("t")->absolute;
-    my $case = $abs_t->child("../lib");
+    my $abs_t   = path("t")->absolute;
+    my $case    = $abs_t->child("../lib");
     is( $case->realpath, $lib->realpath, "realpath on absolute" );
 }
-
 
 {
     my $file = $tmpdir->child("foo.txt");
@@ -240,17 +241,22 @@ my $tmpdir = Path::Tiny->tempdir;
     SKIP: {
         skip "No exception if run as root", 1 if $> == 0;
         skip "No exception writing to read-only file", 1
-          unless exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
+          unless
+          exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
         my $error = exception { $file->copy($copy) };
-        ok( $error,  "copy throws error if permission denied" );
+        ok( $error, "copy throws error if permission denied" );
         like( $error, qr/\Q$file/, "error messages includes the source file name" );
         like( $error, qr/\Q$copy/, "error messages includes the destination file name" );
     }
 }
 
 {
-    $tmpdir->child("subdir", "touched.txt")->touchpath->spew("Hello World\n");
-    is( $tmpdir->child("subdir", "touched.txt")->slurp, "Hello World\n", "touch can chain" );
+    $tmpdir->child( "subdir", "touched.txt" )->touchpath->spew("Hello World\n");
+    is(
+        $tmpdir->child( "subdir", "touched.txt" )->slurp,
+        "Hello World\n",
+        "touch can chain"
+    );
 }
 
 SKIP: {
@@ -284,7 +290,7 @@ SKIP: {
     ok $link->remove_tree, 'remove_tree symbolic link';
     ok $dir->remove_tree;
 
-    $dir = $newtmp->child('foo');
+    $dir  = $newtmp->child('foo');
     $link = $newtmp->child("bar");
     ok $dir->mkpath;
     ok -d $dir;
@@ -304,8 +310,9 @@ SKIP: {
     $link2->spew("Hello Perl\n");
     ok -l $link2, 'path is still symbolic link after spewing';
     is readlink($link2), $link, 'symbolic link is available after spewing';
-    is readlink($link), $file, 'symbolic link is available after spewing';
-    is $file->slurp, "Hello Perl\n", 'spewing follows the link and replace the destination instead';
+    is readlink($link),  $file, 'symbolic link is available after spewing';
+    is $file->slurp, "Hello Perl\n",
+      'spewing follows the link and replace the destination instead';
 }
 
 # We don't have subsume so comment these out.  Keep in case we
