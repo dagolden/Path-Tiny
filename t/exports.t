@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use Test::FailWarnings;
-use Test::Deep '!blessed';
 use Test::Fatal;
 
 use Path::Tiny qw/path cwd rootdir tempdir tempfile/;

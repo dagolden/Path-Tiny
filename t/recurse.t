@@ -3,7 +3,6 @@ use strict;
 use warnings;
 use Test::More 0.92;
 use File::Temp;
-use Test::Deep qw/cmp_deeply/;
 use File::pushd qw/tempd/;
 use Config;
 
@@ -41,7 +40,7 @@ subtest 'no symlinks' => sub {
         push @files, "$f";
     }
 
-    cmp_deeply( [sort @files], [sort @breadth], "Breadth first iteration" )
+    is_deeply( [sort @files], [sort @breadth], "Breadth first iteration" )
       or diag explain \@files;
 
 };
@@ -97,7 +96,7 @@ subtest 'with symlinks' => sub {
         while ( my $f = $iter->() ) {
             push @files, "$f";
         }
-        cmp_deeply( [sort @files], [sort @nofollow], "Don't follow symlinks" )
+        is_deeply( [sort @files], [sort @nofollow], "Don't follow symlinks" )
         or diag explain \@files;
     };
 
@@ -107,7 +106,7 @@ subtest 'with symlinks' => sub {
         while ( my $f = $iter->() ) {
             push @files, "$f";
         }
-        cmp_deeply( [sort @files], [sort @follow], "Follow symlinks" )
+        is_deeply( [sort @files], [sort @follow], "Follow symlinks" )
             or diag explain \@files;
     };
 };

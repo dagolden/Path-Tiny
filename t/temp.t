@@ -2,7 +2,6 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
-use Test::Deep '!blessed';
 use File::Spec::Unix;
 use File::pushd qw/tempd/;
 
