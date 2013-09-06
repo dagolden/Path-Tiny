@@ -1,6 +1,7 @@
 use 5.008001;
 use strict;
 use warnings;
+
 package TestUtils;
 
 use Carp;
@@ -8,7 +9,7 @@ use Cwd qw/getcwd/;
 use File::Temp 0.19 ();
 
 use Exporter;
-our @ISA = qw/Exporter/;
+our @ISA    = qw/Exporter/;
 our @EXPORT = qw(
   exception
   tempd
@@ -20,9 +21,9 @@ BEGIN {
 }
 
 sub exception(&) {
-    my $code = shift;
+    my $code    = shift;
     my $success = eval { $code->(); 1 };
-    my $err = $@;
+    my $err     = $@;
     return '' if $success;
     croak "Execution died, but the error was lost" unless $@;
     return $@;
