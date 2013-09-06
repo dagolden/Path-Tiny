@@ -9,6 +9,7 @@ use Cwd;
 
 my $file1 = path('foo.txt');
 isa_ok( $file1, "Path::Tiny" );
+ok $file1->DOES('Path::Tiny');
 is $file1, 'foo.txt';
 ok $file1->is_relative;
 is $file1->dirname, '.';
