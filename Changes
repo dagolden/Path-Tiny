@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.032     2013-09-06 17:52:48 America/New_York
+
     [PREREQS]
 
     - Removed several test dependencies.  Path::Tiny now only needs
