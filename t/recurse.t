@@ -3,11 +3,10 @@ use strict;
 use warnings;
 use Test::More 0.92;
 use File::Temp;
-use File::pushd qw/tempd/;
 use Config;
 
 use lib 't/lib';
-use TestUtils qw/exception/;
+use TestUtils qw/exception tempd/;
 
 use Path::Tiny;
 
