@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [DOCUMENTED]
+
+    - Added 'iterator' example showing defaults
+
 0.032     2013-09-06 17:52:48 America/New_York
 
     [PREREQS]
