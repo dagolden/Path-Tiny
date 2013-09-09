@@ -571,6 +571,13 @@ recursively, breadth-first.  If the C<follow_symlinks> option is also true,
 directory links will be followed recursively.  There is no protection against
 loops when following links.
 
+The default is the same as:
+
+    $iter = path("/tmp")->iterator( {
+        recurse         => 0,
+        follow_symlinks => 0,
+    } );
+
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
 
