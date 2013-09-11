@@ -30,6 +30,8 @@ use overload (
     fallback => 1,
 );
 
+my $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd';
+
 my $TID = 0; # for thread safe atomic writes
 
 # if cloning, threads should already be loaded, but Win32 pseudoforks
@@ -72,15 +74,30 @@ sub _normalize_win32_path {
 }
 
 # we do our own autodie::exceptions to avoid wrapping built-in functions
+# flock doesn't work on NFS on BSD.  Since program authors often can't control
+# or detect that, we warn once instead of being fatal if we can detect it and
+# people who need it strict can fatalize the 'flock' category
+
+warnings::register_categories('flock') if $IS_BSD;
+my $WARNED_BSD_NFS = 0;
+
 sub _throw {
     my ( $function, $args ) = @_;
-    die autodie::exception->new(
-        function => "CORE::$function",
-        args     => $args,
-        errno    => $!,
-        context  => 'scalar',
-        return   => undef,
-    );
+    if ( $IS_BSD && $function eq 'flock' && $! =~ /operation not supported/ ) {
+        if ( !$WARNED_BSD_NFS ) {
+            warnings::warn( flock => "No flock for NFS on BSD: continuing in unsafe mode" );
+            $WARNED_BSD_NFS++;
+        }
+    }
+    else {
+        die autodie::exception->new(
+            function => "CORE::$function",
+            args     => $args,
+            errno    => $!,
+            context  => 'scalar',
+            return   => undef,
+        );
+    }
 }
 
 # cheapo option validation
@@ -1202,6 +1219,16 @@ will speed up several of them and is highly recommended.
 It uses L<autodie> internally, so most failures will be thrown as exceptions.
 
 =head1 CAVEATS
+
+=head2 NFS and BSD
+
+On BSD, Perl's flock implementation may not work to lock files on an
+NFS filesystem.  Path::Tiny has some heuristics to detect this
+and will warn once and let you continue in an unsafe mode.  If you
+want this failure to be fatal, you can fatalize the 'flock' warnings
+category:
+
+    use warnings FATAL => 'flock';
 
 =head2 utf8 vs UTF-8
 
