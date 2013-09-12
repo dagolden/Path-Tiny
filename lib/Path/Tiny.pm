@@ -83,7 +83,7 @@ my $WARNED_BSD_NFS = 0;
 
 sub _throw {
     my ( $function, $args ) = @_;
-    if ( $IS_BSD && $function eq 'flock' && $! =~ /operation not supported/i ) {
+    if ( $IS_BSD && $function eq 'flock' && $! =~ /operation not supported/i && !warnings::fatal_enabled('flock') ) {
         if ( !$WARNED_BSD_NFS ) {
             warnings::warn( flock => "No flock for NFS on BSD: continuing in unsafe mode" );
             $WARNED_BSD_NFS++;
