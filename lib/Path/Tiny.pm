@@ -30,7 +30,8 @@ use overload (
     fallback => 1,
 );
 
-my $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd';
+my $IS_BSD;
+BEGIN { $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd' }
 
 my $TID = 0; # for thread safe atomic writes
 
@@ -78,7 +79,10 @@ sub _normalize_win32_path {
 # or detect that, we warn once instead of being fatal if we can detect it and
 # people who need it strict can fatalize the 'flock' category
 
-warnings::register_categories('flock') if $IS_BSD;
+#<<< No perltidy
+{ package flock; use if $IS_BSD, 'warnings::register' }
+#>>>
+
 my $WARNED_BSD_NFS = 0;
 
 sub _throw {
