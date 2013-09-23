@@ -13,6 +13,12 @@ Revision history for Path-Tiny
     - BSD/NFS flock fix was not backwards compatible before v5.14.  This
       fixes it harder.
 
+    [PREREQS]
+
+    - dropped autodie
+
+    - lowered ExtUtils::MakeMaker configure_requires version to 6.17
+
 0.033     2013-09-12 08:54:30 America/New_York
 
     [FIXED]
