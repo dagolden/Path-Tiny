@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [INCOMPATIBLE CHANGE]
+
+    - Exceptions are now Path::Tiny::Error objects, not autodie exceptions;
+      this removes the last dependency on autodie, which allows us to
+      support Perls as far back as v5.8.1
+
     [FIXED]
 
     - BSD/NFS flock fix was not backwards compatible before v5.14.  This

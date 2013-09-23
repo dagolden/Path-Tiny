@@ -9,7 +9,6 @@ requires "File::Path" => "2.07";
 requires "File::Spec" => "3.40";
 requires "File::Temp" => "0.18";
 requires "File::stat" => "0";
-requires "autodie::exception" => "2.14";
 requires "constant" => "0";
 requires "overload" => "0";
 requires "perl" => "5.008001";

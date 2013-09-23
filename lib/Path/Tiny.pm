@@ -7,7 +7,6 @@ package Path::Tiny;
 # VERSION
 
 # Dependencies
-use autodie::exception 2.14; # autodie::skip support
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp ();
@@ -37,14 +36,9 @@ my $TID = 0; # for thread safe atomic writes
 
 # if cloning, threads should already be loaded, but Win32 pseudoforks
 # don't do that so we have to be sure it's loaded anyway
-sub CLONE { require threads; threads->tid }
+sub CLONE { require threads; $TID = threads->tid }
 
-sub DOES {
-    return 1 if $_[1] eq 'autodie::skip'; # report errors like croak
-    UNIVERSAL->can('DOES') ? $_[0]->SUPER::DOES( $_[1] ) : $_[0]->isa( $_[1] );
-}
-
-my $HAS_UU;                               # has Unicode::UTF8; lazily populated
+my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
@@ -74,7 +68,6 @@ sub _normalize_win32_path {
     return $path;
 }
 
-# we do our own autodie::exceptions to avoid wrapping built-in functions
 # flock doesn't work on NFS on BSD.  Since program authors often can't control
 # or detect that, we warn once instead of being fatal if we can detect it and
 # people who need it strict can fatalize the 'flock' category
@@ -86,7 +79,7 @@ sub _normalize_win32_path {
 my $WARNED_BSD_NFS = 0;
 
 sub _throw {
-    my ( $function, $args ) = @_;
+    my ( $self, $function, $file ) = @_;
     if (   $IS_BSD
         && $function eq 'flock'
         && $! =~ /operation not supported/i
@@ -98,13 +91,7 @@ sub _throw {
         }
     }
     else {
-        die autodie::exception->new(
-            function => "CORE::$function",
-            args     => $args,
-            errno    => $!,
-            context  => 'scalar',
-            return   => undef,
-        );
+        Path::Tiny::Error->throw( $function, ( defined $file ? $file : $self->[PATH] ), $! );
     }
 }
 
@@ -364,15 +351,15 @@ sub append {
     my $fh = $self->filehandle( ">>", $binmode );
 
     require Fcntl;
-    flock( $fh, Fcntl::LOCK_EX() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_EX() ] );
+    flock( $fh, Fcntl::LOCK_EX() ) or $self->_throw('flock (LOCK_EX)');
 
     # Ensure we're at the end after the lock
-    seek( $fh, 0, Fcntl::SEEK_END() ) or _throw( 'seek', [ $fh, 0, Fcntl::SEEK_END() ] );
+    seek( $fh, 0, Fcntl::SEEK_END() ) or $self->_throw('seek');
 
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
 
     # For immediate flush
-    close $fh or _throw( 'close', [$fh] );
+    close $fh or $self->_throw('close');
 }
 
 sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
@@ -451,9 +438,9 @@ for matching:
 sub children {
     my ( $self, $filter ) = @_;
     my $dh;
-    opendir $dh, $self->[PATH] or _throw( 'opendir', [ $dh, $self->[PATH] ] );
+    opendir $dh, $self->[PATH] or $self->_throw('opendir');
     my @children = readdir $dh;
-    closedir $dh or _throw( 'closedir', [$dh] );
+    closedir $dh or $self->_throw('closedir');
 
     if ( not defined $filter ) {
         @children = grep { $_ ne '.' && $_ ne '..' } @children;
@@ -558,7 +545,7 @@ sub filehandle {
 
     my $mode = $opentype . $binmode;
     my $fh;
-    open $fh, $mode, $self->[PATH] or _throw( 'open', [ $fh, $mode, $self->[PATH] ] );
+    open $fh, $mode, $self->[PATH] or $self->_throw('open ($mode)');
 
     return $fh;
 }
@@ -620,7 +607,7 @@ sub iterator {
                 $current = $dirs[0];
                 my $dh;
                 opendir( $dh, $current->[PATH] )
-                  or _throw( 'opendir', [ $dh, $current->[PATH] ] );
+                  or $self->_throw( 'opendir', $current->[PATH] );
                 $dirs[0] = $dh;
                 if ( -l $current->[PATH] && !$args->{follow_symlinks} ) {
                     # Symlink attack! It was a real dir, but is now a symlink!
@@ -682,7 +669,7 @@ sub lines {
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
     require Fcntl;
-    flock( $fh, Fcntl::LOCK_SH() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_SH() ] );
+    flock( $fh, Fcntl::LOCK_SH() ) or $self->_throw('flock (LOCK_SH)');
     my $chomp = $args->{chomp};
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
@@ -766,7 +753,8 @@ Just like C<rename>.
 sub move {
     my ( $self, $dst ) = @_;
 
-    return rename( $self->[PATH], $dst ) || _throw( 'rename', [ $self->[PATH], $dst ] );
+    return rename( $self->[PATH], $dst )
+      || $self->_throw( 'rename', $self->[PATH] . "' -> '$dst'" );
 }
 
 =method openr, openw, openrw, opena
@@ -910,7 +898,7 @@ sub remove {
 
     return 0 if !-e $self->[PATH] && !-l $self->[PATH];
 
-    return unlink $self->[PATH] || _throw( 'unlink', [ $self->[PATH] ] );
+    return unlink $self->[PATH] || $self->_throw('unlink');
 }
 
 =method remove_tree
@@ -978,7 +966,7 @@ sub slurp {
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( "<", $binmode );
     require Fcntl;
-    flock( $fh, Fcntl::LOCK_SH() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_SH() ] );
+    flock( $fh, Fcntl::LOCK_SH() ) or $self->_throw('flock (LOCK_SH)');
     if ( ( defined($binmode) ? $binmode : "" ) eq ":unix"
         and my $size = -s $fh )
     {
@@ -1036,12 +1024,12 @@ sub spew {
     my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh = $temp->filehandle( ">", $binmode );
     require Fcntl;
-    flock( $fh, Fcntl::LOCK_EX() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_EX() ] );
-    seek( $fh, 0, Fcntl::SEEK_SET() ) or _throw( 'seek', [ $fh, 0, Fcntl::SEEK_SET() ] );
-    truncate( $fh, 0 ) or _throw( 'truncate', [ $fh, 0 ] );
+    flock( $fh, Fcntl::LOCK_EX() ) or $self->_throw( 'flock (LOCK_EX)', $temp->[PATH] );
+    seek( $fh, 0, Fcntl::SEEK_SET() ) or $self->_throw( 'seek', $temp->[PATH] );
+    truncate( $fh, 0 ) or $self->_throw( 'truncate', $temp->[PATH] );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-    flock( $fh, Fcntl::LOCK_UN() ) or _throw( 'flock', [ $fh, Fcntl::LOCK_UN() ] );
-    close $fh or _throw( 'close', [$fh] );
+    flock( $fh, Fcntl::LOCK_UN() ) or $self->_throw( 'flock (LOCK_UN)', $temp->[PATH] );
+    close $fh or $self->_throw( 'close', $temp->[PATH] );
 
     # spewing need to follow the link
     # and replace the destination instead
@@ -1076,13 +1064,13 @@ Like calling C<stat> or C<lstat> from L<File::stat>.
 sub stat {
     my $self = shift;
     require File::stat;
-    return File::stat::stat( $self->[PATH] ) || _throw( 'stat', [ $self->[PATH] ] );
+    return File::stat::stat( $self->[PATH] ) || $self->_throw('stat');
 }
 
 sub lstat {
     my $self = shift;
     require File::stat;
-    return File::stat::lstat( $self->[PATH] ) || _throw( 'lstat', [ $self->[PATH] ] );
+    return File::stat::lstat( $self->[PATH] ) || $self->_throw('lstat');
 }
 
 =method stringify
@@ -1116,11 +1104,11 @@ sub touch {
     my ( $self, $epoch ) = @_;
     if ( !-e $self->[PATH] ) {
         my $fh = $self->openw;
-        close $fh or _throw( 'close', [$fh] );
+        close $fh or $self->_throw('close');
     }
     $epoch = defined($epoch) ? $epoch : time();
     utime $epoch, $epoch, $self->[PATH]
-      or _throw( 'utime', [ $epoch, $epoch, $self->[PATH] ] );
+      or $self->_throw("utime ($epoch)");
     return $self;
 }
 
@@ -1154,6 +1142,19 @@ sub volume {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[VOL];
     return $self->[VOL];
+}
+
+package Path::Tiny::Error;
+
+our @CARP_NOT = qw/Path::Tiny/;
+
+use overload ( q{""} => sub { (shift)->{msg} }, fallback => 1 );
+
+sub throw {
+    my ( $class, $op, $file, $err ) = @_;
+    chomp( my $trace = Carp::shortmess );
+    my $msg = "Error $op on '$file': $err$trace\n";
+    die bless { op => $op, file => $file, err => $err, msg => $msg }, $class;
 }
 
 1;
@@ -1224,7 +1225,19 @@ The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
 mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
 will speed up several of them and is highly recommended.
 
-It uses L<autodie> internally, so most failures will be thrown as exceptions.
+=head1 EXCEPTION HANDLING
+
+Failures will be thrown as exceptions in the class C<Path::Tiny::Error>.
+
+The object will be a hash reference with the following fields:
+
+=for :list
+* C<op> — a description of the operation, usually function call and any extra info
+* C<file> — the file or directory relating to the error
+* C<err> — hold C<$!> at the time the error was thrown
+* C<msg> — a string combining the above data and a Carp-like short stack trace
+
+Exception objects will stringify as the C<msg> field.
 
 =head1 CAVEATS
 
