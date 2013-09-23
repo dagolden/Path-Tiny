@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.034     2013-09-23 16:16:36 America/New_York
+
     [INCOMPATIBLE CHANGE]
 
     - Exceptions are now Path::Tiny::Error objects, not autodie exceptions;
