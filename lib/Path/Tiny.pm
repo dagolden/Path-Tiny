@@ -30,15 +30,16 @@ use overload (
 );
 
 my $IS_BSD;
-BEGIN { $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd' }
 
-my $TID = 0; # for thread safe atomic writes
+BEGIN { $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd' }
 
 # if cloning, threads should already be loaded, but Win32 pseudoforks
 # don't do that so we have to be sure it's loaded anyway
+my $TID = 0; # for thread safe atomic writes
+
 sub CLONE { require threads; $TID = threads->tid }
 
-my $HAS_UU; # has Unicode::UTF8; lazily populated
+my $HAS_UU;  # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
