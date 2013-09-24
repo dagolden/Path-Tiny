@@ -31,7 +31,7 @@ use overload (
 
 my $IS_BSD;
 
-BEGIN { $IS_BSD = $^O eq 'openbsd' || $^O eq 'freebsd' }
+BEGIN { $IS_BSD = $^O =~ /bsd$/ }
 
 # if cloning, threads should already be loaded, but Win32 pseudoforks
 # don't do that so we have to be sure it's loaded anyway
@@ -82,7 +82,7 @@ my $WARNED_BSD_NFS = 0;
 sub _throw {
     my ( $self, $function, $file ) = @_;
     if (   $IS_BSD
-        && $function eq 'flock'
+        && $function =~ /^flock/
         && $! =~ /operation not supported/i
         && !warnings::fatal_enabled('flock') )
     {
@@ -94,6 +94,7 @@ sub _throw {
     else {
         Path::Tiny::Error->throw( $function, ( defined $file ? $file : $self->[PATH] ), $! );
     }
+    return;
 }
 
 # cheapo option validation
