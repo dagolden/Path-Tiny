@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [PREREQS]
+
+    - No longer lists 'threads' as a prerequisite.  If you have a threaded
+      perl, you have it and if you're not, Path::Tiny doesn't care.
+
 0.035     2013-09-24 07:21:55 America/New_York
 
     [FIXED]

@@ -14,7 +14,6 @@ requires "if" => "0";
 requires "overload" => "0";
 requires "perl" => "5.008001";
 requires "strict" => "0";
-requires "threads" => "0";
 requires "warnings" => "0";
 recommends "Unicode::UTF8" => "0.58";
 
