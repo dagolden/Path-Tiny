@@ -1,6 +1,5 @@
 # DAGOLDEN .perltidyrc file
 
--st     # Output to STDOUT
 -se     # Errors to STDERR
 
 -l=85   # Max line width target
@@ -42,3 +41,4 @@
         # Break before all operators except assignment
 
 -ole=unix # line endings
+
