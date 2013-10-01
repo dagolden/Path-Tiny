@@ -565,6 +565,29 @@ sub is_absolute { substr( $_[0]->dirname, 0, 1 ) eq '/' }
 
 sub is_relative { substr( $_[0]->dirname, 0, 1 ) ne '/' }
 
+=method is_rootdir
+
+    while ( ! $path->is_rootdir ) {
+        $path = $path->parent;
+        ...
+    }
+
+Boolean for whether the path is the root directory of the volume.  I.e. the
+C<dirname> is C<q[/]> and the C<basename> is C<q[]>.
+
+This works even on C<MSWin32> with drives and UNC volumes:
+
+    path("C:/")->is_rootdir;             # true
+    path("//server/share/")->is_rootdir; #true
+
+=cut
+
+sub is_rootdir {
+    my ($self) = @_;
+    $self->_splitpath unless defined $self->[DIR];
+    return $self->[DIR] eq '/' && $self->[FILE] eq '';
+}
+
 =method iterator
 
     $iter = path("/tmp")->iterator( \%options );
