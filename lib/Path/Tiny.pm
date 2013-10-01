@@ -816,6 +816,9 @@ original directory or file. An optional positive integer argument is the number
 of parent directories upwards to return.  C<parent> by itself is equivalent to
 C<parent(1)>.
 
+For absolute paths, when C<parent> is C</>, you have reached the top-most
+directory on that volume.
+
 =cut
 
 # XXX this is ugly and coverage is incomplete.  I think it's there for windows
