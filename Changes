@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDITIONS]
+
+    - The 'filehandle' method now offers an option to return locked handles
+      based on the file mode.  Input-output methods now rely on this
+      feature internally.  Truncating file modes defer truncation until
+      after an exclusive lock is acquired.
+
 0.038     2013-10-01 18:20:05 America/New_York
 
     [ADDITIONS]

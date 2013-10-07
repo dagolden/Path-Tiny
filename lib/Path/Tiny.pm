@@ -350,17 +350,8 @@ sub append {
     $args = _get_args( $args, qw/binmode/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
-    my $fh = $self->filehandle( ">>", $binmode );
-
-    require Fcntl;
-    flock( $fh, Fcntl::LOCK_EX() ) or $self->_throw('flock (LOCK_EX)');
-
-    # Ensure we're at the end after the lock
-    seek( $fh, 0, Fcntl::SEEK_END() ) or $self->_throw('seek');
-
+    my $fh = $self->filehandle( { locked => 1 }, ">>", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-
-    # For immediate flush
     close $fh or $self->_throw('close');
 }
 
@@ -528,10 +519,17 @@ sub is_dir { -d $_[0]->[PATH] }
 =method filehandle
 
     $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
+    $fh = path("/tmp/foo.txt")->filehandle({ locked => 1 }, $mode, $binmode);
 
 Returns an open file handle.  The C<$mode> argument must be a Perl-style
 read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
 is given, it is set during the C<open> call.
+
+An optional hash reference may be used to pass options.  The only option is
+C<locked>.  If true, handles opened for writing, appending or read-write are
+locked with C<LOCK_EX>; otherwise, they are locked with C<LOCK_SH>.  When using
+C<locked>, ">" or "+>" modes will delay truncation until after the lock is
+acquired.
 
 See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
@@ -541,15 +539,59 @@ See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 # like ":unix" actually stop perlio/crlf from being added
 
 sub filehandle {
-    my ( $self, $opentype, $binmode ) = @_;
+    my ( $self, @args ) = @_;
+    my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
+    $args = _get_args( $args, qw/locked/ );
+    my ( $opentype, $binmode ) = @args;
+
     $opentype = "<" unless defined $opentype;
+    Carp::croak("Invalid file mode '$opentype'")
+      unless grep { $opentype eq $_ } qw/< +< > +> >> +>>/;
+
     $binmode = ( ( caller(0) )[10] || {} )->{ 'open' . substr( $opentype, -1, 1 ) }
       unless defined $binmode;
     $binmode = "" unless defined $binmode;
 
-    my $mode = $opentype . $binmode;
-    my $fh;
-    open $fh, $mode, $self->[PATH] or $self->_throw('open ($mode)');
+    my ( $fh, $lock, $trunc );
+    if ( $args->{locked} ) {
+        require Fcntl;
+        # truncating file modes shouldn't truncate until lock acquired
+        if ( grep { $opentype eq $_ } qw( > +> ) ) {
+            # sysopen in write mode without truncation
+            my $flags = $opentype eq ">" ? Fcntl::O_WRONLY() : Fcntl::O_RDWR();
+            $flags |= Fcntl::O_CREAT();
+            sysopen( $fh, $self->[PATH], $flags ) or $self->_throw("sysopen");
+
+            # fix up the binmode since sysopen() can't specify layers like
+            # open() and binmode() can't start with just :unix like open()
+            if ( $binmode =~ s/^:unix// ) {
+                # strip off layers until only :unix is left
+                while ( 1 < ( my $layers =()= PerlIO::get_layers( $fh, output => 1 ) ) ) {
+                    binmode( $fh, ":pop" ) or $self->_throw("binmode (:pop)");
+                }
+            }
+
+            # apply any remaining binmode layers
+            if ( length $binmode ) {
+                binmode( $fh, $binmode ) or $self->_throw("binmode ($binmode)");
+            }
+
+            # ask for lock and truncation
+            $lock  = Fcntl::LOCK_EX();
+            $trunc = 1;
+        }
+        else {
+            $lock = $opentype eq "<" ? Fcntl::LOCK_SH() : Fcntl::LOCK_EX();
+        }
+    }
+
+    unless ($fh) {
+        my $mode = $opentype . $binmode;
+        open $fh, $mode, $self->[PATH] or $self->_throw("open ($mode)");
+    }
+
+    do { flock( $fh, $lock ) or $self->_throw("flock ($lock)") } if $lock;
+    do { truncate( $fh, 0 ) or $self->_throw("truncate") } if $trunc;
 
     return $fh;
 }
@@ -694,9 +736,7 @@ sub lines {
     my $args    = _get_args( shift, qw/binmode chomp count/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
-    my $fh = $self->filehandle( "<", $binmode );
-    require Fcntl;
-    flock( $fh, Fcntl::LOCK_SH() ) or $self->_throw('flock (LOCK_SH)');
+    my $fh = $self->filehandle( { locked => 1 }, "<", $binmode );
     my $chomp = $args->{chomp};
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
@@ -807,6 +847,14 @@ take a single C<binmode> argument.  All of the C<open*> methods have
 C<open*_raw> and C<open*_utf8> equivalents that use C<:raw> and
 C<:raw:encoding(UTF-8)>, respectively.
 
+An optional hash reference may be used to pass options.  The only option is
+C<locked>.  If true, handles opened for writing, appending or read-write are
+locked with C<LOCK_EX>; otherwise, they are locked for C<LOCK_SH>.
+
+    $fh = path("foo.txt")->openrw_utf8( { locked => 1 } );
+
+See L</filehandle> for more on locking.
+
 =cut
 
 my %opens = (
@@ -820,13 +868,26 @@ while ( my ( $k, $v ) = each %opens ) {
     no strict 'refs';
     # must check for lexical IO mode hint
     *{$k} = sub {
-        my ( $self, $binmode ) = @_;
+        my ( $self, @args ) = @_;
+        my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
+        $args = _get_args( $args, qw/locked/ );
+        my ($binmode) = @args;
         $binmode = ( ( caller(0) )[10] || {} )->{ 'open' . substr( $v, -1, 1 ) }
           unless defined $binmode;
-        $self->filehandle( $v, $binmode );
+        $self->filehandle( $args, $v, $binmode );
     };
-    *{ $k . "_raw" }  = sub { $_[0]->filehandle( $v, ":raw" ) };
-    *{ $k . "_utf8" } = sub { $_[0]->filehandle( $v, ":raw:encoding(UTF-8)" ) };
+    *{ $k . "_raw" } = sub {
+        my ( $self, @args ) = @_;
+        my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
+        $args = _get_args( $args, qw/locked/ );
+        $self->filehandle( $args, $v, ":raw" );
+    };
+    *{ $k . "_utf8" } = sub {
+        my ( $self, @args ) = @_;
+        my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
+        $args = _get_args( $args, qw/locked/ );
+        $self->filehandle( $args, $v, ":raw:encoding(UTF-8)" );
+    };
 }
 
 =method parent
@@ -991,9 +1052,7 @@ sub slurp {
     my $args    = _get_args( shift, qw/binmode/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
-    my $fh = $self->filehandle( "<", $binmode );
-    require Fcntl;
-    flock( $fh, Fcntl::LOCK_SH() ) or $self->_throw('flock (LOCK_SH)');
+    my $fh = $self->filehandle( { locked => 1 }, "<", $binmode );
     if ( ( defined($binmode) ? $binmode : "" ) eq ":unix"
         and my $size = -s $fh )
     {
@@ -1049,13 +1108,8 @@ sub spew {
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
-    my $fh = $temp->filehandle( ">", $binmode );
-    require Fcntl;
-    flock( $fh, Fcntl::LOCK_EX() ) or $self->_throw( 'flock (LOCK_EX)', $temp->[PATH] );
-    seek( $fh, 0, Fcntl::SEEK_SET() ) or $self->_throw( 'seek', $temp->[PATH] );
-    truncate( $fh, 0 ) or $self->_throw( 'truncate', $temp->[PATH] );
+    my $fh = $temp->filehandle( { locked => 1 }, ">", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
-    flock( $fh, Fcntl::LOCK_UN() ) or $self->_throw( 'flock (LOCK_UN)', $temp->[PATH] );
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
     # spewing need to follow the link
