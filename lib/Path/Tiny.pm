@@ -543,7 +543,9 @@ See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 sub filehandle {
     my ( $self, $opentype, $binmode ) = @_;
     $opentype = "<" unless defined $opentype;
-    $binmode  = ""  unless defined $binmode;
+    $binmode = ( ( caller(0) )[10] || {} )->{ 'open' . substr( $opentype, -1, 1 ) }
+      unless defined $binmode;
+    $binmode = "" unless defined $binmode;
 
     my $mode = $opentype . $binmode;
     my $fh;
