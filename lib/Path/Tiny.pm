@@ -1364,8 +1364,8 @@ C<Unicode::UTF8> approach.
 =head2 Default IO layers and the open pragma
 
 If you have Perl 5.10 or later, file input/output methods (C<slurp>, C<spew>,
-etc.) and high-level handle opening methods ( C<openr>, C<openw>, etc. but not
-C<filehandle>) respect default encodings set by the C<-C> switch or lexical
+etc.) and high-level handle opening methods ( C<filehandle>, C<openr>,
+C<openw>, etc. ) respect default encodings set by the C<-C> switch or lexical
 L<open> settings of the caller.  For UTF-8, this is almost certainly slower
 than using the dedicated C<_utf8> methods if you have L<Unicode::UTF8>.
 

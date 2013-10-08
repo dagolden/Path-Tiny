@@ -9,6 +9,11 @@ Revision history for Path-Tiny
       feature internally.  Truncating file modes defer truncation until
       after an exclusive lock is acquired.
 
+    [FIXES]
+
+    - The 'filehandle' method now respects default encoding set by
+      the caller's open pragma.
+
 0.038     2013-10-01 18:20:05 America/New_York
 
     [ADDITIONS]
