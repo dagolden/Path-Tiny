@@ -565,7 +565,9 @@ sub filehandle {
             # fix up the binmode since sysopen() can't specify layers like
             # open() and binmode() can't start with just :unix like open()
             if ( $binmode =~ s/^:unix// ) {
-                # strip off layers until only :unix is left
+                # eliminate pseudo-layers
+                binmode( $fh, ":raw" ) or $self->_throw("binmode (:raw)");
+                # strip off real layers until only :unix is left
                 while ( 1 < ( my $layers =()= PerlIO::get_layers( $fh, output => 1 ) ) ) {
                     binmode( $fh, ":pop" ) or $self->_throw("binmode (:pop)");
                 }

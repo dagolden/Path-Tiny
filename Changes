@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXES]
+
+    - When using 'filehandle' to request a locked handle that truncates an
+      existing file and has a binmode starting with ":unix", this fixes a
+      bug where pseudo-layers weren't being cleared properly.
+
 0.039     2013-10-08 16:39:23 America/New_York
 
     [ADDITIONS]
