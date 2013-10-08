@@ -4,6 +4,8 @@ Revision history for Path-Tiny
 
     [FIXES]
 
+    - Fixed broken locking test on *bsd
+
     - When using 'filehandle' to request a locked handle that truncates an
       existing file and has a binmode starting with ":unix", this fixes a
       bug where pseudo-layers weren't being cleared properly.

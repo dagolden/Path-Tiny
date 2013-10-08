@@ -17,7 +17,7 @@ if ($IS_BSD) {
     # is temp partition lockable?
     my $file = Path::Tiny->tempfile;
     open my $fh, ">>", $file;
-    flock $fh, "LOCK_EX"
+    flock $fh, LOCK_EX
       or plan skip_all => "Can't lock tempfiles on this OS/filesystem";
 }
 
