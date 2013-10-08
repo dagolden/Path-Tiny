@@ -1372,7 +1372,8 @@ than using the dedicated C<_utf8> methods if you have L<Unicode::UTF8>.
 =head1 TYPE CONSTRAINTS AND COERCION
 
 A standard L<MooseX::Types> library is available at
-L<MooseX::Types::Path::Tiny>.
+L<MooseX::Types::Path::Tiny>.  A L<Type::Tiny> equivalent is available as
+L<Types::Path::Tiny>.
 
 =head1 SEE ALSO
 
