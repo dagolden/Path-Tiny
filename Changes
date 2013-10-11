@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXES]
+
+    - Removes duplicate test dependency on File::Spec that triggers
+      a CPAN.pm bug
+
 0.040     2013-10-08 22:01:50 America/New_York
 
     [FIXES]
