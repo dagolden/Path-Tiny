@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.041     2013-10-11 08:56:31 America/New_York
+
     [FIXES]
 
     - Removes duplicate test dependency on File::Spec that triggers
