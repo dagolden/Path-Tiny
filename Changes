@@ -8,6 +8,10 @@ Revision history for Path-Tiny
       don't exist), the exception now explains the error clearly instead of
       complaining about path() needing a defined, positive-length argument.
 
+    - On Windows, fixed resolution of relative paths with a volume.
+      E.g. "C:foo" is now correctly translated into getdcwd on "C:"
+      plus "foo".
+
 0.041     2013-10-11 08:56:31 America/New_York
 
     [FIXES]

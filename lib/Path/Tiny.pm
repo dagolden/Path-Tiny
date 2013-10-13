@@ -58,15 +58,17 @@ sub _normalize_win32_path {
     if ( $path =~ m{^($DRV_VOL)(?:[^\\/]|$)} ) {
         my $drv = $1;
         require Cwd;
-        my $dcwd = Cwd::getdcwd($path); # C: -> C:\some\cwd
+        my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
         # getdcwd on non-existent drive returns empty string
-        # so make Z: -> Z:/
+        # so just use the original drive Z: -> Z:
         $dcwd = "$drv" unless length $dcwd;
+        # normalize slashes: migth be C:\some\cwd or D:\ or Z:
         $dcwd =~ s{[\\/]?$}{/};
+        # make the path absolute with dcwd
         $path =~ s{^$DRV_VOL}{$dcwd};
     }
     elsif ( $path =~ /^$UNC_VOL$/ ) {
-        $path .= "/";                       # canonpath currently strips it and we want it
+        $path .= "/"; # canonpath currently strips it and we want it
     }
     # hack to make splitpath give us a basename; might not be necessary
     # since canonpath should do this for non-root paths, but I don't trust it
