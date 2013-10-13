@@ -73,7 +73,7 @@ sub _normalize_win32_path {
     elsif ( $path =~ /^$UNC_VOL$/ ) {
         $path .= "/"; # canonpath currently strips it and we want it
     }
- 
+
     # hack to make splitpath give us a basename; might not be necessary
     # since canonpath should do this for non-root paths, but I don't trust it
     $path =~ s{/$}{} if $path !~ /^$WIN32_ROOT$/;
@@ -316,10 +316,10 @@ sub _splitpath {
     $abs = path("foo/bar")->absolute;
     $abs = path("foo/bar")->absolute("/tmp");
 
-Returns a new C<Path::Tiny> object with an absolute path (or itself if
-already absolute.  Unless
-an argument is given, the current directory is used as the absolute base path.
-The argument must be absolute or you won't get an absolute result.
+Returns a new C<Path::Tiny> object with an absolute path (or itself if already
+absolute).  Unless an argument is given, the current directory is used as the
+absolute base path.  The argument must be absolute or you won't get an absolute
+result.
 
 This will not resolve upward directories ("foo/../bar") unless C<canonpath>
 in L<File::Spec> would normally do so on your platform.  If you need them
@@ -348,8 +348,8 @@ sub absolute {
     }
 
     # relative path on any OS
-        require Cwd;
-        return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
+    require Cwd;
+    return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
