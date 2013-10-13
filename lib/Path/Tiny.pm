@@ -54,11 +54,16 @@ my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 
 sub _normalize_win32_path {
     my ($path) = @_;
-    if ( $path =~ /^$DRV_VOL$/ ) {
+    # could be C: or C:foo; have to expand C: either way
+    if ( $path =~ m{^($DRV_VOL)(?:[^\\/]|$)} ) {
+        my $drv = $1;
         require Cwd;
-        my $fullpath = Cwd::getdcwd($path); # C: -> C:\some\cwd
+        my $dcwd = Cwd::getdcwd($path); # C: -> C:\some\cwd
         # getdcwd on non-existent drive returns empty string
-        $path = length $fullpath ? $fullpath : $path . "/";
+        # so make Z: -> Z:/
+        $dcwd = "$drv" unless length $dcwd;
+        $dcwd =~ s{[\\/]?$}{/};
+        $path =~ s{^$DRV_VOL}{$dcwd};
     }
     elsif ( $path =~ /^$UNC_VOL$/ ) {
         $path .= "/";                       # canonpath currently strips it and we want it
