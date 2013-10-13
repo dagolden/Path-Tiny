@@ -47,15 +47,17 @@ sub _check_UU {
 
 # notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
 my $SLASH      = qr{[\\/]};
-my $NOTSLASH   = qr{[^\\/]+};
+my $NOTSLASH   = qr{[^\\/]};
 my $DRV_VOL    = qr{[a-z]:}i;
-my $UNC_VOL    = qr{$SLASH $SLASH $NOTSLASH $SLASH $NOTSLASH}x;
+my $UNC_VOL    = qr{$SLASH $SLASH $NOTSLASH+ $SLASH $NOTSLASH+}x;
 my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 
 sub _normalize_win32_path {
     my ($path) = @_;
-    # could be C: or C:foo; have to expand C: either way
-    if ( $path =~ m{^($DRV_VOL)(?:[^\\/]|$)} ) {
+
+    # have to fix up three cases:
+    # (1) could be C: or C:foo; have to expand C: either way
+    if ( $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)} ) {
         my $drv = $1;
         require Cwd;
         my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
@@ -63,13 +65,15 @@ sub _normalize_win32_path {
         # so just use the original drive Z: -> Z:
         $dcwd = "$drv" unless length $dcwd;
         # normalize slashes: migth be C:\some\cwd or D:\ or Z:
-        $dcwd =~ s{[\\/]?$}{/};
+        $dcwd =~ s{$SLASH?$}{/};
         # make the path absolute with dcwd
         $path =~ s{^$DRV_VOL}{$dcwd};
     }
+    # (2) could be //server/mount
     elsif ( $path =~ /^$UNC_VOL$/ ) {
         $path .= "/"; # canonpath currently strips it and we want it
     }
+ 
     # hack to make splitpath give us a basename; might not be necessary
     # since canonpath should do this for non-root paths, but I don't trust it
     $path =~ s{/$}{} if $path !~ /^$WIN32_ROOT$/;
@@ -312,7 +316,8 @@ sub _splitpath {
     $abs = path("foo/bar")->absolute;
     $abs = path("foo/bar")->absolute("/tmp");
 
-Returns a new C<Path::Tiny> object with an absolute path.  Unless
+Returns a new C<Path::Tiny> object with an absolute path (or itself if
+already absolute.  Unless
 an argument is given, the current directory is used as the absolute base path.
 The argument must be absolute or you won't get an absolute result.
 
@@ -320,14 +325,31 @@ This will not resolve upward directories ("foo/../bar") unless C<canonpath>
 in L<File::Spec> would normally do so on your platform.  If you need them
 resolved, you must call the more expensive C<realpath> method instead.
 
+On Windows, an absolute path without a volume component will have it added
+based on the current drive.
+
 =cut
 
 sub absolute {
     my ( $self, $base ) = @_;
-    return $self if $self->is_absolute;
 
-    require Cwd;
-    return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
+    # absolute paths handled differently by OS
+    if ( $^O eq "MSWin32" ) {
+        return $self if length $self->volume;
+        # add missing volume
+        if ( $self->is_absolute ) {
+            require Cwd;
+            my ($drv) = Cwd::getdcwd() =~ /^($DRV_VOL | $UNC_VOL)/x;
+            return path( $drv . $self->[PATH] );
+        }
+    }
+    else {
+        return $self if $self->is_absolute;
+    }
+
+    # relative path on any OS
+        require Cwd;
+        return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
