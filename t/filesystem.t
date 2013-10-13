@@ -229,6 +229,14 @@ my $tmpdir = Path::Tiny->tempdir;
     my $abs_t   = path("t")->absolute;
     my $case    = $abs_t->child("../lib");
     is( $case->realpath, $lib->realpath, "realpath on absolute" );
+
+    # non-existent realpath should throw error
+    eval { path("lkajdfak/djslakdj")->realpath };
+    like(
+        $@,
+        qr/Error resolving realpath/,
+        "caught error from realpath on non-existent file"
+    );
 }
 
 {

@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - When 'realpath' can't be resolved (because intermediate directories
+      don't exist), the exception now explains the error clearly instead of
+      complaining about path() needing a defined, positive-length argument.
+
 0.041     2013-10-11 08:56:31 America/New_York
 
     [FIXES]

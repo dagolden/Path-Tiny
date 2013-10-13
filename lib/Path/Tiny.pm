@@ -952,11 +952,19 @@ Returns a new C<Path::Tiny> object with all symbolic links and upward directory
 parts resolved using L<Cwd>'s C<realpath>.  Compared to C<absolute>, this is
 more expensive as it must actually consult the filesystem.
 
+If the path can't be resolved (e.g. if it includes directories that don't exist),
+an exception will be thrown:
+
+    $real = path("doesnt_exist/foo")->realpath; # dies
+
 =cut
 
 sub realpath {
+    my $self = shift;
     require Cwd;
-    return path( Cwd::realpath( $_[0]->[PATH] ) );
+    my $realpath = Cwd::realpath( $self->[PATH] );
+    $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
+    return path($realpath);
 }
 
 =method relative
