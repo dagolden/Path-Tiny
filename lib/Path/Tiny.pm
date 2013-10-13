@@ -969,7 +969,7 @@ an exception will be thrown:
 sub realpath {
     my $self = shift;
     require Cwd;
-    my $realpath = Cwd::realpath( $self->[PATH] );
+    my $realpath = eval { Cwd::realpath( $self->[PATH] ) };
     $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
     return path($realpath);
 }
