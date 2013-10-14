@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.043     2013-10-14 06:24:06 America/New_York
+
     [CHANGED]
 
     - Calling 'absolute' on Windows will add the volume if it is missing
