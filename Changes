@@ -8,6 +8,11 @@ Revision history for Path-Tiny
       (E.g. "/foo" will become "C:/foo").  This matches the behavior
       of File::Spec->rel2abs.
 
+    [FIXED]
+
+    - Fixed t/00-report-prereqs.t for use with older versions of
+      CPAN::Meta::Reporter
+
 0.042     2013-10-13 11:02:02 America/New_York
 
     [FIXED]
