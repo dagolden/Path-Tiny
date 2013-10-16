@@ -30,6 +30,8 @@ on 'test' => sub {
 };
 
 on 'test' => sub {
+  recommends "CPAN::Meta" => "0";
+  recommends "CPAN::Meta::Requirements" => "0";
   recommends "Test::FailWarnings" => "0";
 };
 
