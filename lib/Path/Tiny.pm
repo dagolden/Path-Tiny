@@ -1298,7 +1298,7 @@ sub throw {
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
-DOES
+IS_BSD IS_WIN32
 
 =head1 SYNOPSIS
 
