@@ -51,7 +51,7 @@ my $UNC_VOL    = qr{$SLASH $SLASH $NOTSLASH+ $SLASH $NOTSLASH+}x;
 my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 
 sub _win32_vol {
-    my ($path, $drv) = @_;
+    my ( $path, $drv ) = @_;
     require Cwd;
     my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
     # getdcwd on non-existent drive returns empty string
@@ -67,9 +67,8 @@ sub _win32_vol {
 # This is a string test for before we have the object; see is_rootdir for well-formed
 # object test
 sub _is_root {
-    return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' )
+    return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
 }
-
 
 # flock doesn't work on NFS on BSD.  Since program authors often can't control
 # or detect that, we warn once instead of being fatal if we can detect it and
@@ -161,12 +160,12 @@ sub path {
 
     # expand relative volume paths on windows; put trailing slash on UNC root
     if ( IS_WIN32() ) {
-        $path = _win32_vol($path, $1)if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)};
+        $path = _win32_vol( $path, $1 ) if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)};
         $path .= "/" if $path =~ m{^$UNC_VOL$};
     }
 
     # concatenate more arguments (stringifies any objects, too)
-    if ( @_ ) {
+    if (@_) {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
@@ -186,7 +185,7 @@ sub path {
 
     # do any tilde expansions
     if ( $path =~ m{^(~[^/]*).*} ) {
-        my ($homedir) = glob($1);    # glob without list context == heisenbug!
+        my ($homedir) = glob($1); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
 
@@ -360,7 +359,7 @@ sub absolute {
 
     # relative path on any OS
     require Cwd;
-    return path( (defined($base) ? $base : Cwd::getcwd()), $_[0]->[PATH] );
+    return path( ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
