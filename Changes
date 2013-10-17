@@ -10,6 +10,8 @@ Revision history for Path-Tiny
       first argument on Windows; e.g. path("C:", "lib") must be like
       path("C:lib"), not path("C:/lib").
 
+    - On AIX, shared locking is replaced by exclusive locking on a R/W
+      filehandle, as locking read handles is not supported
 
 0.043     2013-10-14 06:24:06 America/New_York
 

@@ -620,6 +620,11 @@ sub filehandle {
             $lock  = Fcntl::LOCK_EX();
             $trunc = 1;
         }
+        elsif ( $^O eq 'aix' && $opentype eq "<" ) {
+            # AIX can only lock write handles, so upgrade to RW and LOCK_EX
+            $opentype = "+<";
+            $lock     = Fcntl::LOCK_EX();
+        }
         else {
             $lock = $opentype eq "<" ? Fcntl::LOCK_SH() : Fcntl::LOCK_EX();
         }
@@ -1381,6 +1386,12 @@ want this failure to be fatal, you can fatalize the 'flock' warnings
 category:
 
     use warnings FATAL => 'flock';
+
+=head2 AIX and locking
+
+AIX requires a write handle for locking.  Therefore, calls that normally
+open a read handle and take a shared lock instead will open a read-write
+handle and take an exclusive lock.
 
 =head2 utf8 vs UTF-8
 
