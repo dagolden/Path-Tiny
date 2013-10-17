@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed child path construction when 'children' is called against the
+      root path.
+
 0.043     2013-10-14 06:24:06 America/New_York
 
     [CHANGED]

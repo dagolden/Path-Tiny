@@ -474,7 +474,7 @@ sub children {
         Carp::croak("Invalid argument '$filter' for children()");
     }
 
-    return map { path( $self->[PATH] . "/$_" ) } @children;
+    return map { path( $self->[PATH], $_ ) } @children;
 }
 
 =method copy
