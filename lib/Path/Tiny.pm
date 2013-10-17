@@ -15,12 +15,14 @@ our @EXPORT    = qw/path/;
 our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
 
 use constant {
-    PATH  => 0,
-    CANON => 1,
-    VOL   => 2,
-    DIR   => 3,
-    FILE  => 4,
-    TEMP  => 5,
+    PATH     => 0,
+    CANON    => 1,
+    VOL      => 2,
+    DIR      => 3,
+    FILE     => 4,
+    TEMP     => 5,
+    IS_BSD   => ( scalar $^O =~ /bsd$/ ),
+    IS_WIN32 => ( $^O eq 'MSWin32' ),
 };
 
 use overload (
@@ -28,10 +30,6 @@ use overload (
     bool     => sub () { 1 },
     fallback => 1,
 );
-
-my $IS_BSD;
-
-BEGIN { $IS_BSD = $^O =~ /bsd$/ }
 
 # if cloning, threads should already be loaded, but Win32 pseudoforks
 # don't do that so we have to be sure it's loaded anyway
@@ -73,10 +71,6 @@ sub _normalize_win32_path {
     elsif ( $path =~ /^$UNC_VOL$/ ) {
         $path .= "/"; # canonpath currently strips it and we want it
     }
-
-    # hack to make splitpath give us a basename; might not be necessary
-    # since canonpath should do this for non-root paths, but I don't trust it
-    $path =~ s{/$}{} if $path !~ /^$WIN32_ROOT$/;
     return $path;
 }
 
@@ -85,14 +79,14 @@ sub _normalize_win32_path {
 # people who need it strict can fatalize the 'flock' category
 
 #<<< No perltidy
-{ package flock; use if $IS_BSD, 'warnings::register' }
+{ package flock; use if Path::Tiny::IS_BSD(), 'warnings::register' }
 #>>>
 
 my $WARNED_BSD_NFS = 0;
 
 sub _throw {
     my ( $self, $function, $file ) = @_;
-    if (   $IS_BSD
+    if (   IS_BSD()
         && $function =~ /^flock/
         && $! =~ /operation not supported/i
         && !warnings::fatal_enabled('flock') )
@@ -164,18 +158,15 @@ sub path {
     my $path = shift;
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
+    # could be "C:" or "C:foo" and we want to expand before handling @_
+    $path = _normalize_win32_path($path) if IS_WIN32();
     # join stringifies any objects, too, which is handy :-)
     $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    if ( $^O eq 'MSWin32' ) {
-        $path = _normalize_win32_path($path);
-    }
-    else {
-        # hack to make splitpath give us a basename; might not be necessary
-        # since canonpath should do this for non-root paths, but I don't trust it
-        $path =~ s{/$}{} if $path ne '/';
-    }
-    $path =~ tr[\\][/]; # unix convention enforced
+    $path =~ tr[\\][/];                               # unix convention enforced
+    # hack to make splitpath give us a basename; might not be necessary
+    # since canonpath should do this for non-root paths, but I don't trust it
+    $path =~ s{/$}{} if IS_WIN32() ? ( $path !~ /^$WIN32_ROOT$/ ) : ( $path ne '/' );
     if ( $path =~ m{^(~[^/]*).*} ) { # expand a tilde
         my ($homedir) = glob($1);    # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
@@ -334,7 +325,7 @@ sub absolute {
     my ( $self, $base ) = @_;
 
     # absolute paths handled differently by OS
-    if ( $^O eq "MSWin32" ) {
+    if (IS_WIN32) {
         return $self if length $self->volume;
         # add missing volume
         if ( $self->is_absolute ) {
