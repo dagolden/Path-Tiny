@@ -50,29 +50,26 @@ my $DRV_VOL    = qr{[a-z]:}i;
 my $UNC_VOL    = qr{$SLASH $SLASH $NOTSLASH+ $SLASH $NOTSLASH+}x;
 my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 
-sub _normalize_win32_path {
-    my ($path) = @_;
-
-    # have to fix up three cases:
-    # (1) could be C: or C:foo; have to expand C: either way
-    if ( $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)} ) {
-        my $drv = $1;
-        require Cwd;
-        my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
-        # getdcwd on non-existent drive returns empty string
-        # so just use the original drive Z: -> Z:
-        $dcwd = "$drv" unless length $dcwd;
-        # normalize slashes: migth be C:\some\cwd or D:\ or Z:
-        $dcwd =~ s{$SLASH?$}{/};
-        # make the path absolute with dcwd
-        $path =~ s{^$DRV_VOL}{$dcwd};
-    }
-    # (2) could be //server/mount
-    elsif ( $path =~ /^$UNC_VOL$/ ) {
-        $path .= "/"; # canonpath currently strips it and we want it
-    }
+sub _win32_vol {
+    my ($path, $drv) = @_;
+    require Cwd;
+    my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
+    # getdcwd on non-existent drive returns empty string
+    # so just use the original drive Z: -> Z:
+    $dcwd = "$drv" unless length $dcwd;
+    # normalize dwcd to end with a slash: might be C:\some\cwd or D:\ or Z:
+    $dcwd =~ s{$SLASH?$}{/};
+    # make the path absolute with dcwd
+    $path =~ s{^$DRV_VOL}{$dcwd};
     return $path;
 }
+
+# This is a string test for before we have the object; see is_rootdir for well-formed
+# object test
+sub _is_root {
+    return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' )
+}
+
 
 # flock doesn't work on NFS on BSD.  Since program authors often can't control
 # or detect that, we warn once instead of being fatal if we can detect it and
@@ -158,19 +155,42 @@ sub path {
     my $path = shift;
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
-    # could be "C:" or "C:foo" and we want to expand before handling @_
-    $path = _normalize_win32_path($path) if IS_WIN32();
-    # join stringifies any objects, too, which is handy :-)
-    $path = join( "/", ( $path eq '/' ? "" : $path ), @_ ) if @_;
+
+    # stringify initial path
+    $path = "$path";
+
+    # expand relative volume paths on windows; put trailing slash on UNC root
+    if ( IS_WIN32() ) {
+        $path = _win32_vol($path, $1)if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)};
+        $path .= "/" if $path =~ m{^$UNC_VOL$};
+    }
+
+    # concatenate more arguments (stringifies any objects, too)
+    if ( @_ ) {
+        $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
+    }
+
+    # canonicalize paths
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
     $path =~ tr[\\][/];                               # unix convention enforced
-    # hack to make splitpath give us a basename; might not be necessary
-    # since canonpath should do this for non-root paths, but I don't trust it
-    $path =~ s{/$}{} if IS_WIN32() ? ( $path !~ /^$WIN32_ROOT$/ ) : ( $path ne '/' );
-    if ( $path =~ m{^(~[^/]*).*} ) { # expand a tilde
+    $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$}; # canonpath strips it
+
+    # hack to make splitpath give us a basename; root paths must always have
+    # a trailing slash, but other paths must not
+    if ( _is_root($path) ) {
+        $path =~ s{/?$}{/};
+    }
+    else {
+        $path =~ s{/$}{};
+    }
+
+    # do any tilde expansions
+    if ( $path =~ m{^(~[^/]*).*} ) {
         my ($homedir) = glob($1);    # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
+
+    # and we're finally done
     bless [ $path, $cpath ], __PACKAGE__;
 }
 
@@ -340,7 +360,7 @@ sub absolute {
 
     # relative path on any OS
     require Cwd;
-    return path( join "/", ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
+    return path( (defined($base) ? $base : Cwd::getcwd()), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
@@ -427,8 +447,7 @@ file or directories.
 
 sub child {
     my ( $self, @parts ) = @_;
-    my $path = $self->[PATH];
-    return path( join( "/", ( $path eq '/' ? "" : $path ), @parts ) );
+    return path( $self->[PATH], @parts );
 }
 
 =method children
