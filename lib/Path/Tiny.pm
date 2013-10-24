@@ -7,6 +7,7 @@ package Path::Tiny;
 # VERSION
 
 # Dependencies
+use Config;
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp ();
@@ -42,6 +43,8 @@ my $HAS_UU;  # has Unicode::UTF8; lazily populated
 sub _check_UU {
     eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
 }
+
+my $HAS_FLOCK = $Config{d_flock} || $Config{d_fcntl_can_lock} || $Config{d_lockf};
 
 # notions of "root" directories differ on Win32: \\server\dir\ or C:\ or \
 my $SLASH      = qr{[\\/]};
@@ -591,7 +594,7 @@ sub filehandle {
     $binmode = "" unless defined $binmode;
 
     my ( $fh, $lock, $trunc );
-    if ( $args->{locked} ) {
+    if ( $HAS_FLOCK && $args->{locked} ) {
         require Fcntl;
         # truncating file modes shouldn't truncate until lock acquired
         if ( grep { $opentype eq $_ } qw( > +> ) ) {
@@ -1355,7 +1358,7 @@ All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
 File input/output methods C<flock> handles before reading or writing,
-as appropriate.
+as appropriate (if supported by the platform).
 
 The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
 mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
@@ -1377,7 +1380,14 @@ Exception objects will stringify as the C<msg> field.
 
 =head1 CAVEATS
 
-=head2 NFS and BSD
+=head2 File locking
+
+If flock is not supported on a platform, it will not be used, even if
+locking is requested.
+
+See additional caveats below.
+
+=head3 NFS and BSD
 
 On BSD, Perl's flock implementation may not work to lock files on an
 NFS filesystem.  Path::Tiny has some heuristics to detect this
@@ -1387,7 +1397,7 @@ category:
 
     use warnings FATAL => 'flock';
 
-=head2 AIX and locking
+=head3 AIX and locking
 
 AIX requires a write handle for locking.  Therefore, calls that normally
 open a read handle and take a shared lock instead will open a read-write
