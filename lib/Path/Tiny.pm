@@ -905,6 +905,7 @@ See L</filehandle> for more on locking.
 
 =cut
 
+# map method names to corresponding open mode
 my %opens = (
     opena  => ">>",
     openr  => "<",
@@ -1162,6 +1163,7 @@ sub spew {
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
     $args = _get_args( $args, qw/binmode/ );
     my $binmode = $args->{binmode};
+    # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $TID . $$ );
     my $fh = $temp->filehandle( { locked => 1 }, ">", $binmode );
