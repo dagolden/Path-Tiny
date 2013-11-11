@@ -1224,6 +1224,53 @@ returns the path standardized with Unix-style C</> directory separators.
 
 sub stringify { $_[0]->[PATH] }
 
+=method subsumes
+
+    path("foo/bar")->subsumes("foo/bar/baz"); # true
+    path("/foo/bar")->subsumes("/foo/baz");   # false
+
+Returns true if the first path is a prefix of the second path at a directory
+boundary.
+
+This B<does not> resolve parent directory entries (C<..>) or symlinks:
+
+    path("foo/bar")->subsumes("foo/bar/../baz"); # true
+
+If such things are important to you, ensure that both paths are resolved to
+the filesystem with C<realpath>:
+
+    my $p1 = path("foo/bar")->realpath;
+    my $p2 = path("foo/bar/../baz")->realpath;
+    if ( $p1->subsumes($p2) ) { ... }
+
+=cut
+
+sub subsumes {
+    my $self = shift;
+    Carp::croak("subsumes() requires a defined, positive-length argument")
+      unless defined $_[0];
+    my $other = path(shift);
+
+    if ( $self->is_absolute && !$other->is_absolute ) {
+        $other = $other->absolute;
+    }
+    elsif ( $other->is_absolute && !$self->is_absolute ) {
+        $self = $self->absolute;
+    }
+
+    if ( $self->[PATH] eq '.' ) {
+        return !!1; # cwd subsumes everything relative
+    }
+    elsif ( $self->is_rootdir ) {
+        # a root directory ("/", "c:/") already ends with a separator
+        return $other->[PATH] =~ m{^\Q$self->[PATH]\E};
+    }
+    else {
+        # exact match or prefix breaking at a separator
+        return $other->[PATH] =~ m{^\Q$self->[PATH]\E(?:/|$)};
+    }
+}
+
 =method touch
 
     path("foo.txt")->touch;
