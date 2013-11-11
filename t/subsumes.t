@@ -35,6 +35,9 @@ my @cases = (
         [ '.'         => 'foo'         => 1 ],
         [ 'foo'       => 'foo/baz'     => 1 ],
         [ './foo/bar' => 'foo/bar/baz' => 1 ],
+        [ './foo/bar' => './foo/bar'   => 1 ],
+        [ './foo/bar' => 'foo/bar'     => 1 ],
+        [ 'foo/bar'   => './foo/bar'   => 1 ],
         [ 'foo/bar'   => 'foo/baz'     => 0 ],
     ],
 
