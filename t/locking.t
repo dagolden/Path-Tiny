@@ -28,11 +28,16 @@ subtest 'write locks blocks read lock' => sub {
     ok $fh, "Opened file for writing with lock";
     $fh->autoflush(1);
     print {$fh} "hello";
-    # Have to check a handle for writing because AIX doesn't support
-    # locking a read handle
-    open my $fh2, ">", "$file";
-    ok( $fh2, "opened again for writing" );
-    ok( !flock( $fh2, LOCK_EX | LOCK_NB ), "write lock not available" );
+    # check if a different process can get a lock; use RW mode for AIX
+    my $rc = system( $^X, '-e', <<"HERE");
+use strict;
+use warnings;
+use Fcntl ':flock';
+open my \$fh, "+<", "$file";
+exit flock( \$fh, LOCK_SH|LOCK_NB );
+HERE
+    isnt( $rc, -1, "ran process to try to get lock" );
+    is( $rc >> 8, 0, "process failed to get lock" );
 };
 
 done_testing;
