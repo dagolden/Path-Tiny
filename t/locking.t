@@ -28,9 +28,11 @@ subtest 'write locks blocks read lock' => sub {
     ok $fh, "Opened file for writing with lock";
     $fh->autoflush(1);
     print {$fh} "hello";
-    open my $fh2, "<", "$file";
-    ok( $fh2, "opened again for reading" );
-    ok( !flock( $fh2, LOCK_SH | LOCK_NB ), "read lock not available" );
+    # Have to check a handle for writing because AIX doesn't support
+    # locking a read handle
+    open my $fh2, ">", "$file";
+    ok( $fh2, "opened again for writing" );
+    ok( !flock( $fh2, LOCK_EX | LOCK_NB ), "write lock not available" );
 };
 
 done_testing;
