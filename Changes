@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.046     2013-11-22 17:07:24 America/New_York
+
     [FIXED]
 
     - Revised locking tests for portability again: locks are now tested
