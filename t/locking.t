@@ -29,13 +29,15 @@ subtest 'write locks blocks read lock' => sub {
     $fh->autoflush(1);
     print {$fh} "hello";
     # check if a different process can get a lock; use RW mode for AIX
-    my $rc = system( $^X, '-e', <<"HERE");
+    my $locktester = Path::Tiny->tempfile;
+    $locktester->spew(<<"HERE");
 use strict;
 use warnings;
 use Fcntl ':flock';
 open my \$fh, "+<", "$file";
 exit flock( \$fh, LOCK_SH|LOCK_NB );
 HERE
+    my $rc = system( $^X, $locktester );
     isnt( $rc, -1, "ran process to try to get lock" );
     is( $rc >> 8, 0, "process failed to get lock" );
 };
