@@ -1251,10 +1251,20 @@ sub subsumes {
       unless defined $_[0];
     my $other = path(shift);
 
+    # normalize absolute vs relative
     if ( $self->is_absolute && !$other->is_absolute ) {
         $other = $other->absolute;
     }
     elsif ( $other->is_absolute && !$self->is_absolute ) {
+        $self = $self->absolute;
+    }
+
+    # normalize volume vs non-volume; do this after absolute path
+    # adjustments above since that might add volumes already
+    if ( length $self->volume && !length $other->volume ) {
+        $other = $other->absolute;
+    }
+    elsif ( length $other->volume && !length $self->volume ) {
         $self = $self->absolute;
     }
 

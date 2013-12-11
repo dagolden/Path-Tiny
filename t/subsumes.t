@@ -7,6 +7,7 @@ use lib 't/lib';
 use TestUtils qw/exception/;
 
 use Path::Tiny;
+use Cwd;
 
 my @cases = (
     # path1 => path2 => path1->subsumes(path2)
@@ -56,6 +57,23 @@ my @cases = (
     ],
 
 );
+
+if ( $^O eq 'MSWin32' ) {
+    my $vol = Cwd::getdcwd();
+    my $other = $vol ne 'Z:\\' ? 'Z:\\' : 'Y:\\';
+    push @cases,
+      [
+        [ "C:/foo"     => "C:/foo" => 1 ],
+        [ "C:/foo"     => "C:/bar" => 0 ],
+        [ "C:/"        => "C:/foo" => 1 ],
+        [ "C:/"        => "D:/"    => 0 ],
+        [ "${vol}/foo" => "/foo"   => 1 ],
+        [ $vol         => "/foo"   => 1 ],
+        [ $vol         => $other   => 0 ],
+        [ "/"          => $vol     => 1 ],
+        [ "/"          => $other   => 0 ],
+      ];
+}
 
 while (@cases) {
     my ( $subtest, $tests ) = splice( @cases, 0, 2 );
