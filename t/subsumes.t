@@ -45,11 +45,11 @@ my @cases = (
     ],
 
     "relative v. absolute" => [
-        [ path(".")->absolute  => 't'                 => 1 ],
-        [ "."                  => path('t')->absolute => 1 ],
-        [ "foo"                => path('t')->absolute => 0 ],
-        [ path("..")->realpath => 't'                 => 1 ],
-        [ path("lib")->absolute => 't'                => 0 ],
+        [ path(".")->absolute   => 't'                 => 1 ],
+        [ "."                   => path('t')->absolute => 1 ],
+        [ "foo"                 => path('t')->absolute => 0 ],
+        [ path("..")->realpath  => 't'                 => 1 ],
+        [ path("lib")->absolute => 't'                 => 0 ],
     ],
 
     "updirs in paths" => [
@@ -61,21 +61,21 @@ my @cases = (
 
 );
 
-if ( $IS_WIN32 ) {
-    my $vol = path(Cwd::getdcwd())->volume . "/";
+if ($IS_WIN32) {
+    my $vol = path( Cwd::getdcwd() )->volume . "/";
     my $other = $vol ne 'Z:/' ? 'Z:/' : 'Y:/';
     push @cases, 'Win32 cases',
       [
-        [ "C:/foo"     => "C:/foo" => 1 ],
-        [ "C:/foo"     => "C:/bar" => 0 ],
-        [ "C:/"        => "C:/foo" => 1 ],
-        [ "C:/"        => "D:/"    => 0 ],
-        [ "${vol}foo"  => "/foo"   => 1 ],
-        [ $vol         => "/foo"   => 1 ],
-        [ $vol         => $other   => 0 ],
-        [ "/"          => $vol     => 1 ],
-        [ "/"          => $other   => 0 ],
-        [ "/foo"       => "${vol}foo"     => 1 ],
+        [ "C:/foo"    => "C:/foo"    => 1 ],
+        [ "C:/foo"    => "C:/bar"    => 0 ],
+        [ "C:/"       => "C:/foo"    => 1 ],
+        [ "C:/"       => "D:/"       => 0 ],
+        [ "${vol}foo" => "/foo"      => 1 ],
+        [ $vol        => "/foo"      => 1 ],
+        [ $vol        => $other      => 0 ],
+        [ "/"         => $vol        => 1 ],
+        [ "/"         => $other      => 0 ],
+        [ "/foo"      => "${vol}foo" => 1 ],
       ];
 }
 
