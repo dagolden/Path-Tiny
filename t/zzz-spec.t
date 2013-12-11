@@ -63,7 +63,7 @@ my @tests = (
     [ "path('..')->absolute('/t1/t2/t3')",           '/t1/t2/t3/..',    '/t1/t2' ],
     [ "path('../t4')->absolute('/t1/t2/t3')",        '/t1/t2/t3/../t4', '/t1/t2/t4' ],
     # need to wash through rootdir->absolute->child to pick up volume on Windows
-    [ "path('/t1')->absolute('/t1/t2/t3')",  Path::Tiny->rootdir->absolute->child("t1") ],
+    [ "path('/t1')->absolute('/t1/t2/t3')", Path::Tiny->rootdir->absolute->child("t1") ],
 );
 
 my @win32_tests;
