@@ -1009,7 +1009,10 @@ an exception will be thrown:
 sub realpath {
     my $self = shift;
     require Cwd;
-    my $realpath = eval { Cwd::realpath( $self->[PATH] ) };
+    my $realpath = eval {
+        local $SIG{__WARN__} = sub { }; # (sigh) pure-perl CWD can carp
+        Cwd::realpath( $self->[PATH] );
+    };
     $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
     return path($realpath);
 }

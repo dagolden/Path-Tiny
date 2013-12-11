@@ -6,6 +6,14 @@ Revision history for Path-Tiny
 
     - Added 'subsumes' method
 
+    [CHANGED]
+
+    - The 'flock' package will no longer indexed by PAUSE
+
+    [FIXED]
+
+    - Intercepts warnings from pure-perl Cwd::realpath
+
 0.047     2013-11-26 15:11:13 America/New_York
 
     [FIXED]
