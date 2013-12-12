@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.049     2013-12-12 00:48:01 America/New_York
+
     [FIXED]
 
     - Generates filename for atomic writes independent of thread-ID.
