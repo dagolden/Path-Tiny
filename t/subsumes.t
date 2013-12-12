@@ -62,7 +62,7 @@ my @cases = (
 );
 
 if ($IS_WIN32) {
-    my $vol = path( Cwd::getdcwd() )->volume . "/";
+    my $vol = path( Win32::GetCwd() )->volume . "/";
     my $other = $vol ne 'Z:/' ? 'Z:/' : 'Y:/';
     push @cases, 'Win32 cases',
       [

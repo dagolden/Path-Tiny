@@ -119,7 +119,7 @@ if ($IS_WIN32) {
         [ "path('/../')",                  '/' ],
         [ "path('d1/../foo')",             'foo' ],
         # if there's no C drive, getdcwd will probably return '', so fake it
-        [ "path('C:')", path( Cwd::getdcwd("C:") || "C:/" ) ],
+        [ "path('C:')", path( eval { Cwd::getdcwd("C:") } || "C:/" ) ],
         [ "path('\\\\server\\share\\')", '//server/share/' ],
         [ "path('\\\\server\\share')",   '//server/share/' ],
         [ "path('//server/share/')",     '//server/share/' ],
