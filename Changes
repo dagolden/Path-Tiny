@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Generates filename for atomic writes independent of thread-ID.
+      Fixes crashing bug on Win32 when fork() is called.
+
 0.048     2013-12-11 21:56:23 America/New_York
 
     [ADDED]
