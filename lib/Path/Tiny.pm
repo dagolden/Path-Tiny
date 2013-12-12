@@ -800,7 +800,7 @@ sub lines {
         return @result;
     }
     elsif ($chomp) {
-        return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>;
+        return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>; ## no critic
     }
     else {
         return wantarray ? <$fh> : ( my $count =()= <$fh> );
@@ -811,7 +811,7 @@ sub lines_raw {
     my $self = shift;
     my $args = _get_args( shift, qw/binmode chomp count/ );
     if ( $args->{chomp} && !$args->{count} ) {
-        return split /\n/, slurp_raw($self); ## no critic
+        return split /\n/, slurp_raw($self);                    ## no critic
     }
     else {
         $args->{binmode} = ":raw";
