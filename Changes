@@ -12,7 +12,8 @@ Revision history for Path-Tiny
 
     [FIXED]
 
-    - Intercepts warnings from pure-perl Cwd::realpath
+    - Hides warnings and fixes possible fatal errors from pure-perl Cwd,
+      particularly on MSWin32
 
 0.047     2013-11-26 15:11:13 America/New_York
 

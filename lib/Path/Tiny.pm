@@ -56,10 +56,10 @@ my $WIN32_ROOT = qr{(?: $UNC_VOL $SLASH | $DRV_VOL $SLASH | $SLASH )}x;
 sub _win32_vol {
     my ( $path, $drv ) = @_;
     require Cwd;
-    my $dcwd = Cwd::getdcwd($drv); # C: -> C:\some\cwd
+    my $dcwd = eval { Cwd::getdcwd($drv) }; # C: -> C:\some\cwd
     # getdcwd on non-existent drive returns empty string
     # so just use the original drive Z: -> Z:
-    $dcwd = "$drv" unless length $dcwd;
+    $dcwd = "$drv" unless defined $dcwd && length $dcwd;
     # normalize dwcd to end with a slash: might be C:\some\cwd or D:\ or Z:
     $dcwd =~ s{$SLASH?$}{/};
     # make the path absolute with dcwd
@@ -352,7 +352,9 @@ sub absolute {
         # add missing volume
         if ( $self->is_absolute ) {
             require Cwd;
-            my ($drv) = Cwd::getdcwd() =~ /^($DRV_VOL | $UNC_VOL)/x;
+            # use Win32::GetCwd not Cwd::getdcwd because we're sure
+            # to have the former but not necessarily the latter
+            my ($drv) = Win32::GetCwd() =~ /^($DRV_VOL | $UNC_VOL)/x;
             return path( $drv . $self->[PATH] );
         }
     }
