@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.048     2013-12-11 21:56:23 America/New_York
+
     [ADDED]
 
     - Added 'subsumes' method
