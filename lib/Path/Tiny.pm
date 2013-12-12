@@ -761,8 +761,9 @@ sub iterator {
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
 is provided, it will be set on the handle prior to reading.  If C<count> is
-provided, up to that many lines will be returned. If C<chomp> is set, lines
-will be chomped before being returned.
+provided, up to that many lines will be returned. If C<chomp> is set, any
+end-of-line character sequences (C<CR>, C<CRLF>, or C<LF>) will be removed
+from the lines returned.
 
 Because the return is a list, C<lines> in scalar context will return the number
 of lines (and throw away the data).
@@ -792,14 +793,14 @@ sub lines {
     if ( $args->{count} ) {
         my ( @result, $counter );
         while ( my $line = <$fh> ) {
-            chomp $line if $chomp;
+            $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})$// if $chomp;
             push @result, $line;
             last if ++$counter == $args->{count};
         }
         return @result;
     }
     elsif ($chomp) {
-        return map { chomp; $_ } <$fh>;
+        return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>;
     }
     else {
         return wantarray ? <$fh> : ( my $count =()= <$fh> );
@@ -825,7 +826,7 @@ sub lines_utf8 {
         && $args->{chomp}
         && !$args->{count} )
     {
-        return split /\n/, slurp_utf8($self); ## no critic
+        return split /(?:\x{0d}?\x{0a}|\x{0d})/, slurp_utf8($self); ## no critic
     }
     else {
         $args->{binmode} = ":raw:encoding(UTF-8)";

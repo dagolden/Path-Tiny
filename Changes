@@ -8,6 +8,9 @@ Revision history for Path-Tiny
 
     [CHANGED]
 
+    - The 'chomp' option for 'lines' will remove any end-of-line sequences
+      fully instead of just chomping the last character
+
     - The 'flock' package will no longer indexed by PAUSE
 
     [FIXED]

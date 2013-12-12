@@ -11,7 +11,7 @@ use Path::Tiny;
 my $tmp = Path::Tiny->tempdir;
 
 sub _lines {
-    return ( "Line1\n", "Line2\n" );
+    return ( "Line1\r\n", "Line2\n" );
 }
 
 sub _utf8_lines {
@@ -125,7 +125,7 @@ subtest "spew -> lines (count, more than)" => sub {
 subtest "spew -> lines (count, chomp)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
-    my @exp = map { chomp; $_ } _lines;
+    my @exp = map { s/[\r\n]+//; $_ } _lines;
     is( join( '', $file->lines( { chomp => 1, count => 2 } ) ),
         join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
@@ -140,7 +140,7 @@ subtest "spew -> lines (count, UTF-8)" => sub {
 subtest "spew -> lines (count, chomp, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
-    my @exp = map { chomp; $_ } _utf8_lines;
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_lines;
     is( join( '', $file->lines_utf8( { chomp => 1, count => 2 } ) ),
         join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
@@ -148,7 +148,7 @@ subtest "spew -> lines (count, chomp, UTF-8)" => sub {
 subtest "spew -> lines (chomp, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
-    my @exp = map { chomp; $_ } _utf8_lines;
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_lines;
     is( join( '', $file->lines_utf8( { chomp => 1 } ) ), join( '', @exp ), "lines" );
 };
 
