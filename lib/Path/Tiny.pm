@@ -1523,6 +1523,8 @@ C<Path::Tiny>:
 There are probably comparable, non-Tiny tools.  Let me know if you want me to
 add a module to the list.
 
+For type constraints and coercions in L<Moose>, see L<MooseX::Types::Path::Tiny>.
+
 =cut
 
 # vim: ts=4 sts=4 sw=4 et:
