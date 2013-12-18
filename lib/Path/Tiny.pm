@@ -1525,8 +1525,6 @@ add a module to the list.
 
 This module was featured in the L<2013 Perl Advent Calendar|http://www.perladvent.org/2013/2013-12-18.html>.
 
-For type constraints and coercions in L<Moose>, see L<MooseX::Types::Path::Tiny>.
-
 =cut
 
 # vim: ts=4 sts=4 sw=4 et:
