@@ -717,6 +717,10 @@ sub iterator {
         my $next;
         while (@dirs) {
             if ( ref $dirs[0] eq 'Path::Tiny' ) {
+                if ( !-d $dirs[0] ) {
+                    # Directory must have been removed, so skip it
+                    shift @dirs and next;
+                }
                 $current = $dirs[0];
                 my $dh;
                 opendir( $dh, $current->[PATH] )
