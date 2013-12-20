@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Recursive iteration won't throw an exception if a directory is
+      removed during iteration.
+
 0.049     2013-12-12 00:48:01 America/New_York
 
     [FIXED]
