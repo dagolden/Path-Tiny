@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed file order bug in the new test file
+
 0.050     2013-12-20 07:27:20 America/New_York
 
     [FIXED]

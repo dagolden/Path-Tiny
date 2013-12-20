@@ -18,20 +18,19 @@ my @tree = qw(
 path($_)->touchpath for @tree;
 
 my @files;
-my $iter = path('base')->iterator({ recurse => 1 });
+my $iter = path('base')->iterator( { recurse => 1 } );
 my $exception = exception {
-  while (my $path = $iter->())
-  {
-    $path->remove_tree if $path->child('.naughty')->is_file;
-    push @files, $path if $path->is_file;
-  }
+    while ( my $path = $iter->() ) {
+        $path->remove_tree if $path->child('.naughty')->is_file;
+        push @files, $path if $path->is_file;
+    }
 };
 
-is($exception, '', 'can remove directories while traversing');
+is( $exception, '', 'can remove directories while traversing' );
 is_deeply(
-  \@files,
-  [ 'base/Bethlehem/XDG/gift_list.txt', 'base/New_York/XDG/gift_list.txt' ],
-  'remaining files',
+    [ sort @files ],
+    [ 'base/Bethlehem/XDG/gift_list.txt', 'base/New_York/XDG/gift_list.txt' ],
+    'remaining files',
 );
 
 done_testing;
