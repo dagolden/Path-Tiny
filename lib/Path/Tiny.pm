@@ -694,7 +694,8 @@ be included.
 If the C<recurse> option is true, the iterator will walk the directory
 recursively, breadth-first.  If the C<follow_symlinks> option is also true,
 directory links will be followed recursively.  There is no protection against
-loops when following links.
+loops when following links. If a directory is not readable, it will not be
+followed.
 
 The default is the same as:
 
@@ -717,8 +718,13 @@ sub iterator {
         my $next;
         while (@dirs) {
             if ( ref $dirs[0] eq 'Path::Tiny' ) {
-                if ( !-d $dirs[0] ) {
-                    # Directory must have been removed, so skip it
+                if ( !-r $dirs[0] ) {
+                    # Directory is missing or not readable, so skip it.  There
+                    # is still a race condition possible between the check and
+                    # the opendir, but we can't easily differentiate between
+                    # error cases that are OK to skip and those that we want
+                    # to be exceptions, so we live with the race and let opendir
+                    # be fatal.
                     shift @dirs and next;
                 }
                 $current = $dirs[0];
