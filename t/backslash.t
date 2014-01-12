@@ -17,7 +17,7 @@ plan tests => 2 + 9 * @testfiles;
 ok chdir $tmpdir;
 
 for my $testfile (@testfiles) {
-  SKIP: {
+    SKIP: {
         open my $fh, '>', $testfile
           or skip "Cannot create $testfile on this platform.", 9;
 
