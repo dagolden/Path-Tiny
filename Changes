@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.052     2014-01-14 15:58:03-05:00 America/New_York
+
     [FIXED]
 
     - Backslash-to-slash conversion now only happens on Windows
