@@ -40,7 +40,7 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
-  requires "Dist::Zilla" => "5.006";
+  requires "Dist::Zilla" => "5.011";
   requires "Dist::Zilla::Plugin::MakeMaker" => "0";
   requires "Dist::Zilla::Plugin::OnlyCorePrereqs" => "0";
   requires "Dist::Zilla::Plugin::Prereqs" => "0";

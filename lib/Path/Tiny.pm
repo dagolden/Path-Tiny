@@ -168,7 +168,7 @@ sub path {
 
     # canonicalize paths
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/];                               # unix convention enforced
+    $path =~ tr[\\][/] if IS_WIN32();                 # unix convention enforced
     $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$}; # canonpath strips it
 
     # hack to make splitpath give us a basename; root paths must always have

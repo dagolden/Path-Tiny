@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Backslash-to-slash conversion now only happens on Windows
+      (since backslash is legal on Unix, we must allow it)
+
 0.051     2013-12-20 07:34:14 America/New_York
 
     [FIXED]
