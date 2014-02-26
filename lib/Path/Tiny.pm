@@ -67,6 +67,34 @@ sub _is_root {
     return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
 }
 
+# mode bits encoded for chmod in symbolic mode
+my %MODEBITS = ( om => 0007, gm => 0070, um => 0700 );
+do { my $m = 0; $MODEBITS{$_} = ( 1 << $m++ ) for qw/ox ow or gx gw gr ux uw ur/ };
+
+sub _symbolic_chmod {
+    my ( $mode, $symbolic ) = @_;
+    for my $clause ( split /,\s*/, $symbolic ) {
+        if ( $clause =~ m{\A([augo]+)([=+-])([rwx]+)\z} ) {
+            my ( $who, $action, $perms ) = ( $1, $2, $3 );
+            $who =~ s/a/ugo/g;
+            for my $w ( split //, $who ) {
+                my $p = 0;
+                $p |= $MODEBITS{"$w$_"} for split //, $perms;
+                if ( $action eq '=' ) {
+                    $mode = ( $mode & ~$MODEBITS{"${w}m"} ) | $p;
+                }
+                else {
+                    $mode = $action eq "+" ? ( $mode | $p ) : ( $mode & ~$p );
+                }
+            }
+        }
+        else {
+            Carp::croak("Invalid mode clause '$clause' for chmod()");
+        }
+    }
+    return $mode;
+}
+
 # flock doesn't work on NFS on BSD.  Since program authors often can't control
 # or detect that, we warn once instead of being fatal if we can detect it and
 # people who need it strict can fatalize the 'flock' category
@@ -483,6 +511,40 @@ sub children {
     }
 
     return map { path( $self->[PATH], $_ ) } @children;
+}
+
+=method chmod
+
+    path("foo.txt")->chmod(0777);
+    path("foo.txt")->chmod("0755");
+    path("foo.txt")->chmod("go-w");
+    path("foo.txt")->chmod("a=r,u+wx");
+
+Sets file or directory permissions.  The argument can be a numeric mode, a
+string beginning with a "0" or a subset of the symbolic mode use by
+F</bin/chmod>.  The symbolic mode must match C<<
+qr/\A([augo]+)([=+-])([rwx]+)\z/ >>.  The symbolic mode does not support
+permissions "stugoX".
+
+=cut
+
+sub chmod {
+    my ( $self, $new_mode ) = @_;
+
+    my $mode;
+    if ( $new_mode =~ /\d/ ) {
+        $mode = ( $new_mode =~ /^0/ ? oct($new_mode) : $new_mode );
+    }
+    elsif ( $new_mode =~ /[=+-]/ ) {
+        $mode = _symbolic_chmod( $self->stat->mode & 07777, $new_mode );
+    }
+    else {
+        Carp::croak("Invalid mode argument '$new_mode' for chmod()");
+    }
+
+    CORE::chmod( $mode, $self->[PATH] ) or $self->_throw("chmod");
+
+    return 1;
 }
 
 =method copy
