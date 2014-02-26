@@ -1479,15 +1479,16 @@ IS_BSD IS_WIN32
 
 =head1 DESCRIPTION
 
-This module attempts to provide a small, fast utility for working with
-file paths.  It is friendlier to use than L<File::Spec> and provides
-easy access to functions from several other core file handling modules.
+This module provide a small, fast utility for working with file paths.  It is
+friendlier to use than L<File::Spec> and provides easy access to functions from
+several other core file handling modules.  It aims to be smaller and faster
+than many alternatives on CPAN while helping people do many common things in
+consistent and less error-prone ways.
 
-It doesn't attempt to be as full-featured as L<IO::All> or L<Path::Class>,
-nor does it try to work for anything except Unix-like and Win32 platforms.
-Even then, it might break if you try something particularly obscure or
-tortuous.  (Quick!  What does this mean: C<< ///../../..//./././a//b/.././c/././ >>?
-And how does it differ on Win32?)
+Path::Tiny does not try to work for anything except Unix-like and Win32
+platforms.  Even then, it might break if you try something particularly obscure
+or tortuous.  (Quick!  What does this mean:
+C<< ///../../..//./././a//b/.././c/././ >>?  And how does it differ on Win32?)
 
 All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
@@ -1495,15 +1496,18 @@ the object gives you back the path (after some clean up).
 File input/output methods C<flock> handles before reading or writing,
 as appropriate (if supported by the platform).
 
-The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
-mode without CRLF translation.  Installing L<Unicode::UTF8> 0.58 or later
-will speed up several of them and is highly recommended.
+The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw mode.
+On Windows, that means they will not have CRLF translation from the C<:crlf> IO
+layer.  Installing L<Unicode::UTF8> 0.58 or later will speed up C<*_utf8>
+situations in many cases and is highly recommended.
 
 =head1 EXCEPTION HANDLING
 
-Failures will be thrown as exceptions in the class C<Path::Tiny::Error>.
+Simple usage errors will generally croak.  Failures of underlying Perl
+unctions will be thrown as exceptions in the class
+C<Path::Tiny::Error>.
 
-The object will be a hash reference with the following fields:
+A C<Path::Tiny::Error> object will be a hash reference with the following fields:
 
 =for :list
 * C<op> — a description of the operation, usually function call and any extra info
@@ -1585,6 +1589,7 @@ These are other file/path utilities, which may offer a different feature
 set than C<Path::Tiny>.
 
 =for :list
+* L<File::chmod>
 * L<File::Fu>
 * L<IO::All>
 * L<Path::Class>
