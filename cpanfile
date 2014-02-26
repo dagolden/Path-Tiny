@@ -27,11 +27,12 @@ on 'test' => sub {
   requires "Test::More" => "0.96";
   requires "lib" => "0";
   requires "open" => "0";
+  requires "version" => "0";
 };
 
 on 'test' => sub {
   recommends "CPAN::Meta" => "0";
-  recommends "CPAN::Meta::Requirements" => "0";
+  recommends "CPAN::Meta::Requirements" => "2.120900";
   recommends "Test::FailWarnings" => "0";
 };
 
@@ -40,7 +41,7 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
-  requires "Dist::Zilla" => "5.011";
+  requires "Dist::Zilla" => "5.013";
   requires "Dist::Zilla::Plugin::MakeMaker" => "0";
   requires "Dist::Zilla::Plugin::OnlyCorePrereqs" => "0";
   requires "Dist::Zilla::Plugin::Prereqs" => "0";
