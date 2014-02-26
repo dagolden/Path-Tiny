@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'chmod' method with symbolic chmod support ("a=r,u+rx")
+
 0.052     2014-01-14 15:58:03-05:00 America/New_York
 
     [FIXED]
