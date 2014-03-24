@@ -41,12 +41,12 @@ on 'configure' => sub {
 };
 
 on 'develop' => sub {
-  requires "Dist::Zilla" => "5.013";
-  requires "Dist::Zilla::Plugin::MakeMaker" => "0";
+  requires "Dist::Zilla" => "5.014";
+  requires "Dist::Zilla::Plugin::MinimumPerl" => "0";
   requires "Dist::Zilla::Plugin::OnlyCorePrereqs" => "0";
   requires "Dist::Zilla::Plugin::Prereqs" => "0";
   requires "Dist::Zilla::Plugin::RemovePrereqs" => "0";
-  requires "Dist::Zilla::PluginBundle::DAGOLDEN" => "0.055";
+  requires "Dist::Zilla::PluginBundle::DAGOLDEN" => "0.060";
   requires "File::Spec" => "0";
   requires "File::Temp" => "0";
   requires "IO::Handle" => "0";
