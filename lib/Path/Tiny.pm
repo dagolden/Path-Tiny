@@ -604,18 +604,25 @@ sub dirname {
 
 =method exists, is_file, is_dir
 
-    if ( path("/tmp")->exists ) { ... }
-    if ( path("/tmp")->is_file ) { ... }
-    if ( path("/tmp")->is_dir ) { ... }
+    if ( path("/tmp")->exists ) { ... }     # -e
+    if ( path("/tmp")->is_dir ) { ... }     # -d
+    if ( path("/tmp")->is_file ) { ... }    # -e && ! -d
 
-Just like C<-e>, C<-f> or C<-d>.  This means the file or directory actually has to
-exist on the filesystem.  Until then, it's just a path.
+Implements file test operations, this means the file or directory actually has
+to exist on the filesystem.  Until then, it's just a path.
+
+B<Note>: C<is_file> is not C<-f> because C<-f> is not the opposite of C<-d>.
+C<-f> means "plain file", excluding symlinks, devices, etc. that often can be
+read just like files.
+
+Use C<-f> instead if you really mean to check for a plain file.
+
 
 =cut
 
 sub exists { -e $_[0]->[PATH] }
 
-sub is_file { -f $_[0]->[PATH] }
+sub is_file { -e $_[0]->[PATH] && !-d _ }
 
 sub is_dir { -d $_[0]->[PATH] }
 

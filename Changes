@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [INCOMPATIBLE CHANGES]
+
+    - The 'is_file' method now does -e && ! -d and not -f because -f
+      is often more restrictive than people intend or expect.
+
     [ADDED]
 
     - Added 'chmod' method with symbolic chmod support ("a=r,u+rx")

@@ -25,6 +25,11 @@ ok $file, "Got a filename via tmpnam()";
 
 ok -e $file, "$file should exist";
 ok $file->is_file, "it's a file!";
+
+if ( -e "/dev/null" ) {
+    ok( path("/dev/null")->is_file, "/dev/null is_file, too" );
+}
+
 my ( $volume, $dirname, $basename ) =
   map { s{\\}{/}; $_ } File::Spec->splitpath($file);
 is( $file->volume,   $volume,   "volume correct" );
