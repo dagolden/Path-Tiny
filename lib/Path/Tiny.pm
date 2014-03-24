@@ -68,7 +68,7 @@ sub _is_root {
 }
 
 # mode bits encoded for chmod in symbolic mode
-my %MODEBITS = ( om => 0007, gm => 0070, um => 0700 );
+my %MODEBITS = ( om => 0007, gm => 0070, um => 0700 ); ## no critic
 { my $m = 0; $MODEBITS{$_} = ( 1 << $m++ ) for qw/ox ow or gx gw gr ux uw ur/ };
 
 sub _symbolic_chmod {
@@ -528,7 +528,7 @@ The symbolic mode must be a comma-delimited list of mode clauses.  Clauses must
 match C<< qr/\A([augo]+)([=+-])([rwx]+)\z/ >>, which defines "who", "op" and
 "perms" parameters for each clause.  Unlike F</bin/chmod>, all three parameters
 are required for each clause, multiple ops are not allowed and permissions
-"stugoX" are not supported.  (See L<File::chmod> for more complex needs.)
+C<stugoX> are not supported.  (See L<File::chmod> for more complex needs.)
 
 =cut
 
@@ -540,7 +540,7 @@ sub chmod {
         $mode = ( $new_mode =~ /^0/ ? oct($new_mode) : $new_mode );
     }
     elsif ( $new_mode =~ /[=+-]/ ) {
-        $mode = _symbolic_chmod( $self->stat->mode & 07777, $new_mode );
+        $mode = _symbolic_chmod( $self->stat->mode & 07777, $new_mode ); ## no critic
     }
     else {
         Carp::croak("Invalid mode argument '$new_mode' for chmod()");
