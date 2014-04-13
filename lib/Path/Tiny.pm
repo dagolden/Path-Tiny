@@ -180,6 +180,8 @@ sub path {
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
 
+    return $path->clone if !@_ && ref $path && eval { $path->isa("Path::Tiny") };
+
     # stringify initial path
     $path = "$path";
 
@@ -216,6 +218,11 @@ sub path {
 
     # and we're finally done
     bless [ $path, $cpath ], __PACKAGE__;
+}
+
+sub clone {
+    my $self = shift;
+    bless [@$self], __PACKAGE__;
 }
 
 =construct new
