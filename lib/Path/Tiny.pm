@@ -176,6 +176,7 @@ directory on that volume using C<Cwd::getdcwd()>.
 
 =cut
 
+my %Cache;
 sub path {
     my $path = shift;
     Carp::croak("path() requires a defined, positive-length argument")
@@ -199,8 +200,15 @@ sub path {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
+    # Check the cache before we call expensive canonpath
+    return $Cache{$path} if $Cache{$path};
+
     # canonicalize paths
     my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
+
+    # Now check again with the canonpath
+    return $Cache{$cpath} if $Cache{$cpath};
+
     $path =~ tr[\\][/] if IS_WIN32();                 # unix convention enforced
     $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$}; # canonpath strips it
 
@@ -220,7 +228,12 @@ sub path {
     }
 
     # and we're finally done
-    bless [ $path, $cpath ], __PACKAGE__;
+    my $obj = bless [ $path, $cpath ], __PACKAGE__;
+
+    Scalar::Util::weaken($Cache{$path} = $obj);
+    Scalar::Util::weaken($Cache{$cpath} = $obj) if $path ne $cpath;
+
+    return $obj;
 }
 
 =construct new
