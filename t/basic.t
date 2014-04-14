@@ -148,9 +148,15 @@ is $file->parent,  '/foo/baz';
 }
 
 {
-    my $path  = path("foo", "bar", "baz");
-    my $clone = path( $path );
-    is $clone, $path, "path() can take a Path::Tiny";
+    my $path = path( "foo", "bar", "baz" );
+    my $clone = path($path);
+    is( $clone, $path, "path() can take a Path::Tiny object" );
+    is( $#$clone, Path::Tiny::CANON(), "clone is right size before splitpath" );
+
+    my $basename = $path->basename;
+    push @$path, 'sentinel';
+    $clone = path($path);
+    is( $#$clone, Path::Tiny::FILE(), "clone is right size after splitpath" );
 
     use Scalar::Util qw(refaddr);
     isnt refaddr($clone), refaddr($path), "path() does a clone on a Path::Tiny";
