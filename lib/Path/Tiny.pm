@@ -11,6 +11,7 @@ use Config;
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp ();
+use Scalar::Util ();
 
 our @EXPORT    = qw/path/;
 our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
@@ -180,7 +181,9 @@ sub path {
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
 
-    return $path->clone if !@_ && ref $path && eval { $path->isa("Path::Tiny") };
+    # Path::Tiny instances are immutable, if we're passed one just return it.
+    return $path
+      if !@_ && (Scalar::Util::blessed($path) || '') eq __PACKAGE__;
 
     # stringify initial path
     $path = "$path";
@@ -218,11 +221,6 @@ sub path {
 
     # and we're finally done
     bless [ $path, $cpath ], __PACKAGE__;
-}
-
-sub clone {
-    my $self = shift;
-    bless [@$self], __PACKAGE__;
 }
 
 =construct new

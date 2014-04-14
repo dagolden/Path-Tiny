@@ -153,7 +153,7 @@ is $file->parent,  '/foo/baz';
     is $clone, $path, "path() can take a Path::Tiny";
 
     use Scalar::Util qw(refaddr);
-    isnt refaddr($clone), refaddr($path), "path() does a clone on a Path::Tiny";
+    is refaddr($clone), refaddr($path), "path() just returns a Path::Tiny object";
 }
 
 done_testing();
