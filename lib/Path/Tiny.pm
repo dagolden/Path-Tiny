@@ -180,6 +180,10 @@ sub path {
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
 
+    # quick clone if the only arg is a Path::Tiny object
+    return bless [ @{$path}[ 0 .. ( $#$path > FILE ? FILE : $#$path ) ] ], __PACKAGE__
+      if !@_ && ref $path && eval { $path->isa("Path::Tiny") };
+
     # stringify initial path
     $path = "$path";
 
