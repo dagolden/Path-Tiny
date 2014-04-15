@@ -58,5 +58,17 @@ subtest "survives absolute" => sub {
     ok( -d $tempdir, "exists" );
 };
 
+subtest "temp files not cleaned up until all clones are gone" => sub {
+    my $temp  = Path::Tiny->tempfile;
+    my $clone = path($temp);
+
+    my $file = $temp->stringify;
+    ok -e $file;
+    $temp = undef;
+    ok -e $file;
+    $clone = undef;
+    ok !-e $file;
+};
+
 done_testing;
 # COPYRIGHT

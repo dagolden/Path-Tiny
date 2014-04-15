@@ -147,4 +147,13 @@ is $file->parent,  '/foo/baz';
     is( $dir, $missing_homedir, 'Test homedir of nonexistant user (via glob)' );
 }
 
+{
+    my $path  = path("foo", "bar", "baz");
+    my $clone = path( $path );
+    is $clone, $path, "path() can take a Path::Tiny";
+
+    use Scalar::Util qw(refaddr);
+    is refaddr($clone), refaddr($path), "path() just returns a Path::Tiny object";
+}
+
 done_testing();
