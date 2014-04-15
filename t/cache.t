@@ -22,6 +22,7 @@ subtest "cache clearing" => sub {
 
     # Just to make sure Perl doesn't reuse the same address.
     my $junk = path("something/else");
+    my($this, $that, $other) = (23, 42, 99);
 
     my $outer1 = path($file);
     isnt refaddr($outer1), $inner_refaddr;
