@@ -436,16 +436,28 @@ sub append_utf8 {
 
 =method basename
 
-    $name = path("foo/bar.txt")->basename; # bar.txt
+    $name = path("foo/bar.txt")->basename;        # bar.txt
+    $name = path("foo.txt")->basename('.txt');    # foo
+    $name = path("foo.txt")->basename(qr/.txt/);  # foo
+    $name = path("foo.txt")->basename(@suffixes);
 
 Returns the file portion or last directory portion of a path.
+
+Given a list of suffixes as strings or regular expressions, any that match at
+the end of the file portion or last directory portion will be removed before
+the result is returned.
 
 =cut
 
 sub basename {
-    my ($self) = @_;
+    my ( $self, @suffixes ) = @_;
     $self->_splitpath unless defined $self->[FILE];
-    return $self->[FILE];
+    my $file = $self->[FILE];
+    for my $s (@suffixes) {
+        my $re = ref($s) eq 'Regexp' ? qr/$s$/ : qr/\Q$s\E$/;
+        last if $file =~ s/$re//;
+    }
+    return $file;
 }
 
 =method canonpath
