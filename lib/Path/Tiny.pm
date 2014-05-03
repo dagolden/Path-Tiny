@@ -32,6 +32,11 @@ use overload (
     fallback => 1,
 );
 
+# FREEZE/THAW per Sereal/CBOR/Types::Serialiser protocol
+sub FREEZE { return $_[0]->[PATH] }
+sub THAW   { return path( $_[2] ) }
+*TO_JSON = *FREEZE;
+
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {

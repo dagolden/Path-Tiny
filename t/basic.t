@@ -147,4 +147,11 @@ is $file->parent,  '/foo/baz';
     is( $dir, $missing_homedir, 'Test homedir of nonexistant user (via glob)' );
 }
 
+# freeze/thaw
+{
+    my $path = path("/foo/bar/baz");
+    is( Path::Tiny->THAW( "fake", $path->FREEZE("fake") ),
+        $path, "FREEZE-THAW roundtrip" );
+}
+
 done_testing();
