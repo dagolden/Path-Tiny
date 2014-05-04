@@ -9,6 +9,13 @@ Revision history for Path-Tiny
 
     - FREEZE/THAW/TO_JSON serialization helpers
 
+    [CHANGED]
+
+    - When constructing a Path::Tiny object from another, the original
+      is returned unless it's a temp dir/file.  This significantly
+      speeds up calling path($path) if $path is already a Path::Tiny
+      object. (Thanks to Michael Schwern for prompting such benchmarking.)
+
 0.053     2014-03-24 09:25:51-04:00 America/New_York (TRIAL RELEASE)
 
     [INCOMPATIBLE CHANGES]

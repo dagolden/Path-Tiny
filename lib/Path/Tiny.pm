@@ -178,12 +178,30 @@ On Windows, if the path consists of a drive identifier without a path component
 (C<C:> or C<D:>), it will be expanded to the absolute path of the current
 directory on that volume using C<Cwd::getdcwd()>.
 
+If called with a single C<Path::Tiny> argument, the original is returned unless
+the original is holding a temporary file or directory reference in which case a
+stringified copy is made.
+
+    $path = path("foo/bar");
+    $temp = Path::Tiny->tempfile;
+
+    $p2 = path($path); # like $p2 = $path
+    $t2 = path($temp); # like $t2 = path( "$temp" )
+
+This optimizes copies without proliferating references unexpectedly if a copy is
+made by code outside your control.
+
 =cut
 
 sub path {
     my $path = shift;
     Carp::croak("path() requires a defined, positive-length argument")
       unless defined $path && length $path;
+
+    # non-temp Path::Tiny objects are effectively immutable and can be reused
+    if ( !@_ && ref($path) eq __PACKAGE__ && !$path->[TEMP] ) {
+        return $path;
+    }
 
     # stringify initial path
     $path = "$path";
