@@ -195,8 +195,8 @@ made by code outside your control.
 
 sub path {
     my $path = shift;
-    Carp::croak("path() requires a defined, positive-length argument")
-      unless defined $path && length $path;
+    Carp::croak("Path::Tiny paths require defined, positive-length parts")
+      unless 1 + @_ == grep { defined && length } $path, @_;
 
     # non-temp Path::Tiny objects are effectively immutable and can be reused
     if ( !@_ && ref($path) eq __PACKAGE__ && !$path->[TEMP] ) {

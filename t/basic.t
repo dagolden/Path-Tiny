@@ -84,7 +84,7 @@ is $file->parent,  '/foo/baz';
 
 {
     # Special cases
-    for my $bad ( [''], [undef], [], [ '', 'var', 'tmp' ] ) {
+    for my $bad ( [''], [undef], [], [ '', 'var', 'tmp' ], [ 'foo', '', 'bar' ] ) {
         like( exception { path(@$bad) }, qr/positive-length/, "exception" );
     }
     is( Path::Tiny->cwd,     path( Cwd::getcwd() ) );

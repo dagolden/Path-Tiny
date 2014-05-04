@@ -16,6 +16,12 @@ Revision history for Path-Tiny
       speeds up calling path($path) if $path is already a Path::Tiny
       object. (Thanks to Michael Schwern for prompting such benchmarking.)
 
+    [FIXED]
+
+    - Constructing any path -- e.g. with child() -- with undef or
+      zero-length parts throws an error instead of constructing an
+      invalid path
+
 0.053     2014-03-24 09:25:51-04:00 America/New_York (TRIAL RELEASE)
 
     [INCOMPATIBLE CHANGES]
