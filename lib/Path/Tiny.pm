@@ -35,7 +35,7 @@ use overload (
 # FREEZE/THAW per Sereal/CBOR/Types::Serialiser protocol
 sub FREEZE { return $_[0]->[PATH] }
 sub THAW   { return path( $_[2] ) }
-*TO_JSON = *FREEZE;
+{ no warnings 'once'; *TO_JSON = *FREEZE };
 
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
@@ -1478,7 +1478,7 @@ sub throw {
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
-IS_BSD IS_WIN32
+IS_BSD IS_WIN32 FREEZE THAW TO_JSON
 
 =head1 SYNOPSIS
 
