@@ -203,7 +203,7 @@ sub path {
         return $path;
     }
 
-    # stringify initial path
+    # stringify objects
     $path = "$path";
 
     # expand relative volume paths on windows; put trailing slash on UNC root
@@ -212,18 +212,17 @@ sub path {
         $path .= "/" if $path =~ m{^$UNC_VOL$};
     }
 
-    # concatenate more arguments (stringifies any objects, too)
+    # concatenations stringifies objects, too
     if (@_) {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
-    # canonicalize paths
-    my $cpath = $path = File::Spec->canonpath($path); # ugh, but probably worth it
-    $path =~ tr[\\][/] if IS_WIN32();                 # unix convention enforced
-    $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$}; # canonpath strips it
+    # canonicalize, but with unix slashes and put back trailing volume slash
+    my $cpath = $path = File::Spec->canonpath($path);
+    $path =~ tr[\\][/] if IS_WIN32();
+    $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$};
 
-    # hack to make splitpath give us a basename; root paths must always have
-    # a trailing slash, but other paths must not
+    # root paths must always have a trailing slash, but other paths must not
     if ( _is_root($path) ) {
         $path =~ s{/?$}{/};
     }
@@ -237,7 +236,6 @@ sub path {
         $path =~ s{^(~[^/]*)}{$homedir};
     }
 
-    # and we're finally done
     bless [ $path, $cpath ], __PACKAGE__;
 }
 
