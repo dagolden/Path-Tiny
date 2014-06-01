@@ -316,7 +316,7 @@ functions instead of as methods.
 =cut
 
 sub tempfile {
-    shift if $_[0] eq 'Path::Tiny'; # called as method
+    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
@@ -330,7 +330,7 @@ sub tempfile {
 }
 
 sub tempdir {
-    shift if $_[0] eq 'Path::Tiny'; # called as method
+    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
 
     # File::Temp->newdir demands leading template
