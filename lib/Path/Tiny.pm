@@ -615,7 +615,11 @@ sub digest {
     my ( $self, $alg, @args ) = @_;
     $alg = 'SHA-256' unless defined $alg;
     require Digest;
-    return Digest->new( $alg, @args )->add( $self->slurp_raw )->hexdigest;
+    my $digest = Digest->new( $alg, @args );
+    my $fh = $self->filehandle( { locked => 1 }, "<", ":unix" );
+    my $buf;
+    $digest->add($buf) while read $fh, $buf, 4096;
+    return $digest->hexdigest;
 }
 
 =method dirname
