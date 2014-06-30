@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.055     2014-06-30 10:29:28-04:00 America/New_York
+
     [FIXED]
 
     - tempfile/tempdir won't warn if used as functions without arguments
