@@ -1149,8 +1149,9 @@ sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
 B<Note: as of 0.012, remove only works on files>.
 
-This is just like C<unlink>, except if the path does not exist, it returns
-false rather than throwing an exception.
+This is just like C<unlink>, except for its error handling: if the path does
+not exist, it returns false; if deleting the file fails, it throws an
+exception.
 
 =cut
 
