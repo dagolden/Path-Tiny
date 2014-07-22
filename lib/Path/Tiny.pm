@@ -1159,7 +1159,7 @@ sub remove {
 
     return 0 if !-e $self->[PATH] && !-l $self->[PATH];
 
-    return unlink $self->[PATH] || $self->_throw('unlink');
+    return unlink( $self->[PATH] ) || $self->_throw('unlink');
 }
 
 =method remove_tree
