@@ -181,6 +181,13 @@ my $tmpdir = Path::Tiny->tempdir;
     ok $subdir->mkpath;
     ok exception { $subdir->remove }, "calling 'remove' on a directory throws";
     ok rmdir $subdir;
+
+    my $orig = Path::Tiny->cwd;
+    ok chdir $tmpdir;
+    my $zero_file = path '0';
+    ok $zero_file->openw;
+    ok $zero_file->remove, "removing file called '0'";
+    ok chdir $orig;
 }
 
 {
