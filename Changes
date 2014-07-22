@@ -7,6 +7,10 @@ Revision history for Path-Tiny
     - The 'digest' method now takes a 'chunk_size' option to avoid
       slurping files entirely into memory.
 
+    [FIXED]
+
+    - Fixed problem throwing errors from 'remove'
+
 0.055     2014-06-30 10:29:28-04:00 America/New_York
 
     [FIXED]
