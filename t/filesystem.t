@@ -176,6 +176,11 @@ my $tmpdir = Path::Tiny->tempdir;
     ok( $file->remove, "removing file" );
     ok !-e $file, "file is gone";
     ok !$file->remove, "removing file again returns false";
+
+    my $subdir = $tmpdir->child('subdir');
+    ok $subdir->mkpath;
+    ok exception { $subdir->remove }, "calling 'remove' on a directory throws";
+    ok rmdir $subdir;
 }
 
 {
