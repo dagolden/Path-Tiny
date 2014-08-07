@@ -20,19 +20,17 @@ recommends "Unicode::UTF8" => "0.58";
 on 'test' => sub {
   requires "ExtUtils::MakeMaker" => "0";
   requires "File::Basename" => "0";
+  requires "File::Spec" => "3.40";
   requires "File::Spec::Functions" => "0";
   requires "File::Spec::Unix" => "0";
   requires "File::Temp" => "0.19";
-  requires "List::Util" => "0";
   requires "Test::More" => "0.96";
   requires "lib" => "0";
   requires "open" => "0";
-  requires "version" => "0";
 };
 
 on 'test' => sub {
-  recommends "CPAN::Meta" => "0";
-  recommends "CPAN::Meta::Requirements" => "2.120900";
+  recommends "CPAN::Meta" => "2.120900";
   recommends "Test::FailWarnings" => "0";
 };
 
