@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [*** DEPRECATIONS ***]
+
+    - The 'dirname' method is deprecated due to exposing File::Spec
+      inconsistencies
+
     [ADDED]
 
     - The 'digest' method now takes a 'chunk_size' option to avoid
