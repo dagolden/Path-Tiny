@@ -325,7 +325,7 @@ sub tempfile {
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
     my $self = path($temp)->absolute;
-    $self->[TEMP] = $temp;          # keep object alive while we are
+    $self->[TEMP] = $temp;                # keep object alive while we are
     return $self;
 }
 
@@ -337,7 +337,7 @@ sub tempdir {
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = path($temp)->absolute;
-    $self->[TEMP] = $temp;          # keep object alive while we are
+    $self->[TEMP] = $temp;                # keep object alive while we are
     return $self;
 }
 
@@ -604,21 +604,33 @@ sub copy {
 
     $obj = path("/tmp/foo.txt")->digest;        # SHA-256
     $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
+    $obj = path("/tmp/foo.txt")->digest( { chunk_size => 1e6 }, "MD5" );
 
-Returns a hexadecimal digest for a file.  Any arguments are passed to the
-constructor for L<Digest> to select an algorithm.  If no arguments are given,
-the default is SHA-256.
+Returns a hexadecimal digest for a file.  An optional hash reference of options may
+be given.  The only option is C<chunk_size>.  If C<chunk_size> is given, that many
+bytes will be read at a time.  If not provided, the entire file will be slurped
+into memory to compute the digest.
+
+Any subsequent arguments are passed to the constructor for L<Digest> to select
+an algorithm.  If no arguments are given, the default is SHA-256.
 
 =cut
 
 sub digest {
-    my ( $self, $alg, @args ) = @_;
-    $alg = 'SHA-256' unless defined $alg;
+    my ( $self, @opts ) = @_;
+    my $args = ( @opts && ref $opts[0] eq 'HASH' ) ? shift @opts : {};
+    $args = _get_args( $args, qw/chunk_size/ );
+    unshift @opts, 'SHA-256' unless @opts;
     require Digest;
-    my $digest = Digest->new( $alg, @args );
-    my $fh = $self->filehandle( { locked => 1 }, "<", ":unix" );
-    my $buf;
-    $digest->add($buf) while read $fh, $buf, 4096;
+    my $digest = Digest->new(@opts);
+    if ( $args->{chunk_size} ) {
+        my $fh = $self->filehandle( { locked => 1 }, "<", ":unix" );
+        my $buf;
+        $digest->add($buf) while read $fh, $buf, $args->{chunk_size};
+    }
+    else {
+        $digest->add( $self->slurp_raw );
+    }
     return $digest->hexdigest;
 }
 

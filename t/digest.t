@@ -23,7 +23,9 @@ is(
 
 my $sha = Digest->new('SHA-256');
 $sha->add($chunk);
-is( $file->digest, $sha->hexdigest, 'digest SHA-256', );
+my $sha_hex = $sha->hexdigest;
+is( $file->digest, $sha_hex, 'digest SHA-256' );
+is( $file->digest( { chunk_size => 10 } ), $sha_hex, 'digest SHA-256 (chunked)' );
 
 is(
     $file->digest('MD5'),
@@ -33,7 +35,9 @@ is(
 
 my $md5 = Digest->new('MD5');
 $md5->add($chunk);
-is( $file->digest('MD5'), $md5->hexdigest, 'digest MD5', );
+my $md5_hex = $md5->hexdigest;
+is( $file->digest('MD5'), $md5_hex, 'digest MD5', );
+is( $file->digest( { chunk_size => 10 }, 'MD5' ), $md5_hex, 'digest MD5 (chunked)' );
 
 done_testing;
 # COPYRIGHT
