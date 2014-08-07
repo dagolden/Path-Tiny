@@ -634,14 +634,18 @@ sub digest {
     return $digest->hexdigest;
 }
 
-=method dirname
+=method dirname (deprecated)
 
     $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
 
-Returns the directory name portion of the path.  This is roughly
-equivalent to what L<File::Spec> would give from C<splitpath> and thus
-usually has the trailing slash. If that's not desired, stringify directories
-or call C<parent> on files.
+Returns the directory portion you would get from calling
+C<< File::Spec->splitpath( $path->stringify ) >> or C<"."> for a path without a
+parent directory portion.  Because L<File::Spec> is inconsistent, the result
+might or might not have a trailing slash.  Because of this, this method is
+B<deprecated>.
+
+A better, more consistently approach is likely C<< $path->parent->stringify >>,
+which will not have a trailing slash except for a root directory.
 
 =cut
 
