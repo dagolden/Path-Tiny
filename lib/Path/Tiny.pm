@@ -746,9 +746,14 @@ sub filehandle {
             $trunc = 1;
         }
         elsif ( $^O eq 'aix' && $opentype eq "<" ) {
-            # AIX can only lock write handles, so upgrade to RW and LOCK_EX
-            $opentype = "+<";
-            $lock     = Fcntl::LOCK_EX();
+            # AIX can only lock write handles, so upgrade to RW and LOCK_EX if
+            # the file is writable; otherwise give up on locking.  N.B.
+            # checking -w before open to determine the open mode is an
+            # unavoidable race condition
+            if ( -w $self->[PATH] ) {
+                $opentype = "+<";
+                $lock     = Fcntl::LOCK_EX();
+            }
         }
         else {
             $lock = $opentype eq "<" ? Fcntl::LOCK_SH() : Fcntl::LOCK_EX();
@@ -1601,7 +1606,8 @@ category:
 
 AIX requires a write handle for locking.  Therefore, calls that normally
 open a read handle and take a shared lock instead will open a read-write
-handle and take an exclusive lock.
+handle and take an exclusive lock.  If the user does not have write
+permission, no lock will be used.
 
 =head2 utf8 vs UTF-8
 

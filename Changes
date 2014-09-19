@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - On AIX, reads that default to locking would fail without
+      write permissions, because locking needs write permissions.
+      The fix is only to lock reads if write permissions exist;
+      otherwise locking is skipped.
+
 0.056     2014-08-07 15:08:41-04:00 America/New_York
 
     [*** DEPRECATIONS ***]
