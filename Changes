@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added a 'sibling' method as sugar for ->parent->child(...)
+
 0.057     2014-09-19 11:23:05-04:00 America/New_York
 
     [FIXED]

@@ -1224,6 +1224,22 @@ sub remove_tree {
     return $count;
 }
 
+=method sibling
+
+    $foo = path("/tmp/foo.txt");
+    $sib = $foo->sibling("bar.txt");        # /tmp/bar.txt
+    $sib = $foo->sibling("baz", "bam.txt"); # /tmp/baz/bam.txt
+
+Returns a new C<Path::Tiny> object relative to the parent of the original.
+This is slightly more efficient than C<< $path->parent->child(...) >>.
+
+=cut
+
+sub sibling {
+    my $self = shift;
+    return path( $self->parent->[PATH], @_ );
+}
+
 =method slurp, slurp_raw, slurp_utf8
 
     $data = path("foo.txt")->slurp;

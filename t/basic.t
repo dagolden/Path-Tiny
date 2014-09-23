@@ -51,6 +51,10 @@ is $cat,     '/tmp/foo';
 isa_ok $cat, 'Path::Tiny';
 is $cat->basename, 'foo';
 
+my $sib = $cat->sibling('bar');
+is $sib,     '/tmp/bar';
+isa_ok $sib, 'Path::Tiny';
+
 my $file = path('/foo//baz/./foo');
 is $file, '/foo/baz/foo';
 is $file->dirname, '/foo/baz/';
