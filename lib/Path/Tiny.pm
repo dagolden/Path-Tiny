@@ -191,6 +191,8 @@ stringified copy is made.
 This optimizes copies without proliferating references unexpectedly if a copy is
 made by code outside your control.
 
+Current API available since 0.017.
+
 =cut
 
 sub path {
@@ -246,6 +248,8 @@ sub path {
 This is just like C<path>, but with method call overhead.  (Why would you
 do that?)
 
+Current API available since 0.001.
+
 =cut
 
 sub new { shift; path(@_) }
@@ -260,6 +264,8 @@ This is slightly faster than C<< path(".")->absolute >>.
 
 C<cwd> may be exported on request and used as a function instead of as a
 method.
+
+Current API available since 0.018.
 
 =cut
 
@@ -278,6 +284,8 @@ picky for C<path("/")>.
 
 C<rootdir> may be exported on request and used as a function instead of as a
 method.
+
+Current API available since 0.018.
 
 =cut
 
@@ -312,6 +320,8 @@ C<< File::Temp->newdir >> instead.
 
 Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
+
+Current API available since 0.018.
 
 =cut
 
@@ -384,6 +394,8 @@ resolved, you must call the more expensive C<realpath> method instead.
 On Windows, an absolute path without a volume component will have it added
 based on the current drive.
 
+Current API available since 0.001.
+
 =cut
 
 sub absolute {
@@ -429,6 +441,8 @@ C<append_utf8> is like C<append> with a C<binmode> of
 C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
 append will be done instead on the data encoded with C<Unicode::UTF8>.
 
+Current API available since 0.004.
+
 =cut
 
 sub append {
@@ -468,6 +482,8 @@ Given a list of suffixes as strings or regular expressions, any that match at
 the end of the file portion or last directory portion will be removed before
 the result is returned.
 
+Current API available since 0.054.
+
 =cut
 
 sub basename {
@@ -489,6 +505,8 @@ Returns a string with the canonical format of the path name for
 the platform.  In particular, this means directory separators
 will be C<\> on Windows.
 
+Current API available since 0.001.
+
 =cut
 
 sub canonpath { $_[0]->[CANON] }
@@ -501,6 +519,8 @@ sub canonpath { $_[0]->[CANON] }
 Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
 file or directories.
+
+Current API available since 0.001.
 
 =cut
 
@@ -523,6 +543,8 @@ for matching:
 
     @paths = path("/tmp")->children( qr/^foo/ );
     # matches children like the glob foo*
+
+Current API available since 0.028.
 
 =cut
 
@@ -563,6 +585,8 @@ match C<< qr/\A([augo]+)([=+-])([rwx]+)\z/ >>, which defines "who", "op" and
 are required for each clause, multiple ops are not allowed and permissions
 C<stugoX> are not supported.  (See L<File::chmod> for more complex needs.)
 
+Current API available since 0.053.
+
 =cut
 
 sub chmod {
@@ -590,6 +614,8 @@ sub chmod {
 
 Copies a file using L<File::Copy>'s C<copy> function.
 
+Current API available since 0.001.
+
 =cut
 
 # XXX do recursively for directories?
@@ -613,6 +639,8 @@ into memory to compute the digest.
 
 Any subsequent arguments are passed to the constructor for L<Digest> to select
 an algorithm.  If no arguments are given, the default is SHA-256.
+
+Current API available since 0.056.
 
 =cut
 
@@ -647,6 +675,8 @@ B<deprecated>.
 A better, more consistently approach is likely C<< $path->parent->stringify >>,
 which will not have a trailing slash except for a root directory.
 
+Deprecated in 0.056.
+
 =cut
 
 sub dirname {
@@ -670,6 +700,7 @@ read just like files.
 
 Use C<-f> instead if you really mean to check for a plain file.
 
+Current API available since 0.053.
 
 =cut
 
@@ -695,6 +726,8 @@ C<locked>, ">" or "+>" modes will delay truncation until after the lock is
 acquired.
 
 See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
+
+Current API available since 0.039.
 
 =cut
 
@@ -778,6 +811,8 @@ sub filehandle {
 
 Booleans for whether the path appears absolute or relative.
 
+Current API available since 0.001.
+
 =cut
 
 sub is_absolute { substr( $_[0]->dirname, 0, 1 ) eq '/' }
@@ -798,6 +833,8 @@ This works even on C<MSWin32> with drives and UNC volumes:
 
     path("C:/")->is_rootdir;             # true
     path("//server/share/")->is_rootdir; #true
+
+Current API available since 0.038.
 
 =cut
 
@@ -837,6 +874,8 @@ The default is the same as:
 
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
+
+Current API available since 0.016.
 
 =cut
 
@@ -915,6 +954,8 @@ actually faster than relying on C<:encoding(UTF-8)>, though a bit memory
 intensive.  If memory use is a concern, consider C<openr_utf8> and
 iterating directly on the handle.
 
+Current API available since 0.048.
+
 =cut
 
 sub lines {
@@ -979,6 +1020,8 @@ is passed through to C<make_path>.  Errors will be trapped and an exception
 thrown.  Returns the list of directories created or an empty list if
 the directories already exist, just like C<make_path>.
 
+Current API available since 0.001.
+
 =cut
 
 sub mkpath {
@@ -1000,6 +1043,8 @@ sub mkpath {
     path("foo.txt")->move("bar.txt");
 
 Just like C<rename>.
+
+Current API available since 0.001.
 
 =cut
 
@@ -1040,6 +1085,8 @@ locked with C<LOCK_EX>; otherwise, they are locked for C<LOCK_SH>.
     $fh = path("foo.txt")->openrw_utf8( { locked => 1 } );
 
 See L</filehandle> for more on locking.
+
+Current API available since 0.011.
 
 =cut
 
@@ -1088,6 +1135,8 @@ Returns a C<Path::Tiny> object corresponding to the parent directory of the
 original directory or file. An optional positive integer argument is the number
 of parent directories upwards to return.  C<parent> by itself is equivalent to
 C<parent(1)>.
+
+Current API available since 0.014.
 
 =cut
 
@@ -1142,6 +1191,8 @@ an exception will be thrown:
 
     $real = path("doesnt_exist/foo")->realpath; # dies
 
+Current API available since 0.001.
+
 =cut
 
 sub realpath {
@@ -1163,6 +1214,8 @@ Returns a C<Path::Tiny> object with a relative path name.
 Given the trickiness of this, it's a thin wrapper around
 C<< File::Spec->abs2rel() >>.
 
+Current API available since 0.001.
+
 =cut
 
 # Easy to get wrong, so wash it through File::Spec (sigh)
@@ -1172,11 +1225,11 @@ sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
 
     path("foo.txt")->remove;
 
-B<Note: as of 0.012, remove only works on files>.
-
 This is just like C<unlink>, except for its error handling: if the path does
 not exist, it returns false; if deleting the file fails, it throws an
 exception.
+
+Current API available since 0.012.
 
 =cut
 
@@ -1204,6 +1257,8 @@ If you want to remove a directory only if it is empty, use the built-in
 C<rmdir> function instead.
 
     rmdir path("foo/bar/baz/");
+
+Current API available since 0.013.
 
 =cut
 
@@ -1233,6 +1288,8 @@ sub remove_tree {
 Returns a new C<Path::Tiny> object relative to the parent of the original.
 This is slightly more efficient than C<< $path->parent->child(...) >>.
 
+Current API available since 0.058.
+
 =cut
 
 sub sibling {
@@ -1259,6 +1316,8 @@ C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
 slurp will be done instead and the result decoded with C<Unicode::UTF8>.
 This is just as strict and is roughly an order of magnitude faster than
 using C<:encoding(UTF-8)>.
+
+Current API available since 0.004.
 
 =cut
 
@@ -1313,6 +1372,8 @@ C<spew_utf8> is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
 If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on
 the data encoded with C<Unicode::UTF8>.
 
+Current API available since 0.011.
+
 =cut
 
 # XXX add "unsafe" option to disable flocking and atomic?  Check benchmarks on append() first.
@@ -1355,6 +1416,8 @@ sub spew_utf8 {
 
 Like calling C<stat> or C<lstat> from L<File::stat>.
 
+Current API available since 0.001.
+
 =cut
 
 # XXX break out individual stat() components as subs?
@@ -1378,6 +1441,8 @@ sub lstat {
 Returns a string representation of the path.  Unlike C<canonpath>, this method
 returns the path standardized with Unix-style C</> directory separators.
 
+Current API available since 0.001.
+
 =cut
 
 sub stringify { $_[0]->[PATH] }
@@ -1400,6 +1465,8 @@ the filesystem with C<realpath>:
     my $p1 = path("foo/bar")->realpath;
     my $p2 = path("foo/bar/../baz")->realpath;
     if ( $p1->subsumes($p2) ) { ... }
+
+Current API available since 0.048.
 
 =cut
 
@@ -1452,6 +1519,8 @@ Returns the path object so it can be easily chained with spew:
 
     path("foo.txt")->touch->spew( $content );
 
+Current API available since 0.015.
+
 =cut
 
 sub touch {
@@ -1473,6 +1542,8 @@ sub touch {
 Combines C<mkpath> and C<touch>.  Creates the parent directory if it doesn't exist,
 before touching the file.  Returns the path object like C<touch> does.
 
+Current API available since 0.022.
+
 =cut
 
 sub touchpath {
@@ -1491,6 +1562,8 @@ Returns the volume portion of the path.  This is equivalent
 equivalent to what L<File::Spec> would give from C<splitpath> and thus
 usually is the empty string on Unix-like operating systems or the
 drive letter for an absolute path on C<MSWin32>.
+
+Current API available since 0.001.
 
 =cut
 
