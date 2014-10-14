@@ -40,7 +40,7 @@ sub THAW   { return path( $_[2] ) }
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
-    eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
+    !!eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
 }
 
 my $HAS_FLOCK = $Config{d_flock} || $Config{d_fcntl_can_lock} || $Config{d_lockf};
