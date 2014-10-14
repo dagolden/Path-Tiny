@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed precedence bug in the check for Unicode::UTF8
+
 0.058     2014-09-23 11:00:24-04:00 America/New_York
 
     [ADDED]
