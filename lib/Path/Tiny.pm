@@ -40,7 +40,7 @@ sub THAW   { return path( $_[2] ) }
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
-    eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
+    !!eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
 }
 
 my $HAS_FLOCK = $Config{d_flock} || $Config{d_fcntl_can_lock} || $Config{d_lockf};
@@ -459,7 +459,7 @@ sub append {
 sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
 
 sub append_utf8 {
-    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : ($HAS_UU = _check_UU()) ) {
         my $self = shift;
         append( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
     }
@@ -998,7 +998,7 @@ sub lines_raw {
 sub lines_utf8 {
     my $self = shift;
     my $args = _get_args( shift, qw/binmode chomp count/ );
-    if (   ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() )
+    if (   ( defined($HAS_UU) ? $HAS_UU : ($HAS_UU = _check_UU()) )
         && $args->{chomp}
         && !$args->{count} )
     {
@@ -1343,7 +1343,7 @@ sub slurp {
 sub slurp_raw { $_[1] = { binmode => ":unix" }; goto &slurp }
 
 sub slurp_utf8 {
-    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : ($HAS_UU = _check_UU()) ) {
         return Unicode::UTF8::decode_utf8( slurp( $_[0], { binmode => ":unix" } ) );
     }
     else {
@@ -1399,7 +1399,7 @@ sub spew {
 sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
 
 sub spew_utf8 {
-    if ( defined($HAS_UU) ? $HAS_UU : $HAS_UU = _check_UU() ) {
+    if ( defined($HAS_UU) ? $HAS_UU : ($HAS_UU = _check_UU()) ) {
         my $self = shift;
         spew( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
     }
