@@ -432,8 +432,15 @@ sub absolute {
     path("foo.txt")->append_utf8(@data);
 
 Appends data to a file.  The file is locked with C<flock> prior to writing.  An
-optional hash reference may be used to pass options.  The only option is
-C<binmode>, which is passed to C<binmode()> on the handle used for writing.
+optional hash reference may be used to pass options.  Valid options are:
+
+=for :list
+* C<binmode>: passed to C<binmode()> on the handle used for writing.
+* C<truncate>: truncates the file after locking and before appending
+
+The C<truncate> option is a way to replace the contents of a file
+B<in place>, unlike L</spew> which writes to a temporary file and then
+replaces the original (if it exists).
 
 C<append_raw> is like C<append> with a C<binmode> of C<:unix> for fast,
 unbuffered, raw write.
@@ -442,17 +449,18 @@ C<append_utf8> is like C<append> with a C<binmode> of
 C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
 append will be done instead on the data encoded with C<Unicode::UTF8>.
 
-Current API available since 0.004.
+Current API available since 0.060.
 
 =cut
 
 sub append {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
-    $args = _get_args( $args, qw/binmode/ );
+    $args = _get_args( $args, qw/binmode truncate/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
-    my $fh = $self->filehandle( { locked => 1 }, ">>", $binmode );
+    my $mode = $args->{truncate} ? ">" : ">>";
+    my $fh = $self->filehandle( { locked => 1 }, $mode, $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh or $self->_throw('close');
 }
@@ -1372,6 +1380,12 @@ unbuffered, raw write.
 C<spew_utf8> is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>.
 If L<Unicode::UTF8> 0.58+ is installed, a raw spew will be done instead on
 the data encoded with C<Unicode::UTF8>.
+
+B<NOTE>: because the file is written to a temporary file and then renamed, the
+new file will wind up with permissions based on your current umask.  This is a
+feature to protect you from a race condition that would otherwise give
+different permissions than you might expect.  If you really want to keep the
+original mode flags, use L</append> with the C<truncate> option.
 
 Current API available since 0.011.
 

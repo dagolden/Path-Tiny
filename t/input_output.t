@@ -189,6 +189,14 @@ subtest "append -> slurp (binmode)" => sub {
     is( $file->slurp( { binmode => ":utf8" } ), join( '', _utf8_lines ), "slurp" );
 };
 
+subtest "append -> slurp (truncate)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append(_lines), "append" );
+    is( $file->slurp, join( '', _lines ), "slurp" );
+    ok( $file->append( { truncate => 1 }, _lines ), "append with truncate" );
+    is( $file->slurp, join( '', _lines ), "slurp" );
+};
+
 subtest "append -> slurp (open hint)" => sub {
     plan skip_all => "Needs 5.10" unless $] >= 5.010;
     use open IO => ':utf8';

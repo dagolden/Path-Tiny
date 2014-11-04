@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'truncate' option to append for in-place replacement of
+      file contents.
+
 0.059     2014-10-14 12:45:46-04:00 America/New_York
 
     [FIXED]
