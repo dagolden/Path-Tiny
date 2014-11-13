@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.061     2014-11-13 16:50:05-05:00 America/New_York
+
     [FIXED]
 
     - Fixed append_utf8 and append_raw with 'truncate' option.
