@@ -465,16 +465,25 @@ sub append {
     close $fh or $self->_throw('close');
 }
 
-sub append_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &append }
+sub append_raw {
+    my ( $self, @data ) = @_;
+    my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
+    $args = _get_args( $args, qw/binmode truncate/ );
+    $args->{binmode} = ':unix';
+    append( $self, $args, @data );
+}
 
 sub append_utf8 {
+    my ( $self, @data ) = @_;
+    my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
+    $args = _get_args( $args, qw/binmode truncate/ );
     if ( defined($HAS_UU) ? $HAS_UU : ( $HAS_UU = _check_UU() ) ) {
-        my $self = shift;
-        append( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
+        $args->{binmode} = ":unix";
+        append( $self, $args, map { Unicode::UTF8::encode_utf8($_) } @data );
     }
     else {
-        splice @_, 1, 0, { binmode => ":unix:encoding(UTF-8)" };
-        goto &append;
+        $args->{binmode} = ":unix:encoding(UTF-8)";
+        append( $self, $args, @data );
     }
 }
 

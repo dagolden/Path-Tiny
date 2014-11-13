@@ -211,9 +211,25 @@ subtest "append -> slurp (UTF-8)" => sub {
     is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
 };
 
+subtest "append -> slurp (truncate, UTF8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append_utf8(_utf8_lines), "append" );
+    is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
+    ok( $file->append_utf8( { truncate => 1 }, _utf8_lines ), "append with truncate" );
+    is( $file->slurp_utf8, join( '', _utf8_lines ), "slurp" );
+};
+
 subtest "append -> slurp (raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->append_raw(_lines), "append" );
+    is( $file->slurp_raw, join( '', _lines ), "slurp" );
+};
+
+subtest "append -> slurp (truncate, raw)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->append_raw(_lines), "append" );
+    is( $file->slurp_raw, join( '', _lines ), "slurp" );
+    ok( $file->append_raw( { truncate => 1 }, _lines ), "append with truncate" );
     is( $file->slurp_raw, join( '', _lines ), "slurp" );
 };
 
