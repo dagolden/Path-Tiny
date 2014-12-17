@@ -1642,7 +1642,7 @@ IS_BSD IS_WIN32 FREEZE THAW TO_JSON
   @lines = $file->lines;
   @lines = $file->lines_utf8;
 
-  $head = $file->lines( {count => 1} );
+  ($head) = $file->lines( {count => 1} );
 
   # writing files
 

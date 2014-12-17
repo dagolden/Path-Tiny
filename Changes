@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [DOCUMENTED]
+
+    - Fixed SYNOPSIS example
+
 0.061     2014-11-13 16:50:05-05:00 America/New_York
 
     [FIXED]
