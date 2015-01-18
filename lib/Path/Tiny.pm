@@ -1070,7 +1070,7 @@ sub move {
     my ( $self, $dst ) = @_;
 
     return rename( $self->[PATH], $dst )
-      || $self->_throw( 'rename', $self->[PATH] . "' -> '$dst'" );
+      || $self->_throw( 'rename', $self->[PATH] . "' -> '$dst" );
 }
 
 =method openr, openw, openrw, opena
