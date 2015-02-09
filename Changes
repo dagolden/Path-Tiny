@@ -6,6 +6,8 @@ Revision history for Path-Tiny
 
     - Added 'assert' method
 
+    - Added 'visit' method
+
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
