@@ -941,6 +941,63 @@ sub iterator {
     };
 }
 
+=method visit
+
+    path("/tmp")->visit( \&callback, \%options );
+
+Visits directory entries then executes callback for each entry.
+The current and parent directory entries ("." and "..") will not
+be visited.
+
+    path("/tmp")->visit(
+        sub {
+            my $file = shift; # Path::Tiny object
+
+            ...
+
+            if ($condition) {
+                return 1; # keep traversing
+            }
+            else {
+                return; # terminate traversing
+            }
+        },
+        \%options,
+    );
+
+The callback must return true if you want to traverse all entries in the directory.
+If the callback returns true, it will continue to visit the directory entries.
+But the callback returns false, traversing the directory will be terminated.
+
+If the C<recurse> option is true, the iterator will walk the directory
+recursively, breadth-first.  If the C<follow_symlinks> option is also true,
+directory links will be followed recursively.  There is no protection against
+loops when following links. If a directory is not readable, it will not be
+followed.
+
+The default is the same as:
+
+    path("/tmp")->visit( \&callback, {
+        recurse         => 0,
+        follow_symlinks => 0,
+    } );
+
+Current API available since 0.062.
+
+=cut
+
+sub visit {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/recurse follow_symlinks/ );
+    Carp::croak("Callback for visit() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+    my $next = $self->iterator($args);
+    while ( my $file = $next->() ) {
+        $cb->($file) or last;
+    }
+}
+
 =method lines, lines_raw, lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines;

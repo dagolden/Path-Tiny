@@ -110,26 +110,48 @@ my $tmpdir = Path::Tiny->tempdir;
     ok $dir->child('file.x')->touch;
     ok $dir->child('0')->touch;
     ok $dir->child('foo/bar/baz.txt')->touchpath;
-    my @contents;
-    my $iter = $dir->iterator;
-    while ( my $file = $iter->() ) {
-        push @contents, $file;
-    }
-    is scalar @contents, 4
-      or diag explain \@contents;
-    is( $iter->(), undef, "exhausted iterator is undef" );
 
-    my $joined = join ' ', sort map $_->basename, grep { -f $_ } @contents;
-    is $joined, '0 file.x'
-      or diag explain \@contents;
+    subtest 'iterator' => sub {
+        my @contents;
+        my $iter = $dir->iterator;
+        while ( my $file = $iter->() ) {
+            push @contents, $file;
+        }
+        is scalar @contents, 4
+          or diag explain \@contents;
+        is( $iter->(), undef, "exhausted iterator is undef" );
 
-    my ($subdir) = grep { $_ eq $dir->child('dir') } @contents;
-    ok $subdir;
-    is -d $subdir, 1;
+        my $joined = join ' ', sort map $_->basename, grep { -f $_ } @contents;
+        is $joined, '0 file.x'
+          or diag explain \@contents;
 
-    my ($file) = grep { $_ eq $dir->child('file.x') } @contents;
-    ok $file;
-    is -d $file, '';
+        my ($subdir) = grep { $_ eq $dir->child('dir') } @contents;
+        ok $subdir;
+        is -d $subdir, 1;
+
+        my ($file) = grep { $_ eq $dir->child('file.x') } @contents;
+        ok $file;
+        is -d $file, '';
+    };
+
+    subtest 'visit' => sub {
+        my @contents;
+        $dir->visit( sub { push @contents, $_[0]; return 1; } );
+        is scalar @contents, 4
+          or diag explain \@contents;
+
+        my $joined = join ' ', sort map $_->basename, grep { -f $_ } @contents;
+        is $joined, '0 file.x'
+          or diag explain \@contents;
+
+        my ($subdir) = grep { $_ eq $dir->child('dir') } @contents;
+        ok $subdir;
+        is -d $subdir, 1;
+
+        my ($file) = grep { $_ eq $dir->child('file.x') } @contents;
+        ok $file;
+        is -d $file, '';
+    };
 
     ok $dir->remove_tree;
     ok !-e $dir;
@@ -143,12 +165,19 @@ my $tmpdir = Path::Tiny->tempdir;
     ok $dir2->child('0')->mkpath;
     ok -d $dir2->child('0');
 
-    @contents = ();
-    $iter     = $dir2->iterator;
-    while ( my $file = $iter->() ) {
-        push @contents, $file;
-    }
-    ok grep { $_ eq '0' } @contents;
+    subtest 'iterator' => sub {
+        my @contents;
+        my $iter = $dir2->iterator;
+        while ( my $file = $iter->() ) {
+            push @contents, $file;
+        }
+        ok grep { $_ eq '0' } @contents;
+    };
+    subtest 'visit' => sub {
+        my @contents;
+        $dir2->visit( sub { push @contents, $_[0]; return 1; } );
+        ok grep { $_ eq '0' } @contents;
+    };
 
     ok chdir($orig);
     ok $dir->remove_tree;
