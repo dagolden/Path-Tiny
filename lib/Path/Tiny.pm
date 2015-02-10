@@ -1028,6 +1028,7 @@ sub lines {
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
         my ( @result, $counter );
+        _seek_start_of_last_n_lines( $self, $fh, -$args->{count} ) if $args->{count} < 0;
         while ( my $line = <$fh> ) {
             $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})$// if $chomp;
             push @result, $line;
@@ -1041,6 +1042,61 @@ sub lines {
     else {
         return wantarray ? <$fh> : ( my $count =()= <$fh> );
     }
+}
+
+sub _seek_start_of_last_n_lines {
+    my ( $path, $fh, $n_lines ) = @_;
+
+    require Fcntl;
+
+    seek $fh, 0, Fcntl::SEEK_CUR() or $path->_throw('seek');
+    my $start_pos = tell $fh;
+    seek $fh, 0, Fcntl::SEEK_END() or $path->_throw('seek');
+    my $end_pos = tell $fh;
+    return unless $start_pos < $end_pos;
+
+    require POSIX;
+
+    my $bufsize    = POSIX::BUFSIZ();
+    my $pos        = $end_pos;
+    my $n_newlines = 0;
+    my $last_newline;
+
+    # read file from the end until we got enough lines
+    REVERSE_READ: {
+        my $is_first = 1;
+        do {
+            if ( $pos == $start_pos ) {
+                seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
+                return;
+            }
+
+            my $bytes_read = ( $pos - $start_pos ) % $bufsize;
+            $bytes_read ||= $bufsize;
+            $pos -= $bytes_read;
+            seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
+            $bytes_read = read $fh, my ($buffer), $bytes_read;
+            $path->_throw('read') unless defined $bytes_read;
+
+            # check last line has newline or not
+            if ($is_first) {
+                $last_newline = $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})$/;
+                undef $is_first;
+            }
+
+            $n_newlines += () = $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})/gms;
+        } while ( $n_newlines < $n_lines + ( $last_newline ? 1 : 0 ) );
+    }
+
+    seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
+    my $bytes_read = read $fh, my ($buffer), $bufsize;
+    $path->_throw('read') unless defined $bytes_read;
+
+    # skip needless newlines then set position of filehandle
+    my $offset = 0;
+    my $count = $n_newlines - $n_lines + ( $last_newline ? 0 : 1 );
+    $offset = pos $buffer while $count-- > 0 && $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})/gms;
+    seek $fh, $pos + $offset, Fcntl::SEEK_SET() or $path->_throw('seek');
 }
 
 sub lines_raw {
@@ -1777,6 +1833,7 @@ IS_BSD IS_WIN32 FREEZE THAW TO_JSON
   @lines = $file->lines_utf8;
 
   ($head) = $file->lines( {count => 1} );
+  ($tail) = $file->lines( {count => -1} );
 
   # writing files
 
