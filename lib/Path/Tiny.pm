@@ -235,7 +235,10 @@ sub path {
 
     # do any tilde expansions
     if ( $path =~ m{^(~[^/]*).*} ) {
-        my ($homedir) = glob($1); # glob without list context == heisenbug!
+        my $homedir = $1;
+        $homedir =~ s/\\/\\\\/g;     # escape backslashes
+        $homedir =~ s/(\s)/\\$1/g;   # escape whitespace
+        ($homedir) = glob($homedir); # glob without list context == heisenbug!
         $path =~ s{^(~[^/]*)}{$homedir};
     }
 
