@@ -122,33 +122,35 @@ is $file->parent,  '/foo/baz';
 # tilde processing
 {
     my ($homedir) = glob('~');
-    my $dir = path('~');
-    is( $dir, $homedir, 'Test my homedir' );
-    $dir = path('~/');
-    is( $dir, $homedir, 'Test my homedir with trailing "/"' );
-    $dir = path('~/foo/bar');
-    is( $dir, $homedir . '/foo/bar', 'Test my homedir with longer path' );
-    $dir = path('~/foo/bar/');
-    is( $dir, $homedir . '/foo/bar', 'Test my homedir, longer path and trailing "/"' );
-
+    my $username = path($homedir)->basename;
     my ($root_homedir) = glob('~root');
-    $dir = path('~root');
-    is( $dir, $root_homedir, 'Test root homedir' );
-    $dir = path('~root');
-    is( $dir, $root_homedir, 'Test root homedir with trailing /' );
-    $dir = path('~root/foo/bar');
-    is( $dir, $root_homedir . '/foo/bar', 'Test root homedir with longer path' );
-    $dir = path('~root/foo/bar/');
-    is(
-        $dir,
-        $root_homedir . '/foo/bar',
-        'Test root homedir, longer path and trailing "/"'
+    my ($missing_homedir) = glob('~idontthinkso');
+
+    my @tests = (
+      # [arg for path(), expected string (undef if eq arg for path()), test string]
+        ['~',                     $homedir,                 'Test my homedir' ],
+        ['~/',                    $homedir,                 'Test my homedir with trailing "/"' ],
+        ['~/foo/bar',             $homedir.'/foo/bar',      'Test my homedir with longer path' ],
+        ['~/foo/bar/',            $homedir.'/foo/bar',      'Test my homedir, longer path and trailing "/"' ],
+        ['~root',                 $root_homedir,            'Test root homedir' ],
+        ['~root/',                $root_homedir,            'Test root homedir with trailing /' ],
+        ['~root/foo/bar',         $root_homedir.'/foo/bar', 'Test root homedir with longer path' ],
+        ['~root/foo/bar/',        $root_homedir.'/foo/bar', 'Test root homedir, longer path and trailing "/"'],
+        ['~idontthinkso',         undef,                    'Test homedir of nonexistant user' ],
+        ['~idontthinkso',         $missing_homedir,         'Test homedir of nonexistant user (via glob)' ],
+        ['~blah blah',            undef,                    'Test space' ],
+        ['~this is fun',          undef,                    'Test multiple spaces' ],
+        ['~yikes \' apostrophe!', undef,                    'Test spaces and embedded apostrophe' ],
+        ['~hum " quote',          undef,                    'Test spaces and embedded quote' ],
+        ['~hello ~there',         undef,                    'Test space-separated tildes' ],
+        ["~fun\ttimes",           undef,                    'Test tab' ],
+        ["~new\nline",            undef,                    'Test newline' ],
+        ['~'.$username.' file',   undef,                    'Test \'~$username file\'' ],
     );
 
-    my ($missing_homedir) = glob('~idontthinkso');
-    $dir = path('~idontthinkso');
-    is( $dir, '~idontthinkso',  'Test homedir of nonexistant user' );
-    is( $dir, $missing_homedir, 'Test homedir of nonexistant user (via glob)' );
+    for my $test (@tests) {
+        is(path($test->[0]), defined $test->[1] ? $test->[1] : $test->[0], $test->[2]);
+    }
 }
 
 # freeze/thaw
