@@ -1683,7 +1683,7 @@ situations in many cases and is highly recommended.
 =head1 EXCEPTION HANDLING
 
 Simple usage errors will generally croak.  Failures of underlying Perl
-unctions will be thrown as exceptions in the class
+functions will be thrown as exceptions in the class
 C<Path::Tiny::Error>.
 
 A C<Path::Tiny::Error> object will be a hash reference with the following fields:
