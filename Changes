@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'visit' method
+
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example

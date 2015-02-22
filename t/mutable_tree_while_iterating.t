@@ -17,20 +17,44 @@ my @tree = qw(
 );
 path($_)->touchpath for @tree;
 
-my @files;
-my $iter = path('base')->iterator( { recurse => 1 } );
-my $exception = exception {
-    while ( my $path = $iter->() ) {
-        $path->remove_tree if $path->child('.naughty')->is_file;
-        push @files, $path if $path->is_file;
-    }
+subtest 'iterator' => sub {
+    my @files;
+    my $iter = path('base')->iterator( { recurse => 1 } );
+    my $exception = exception {
+        while ( my $path = $iter->() ) {
+            $path->remove_tree if $path->child('.naughty')->is_file;
+            push @files, $path if $path->is_file;
+        }
+    };
+
+    is( $exception, '', 'can remove directories while traversing' );
+    is_deeply(
+        [ sort @files ],
+        [ 'base/Bethlehem/XDG/gift_list.txt', 'base/New_York/XDG/gift_list.txt' ],
+        'remaining files',
+    );
 };
 
-is( $exception, '', 'can remove directories while traversing' );
-is_deeply(
-    [ sort @files ],
-    [ 'base/Bethlehem/XDG/gift_list.txt', 'base/New_York/XDG/gift_list.txt' ],
-    'remaining files',
-);
+subtest 'visit' => sub {
+    my @files;
+    my $exception = exception {
+        path('base')->visit(
+            sub {
+                my $path = shift;
+                $path->remove_tree if $path->child('.naughty')->is_file;
+                push @files, $path if $path->is_file;
+                return 1;
+            },
+            { recurse => 1 },
+        );
+    };
+
+    is( $exception, '', 'can remove directories while traversing' );
+    is_deeply(
+        [ sort @files ],
+        [ 'base/Bethlehem/XDG/gift_list.txt', 'base/New_York/XDG/gift_list.txt' ],
+        'remaining files',
+    );
+};
 
 done_testing;

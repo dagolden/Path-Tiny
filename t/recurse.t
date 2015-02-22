@@ -35,16 +35,24 @@ subtest 'no symlinks' => sub {
 
     path($_)->touchpath for @tree;
 
-    my $iter = path(".")->iterator( { recurse => 1 } );
+    subtest 'iterator' => sub {
+        my $iter = path(".")->iterator( { recurse => 1 } );
 
-    my @files;
-    while ( my $f = $iter->() ) {
-        push @files, "$f";
-    }
+        my @files;
+        while ( my $f = $iter->() ) {
+            push @files, "$f";
+        }
 
-    is_deeply( [ sort @files ], [ sort @breadth ], "Breadth first iteration" )
-      or diag explain \@files;
+        is_deeply( [ sort @files ], [ sort @breadth ], "Breadth first iteration" )
+          or diag explain \@files;
+    };
+    subtest 'visit' => sub {
+        my @files;
+        path(".")->visit( sub { push @files, "$_[0]"; return 1; }, { recurse => 1 }, );
 
+        is_deeply( [ sort @files ], [ sort @breadth ], "Breadth first iteration" )
+          or diag explain \@files;
+    };
 };
 
 subtest 'with symlinks' => sub {
@@ -93,23 +101,43 @@ subtest 'with symlinks' => sub {
 
     subtest 'no follow' => sub {
         # no-follow
-        my $iter = path(".")->iterator( { recurse => 1 } );
-        my @files;
-        while ( my $f = $iter->() ) {
-            push @files, "$f";
-        }
-        is_deeply( [ sort @files ], [ sort @nofollow ], "Don't follow symlinks" )
-          or diag explain \@files;
+        subtest 'iterator' => sub {
+            my $iter = path(".")->iterator( { recurse => 1 } );
+            my @files;
+            while ( my $f = $iter->() ) {
+                push @files, "$f";
+            }
+            is_deeply( [ sort @files ], [ sort @nofollow ], "Don't follow symlinks" )
+              or diag explain \@files;
+        };
+        subtest 'visit' => sub {
+            my @files;
+            path(".")->visit( sub { push @files, "$_[0]"; return 1; }, { recurse => 1 }, );
+            is_deeply( [ sort @files ], [ sort @nofollow ], "Don't follow symlinks" )
+              or diag explain \@files;
+        };
     };
 
     subtest 'follow' => sub {
-        my $iter = path(".")->iterator( { recurse => 1, follow_symlinks => 1 } );
-        my @files;
-        while ( my $f = $iter->() ) {
-            push @files, "$f";
-        }
-        is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
-          or diag explain \@files;
+        subtest 'iterator' => sub {
+            my $iter = path(".")->iterator( { recurse => 1, follow_symlinks => 1 } );
+            my @files;
+            while ( my $f = $iter->() ) {
+                push @files, "$f";
+            }
+            is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
+              or diag explain \@files;
+          },
+          subtest 'visit' => sub {
+            my @files;
+            path(".")->visit(
+                sub { push @files, "$_[0]"; return 1; },
+                { recurse => 1, follow_symlinks => 1 },
+            );
+            is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
+              or diag explain \@files;
+          },
+          ;
     };
 };
 
