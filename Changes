@@ -8,6 +8,10 @@ Revision history for Path-Tiny
 
     - Added 'visit' method
 
+    [FIXED]
+
+    - Fixed tilde expansion if path has spaces
+
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
