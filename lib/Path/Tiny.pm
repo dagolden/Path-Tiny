@@ -333,6 +333,12 @@ C<< File::Temp->newdir >> instead.
 Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
 
+B<Note>: for tempfiles, the filehandles from File::Temp are closed and not
+reused.  This is not as secure than using File::Temp handles directly, but is
+less prone to deadlocks or access problems on some platforms.  Think of what
+C<Path::Tiny> gives you to be just a temporary file B<name> that gets cleaned
+up.
+
 Current API available since 0.018.
 
 =cut
@@ -1387,6 +1393,13 @@ C<:unix:encoding(UTF-8)>.  If L<Unicode::UTF8> 0.58+ is installed, a raw
 slurp will be done instead and the result decoded with C<Unicode::UTF8>.
 This is just as strict and is roughly an order of magnitude faster than
 using C<:encoding(UTF-8)>.
+
+B<Note>: C<slurp> and friends lock the filehandle before slurping.  If
+you plan to slurp from a file created with L<File::Temp>, be sure to
+close other handles or open without locking to avoid a deadlock:
+
+    my $tempfile = File::Temp->new(EXLOCK => 0);
+    my $guts = path($tempfile)->slurp;
 
 Current API available since 0.004.
 
