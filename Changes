@@ -12,6 +12,10 @@ Revision history for Path-Tiny
 
     - Fixed tilde expansion if path has spaces
 
+    - Make realpath non-fatal on Windows if the parent path exists
+      and only the final path component does not. (Makes it behave
+      like Cwd on Unix.)
+
     - Removed rendundant locking on tempfile use for spewing
 
     [DOCUMENTED]

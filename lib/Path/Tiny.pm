@@ -1246,10 +1246,20 @@ Returns a new C<Path::Tiny> object with all symbolic links and upward directory
 parts resolved using L<Cwd>'s C<realpath>.  Compared to C<absolute>, this is
 more expensive as it must actually consult the filesystem.
 
-If the path can't be resolved (e.g. if it includes directories that don't exist),
-an exception will be thrown:
+If the parent path can't be resolved (e.g. if it includes directories that
+don't exist), an exception will be thrown:
 
     $real = path("doesnt_exist/foo")->realpath; # dies
+
+However, if the parent path exists and only the last component (e.g. filename)
+doesn't exist, the realpath will be the realpath of the parent plus the
+non-existent last component:
+
+    $real = path("./aasdlfasdlf")->realpath; # works
+
+The underlying L<Cwd> module always worked this way on Unix, but died on
+Windows if the full path didn't exist.  As of version 0.062, it's safe to use
+on either platform.
 
 Current API available since 0.001.
 
