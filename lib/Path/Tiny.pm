@@ -79,7 +79,7 @@ sub _safe_realpath {
     require Cwd;
     return eval {
         local $SIG{__WARN__} = sub { };
-        Cwd::realpath( $path );
+        Cwd::realpath($path);
     };
 }
 
@@ -1259,10 +1259,12 @@ sub realpath {
     my $self = shift;
     # Win32 with basename needs parent path resolved separately so realpath
     # doesn't throw an error resolving non-existent basename
-    $self->_splitpath if IS_WIN32 && ! defined $self->[FILE];
-    my $realpath = _safe_realpath( IS_WIN32 && length $self->[FILE] ? $self->parent->[PATH] : $self->[PATH] );
+    $self->_splitpath if IS_WIN32 && !defined $self->[FILE];
+    my $realpath = _safe_realpath( IS_WIN32
+          && length $self->[FILE] ? $self->parent->[PATH] : $self->[PATH] );
     $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
-    return( IS_WIN32 && length $self->[FILE] ? path($realpath, $self->[FILE]) : path($realpath) );
+    return ( IS_WIN32
+          && length $self->[FILE] ? path( $realpath, $self->[FILE] ) : path($realpath) );
 }
 
 =method relative
@@ -1580,9 +1582,10 @@ Like the Unix C<touch> utility.  Creates the file if it doesn't exist, or else
 changes the modification and access times to the current time.  If the first
 argument is the epoch seconds then it will be used.
 
-Returns the path object so it can be easily chained with spew:
+Returns the path object so it can be easily chained with other methods:
 
-    path("foo.txt")->touch->spew( $content );
+    # won't die if foo.txt doesn't exist
+    $content = path("foo.txt")->touch->slurp;
 
 Current API available since 0.015.
 
