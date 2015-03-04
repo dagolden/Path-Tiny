@@ -73,6 +73,16 @@ sub _is_root {
     return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
 }
 
+#  pure-perl CWD can carp; also might die if path parts don't exist
+sub _safe_realpath {
+    my $path = shift;
+    require Cwd;
+    return eval {
+        local $SIG{__WARN__} = sub { };
+        Cwd::realpath( $path );
+    };
+}
+
 # mode bits encoded for chmod in symbolic mode
 my %MODEBITS = ( om => 0007, gm => 0070, um => 0700 ); ## no critic
 { my $m = 0; $MODEBITS{$_} = ( 1 << $m++ ) for qw/ox ow or gx gw gr ux uw ur/ };
@@ -1247,13 +1257,12 @@ Current API available since 0.001.
 
 sub realpath {
     my $self = shift;
-    require Cwd;
-    my $realpath = eval {
-        local $SIG{__WARN__} = sub { }; # (sigh) pure-perl CWD can carp
-        Cwd::realpath( $self->[PATH] );
-    };
+    # Win32 with basename needs parent path resolved separately so realpath
+    # doesn't throw an error resolving non-existent basename
+    $self->_splitpath if IS_WIN32 && ! defined $self->[FILE];
+    my $realpath = _safe_realpath( IS_WIN32 && length $self->[FILE] ? $self->parent->[PATH] : $self->[PATH] );
     $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
-    return path($realpath);
+    return( IS_WIN32 && length $self->[FILE] ? path($realpath, $self->[FILE]) : path($realpath) );
 }
 
 =method relative
