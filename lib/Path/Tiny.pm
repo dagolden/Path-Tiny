@@ -235,10 +235,8 @@ sub path {
 
     # do any tilde expansions
     if ( $path =~ m{^(~[^/]*).*} ) {
-        my $homedir = $1;
-        $homedir =~ s/\\/\\\\/g;     # escape backslashes
-        $homedir =~ s/(\s)/\\$1/g;   # escape whitespace
-        ($homedir) = glob($homedir); # glob without list context == heisenbug!
+        require File::Glob;
+        my ($homedir) = File::Glob::bsd_glob($1);
         $path =~ s{^(~[^/]*)}{$homedir};
     }
 
