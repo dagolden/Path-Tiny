@@ -61,13 +61,9 @@ subtest 'no symlinks' => sub {
     };
     subtest 'visit abort' => sub {
         my $result =
-          path(".")->visit( sub { $_[1]->{$_}++; return \0 if /bbbb/ }, { recurse => 1 } );
+          path(".")->visit( sub { return \0 if ++$_[1]->{count} == 2 }, { recurse => 1 } );
 
-        is_deeply(
-            [ sort keys %$result ],
-            [qw/aaaa.txt bbbb.txt/],
-            "Breadth first iteration"
-        ) or diag explain $result;
+        is( $result->{count}, 2, "visitor aborted on false scalar ref" );
     };
 };
 
