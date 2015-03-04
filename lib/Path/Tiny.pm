@@ -922,6 +922,8 @@ The default is the same as:
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
 
+See also L</visit>.
+
 Current API available since 0.016.
 
 =cut
@@ -974,9 +976,11 @@ sub iterator {
 
     path("/tmp")->visit( \&callback, \%options );
 
-Visits directory entries then executes callback for each entry.
-The current and parent directory entries ("." and "..") will not
-be visited.
+Wraps the L</iterator> method to execute a callback for each directory entry
+(including both files and directories).  The current and parent directory
+entries ("." and "..") will not be visited.
+
+The callback will receive each entry as the sole argument.
 
     path("/tmp")->visit(
         sub {
@@ -994,22 +998,12 @@ be visited.
         \%options,
     );
 
-The callback must return true if you want to traverse all entries in the directory.
-If the callback returns true, it will continue to visit the directory entries.
-But the callback returns false, traversing the directory will be terminated.
+The callback must return true if you want to traverse all entries in the
+directory.  If the callback returns true, it will continue to visit the
+directory entries.  But the callback returns false, traversing the directory
+will be terminated.
 
-If the C<recurse> option is true, the iterator will walk the directory
-recursively, breadth-first.  If the C<follow_symlinks> option is also true,
-directory links will be followed recursively.  There is no protection against
-loops when following links. If a directory is not readable, it will not be
-followed.
-
-The default is the same as:
-
-    path("/tmp")->visit( \&callback, {
-        recurse         => 0,
-        follow_symlinks => 0,
-    } );
+The options are the same as for L</iterator>.
 
 Current API available since 0.062.
 
