@@ -1452,7 +1452,7 @@ sub spew {
     # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $$ . int( rand( 2**31 ) ) );
-    my $fh = $temp->filehandle( { locked => 1 }, ">", $binmode );
+    my $fh = $temp->filehandle( ">", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 

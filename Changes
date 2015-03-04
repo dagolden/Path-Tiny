@@ -12,6 +12,8 @@ Revision history for Path-Tiny
 
     - Fixed tilde expansion if path has spaces
 
+    - Removed rendundant locking on tempfile use for spewing
+
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
