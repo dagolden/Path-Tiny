@@ -498,6 +498,8 @@ thrown.  The assertion code reference may also throw its own exception.
 
 If no assertion is provided, the invocant is returned without error.
 
+Current API available since 0.062.
+
 =cut
 
 sub assert {
