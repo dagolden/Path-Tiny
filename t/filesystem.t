@@ -136,7 +136,7 @@ my $tmpdir = Path::Tiny->tempdir;
 
     subtest 'visit' => sub {
         my @contents;
-        $dir->visit( sub { push @contents, $_[0]; return 1; } );
+        $dir->visit( sub { push @contents, $_[0] } );
         is scalar @contents, 4
           or diag explain \@contents;
 
@@ -175,7 +175,7 @@ my $tmpdir = Path::Tiny->tempdir;
     };
     subtest 'visit' => sub {
         my @contents;
-        $dir2->visit( sub { push @contents, $_[0]; return 1; } );
+        $dir2->visit( sub { push @contents, $_[0] } );
         ok grep { $_ eq '0' } @contents;
     };
 

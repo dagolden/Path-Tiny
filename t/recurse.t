@@ -48,10 +48,26 @@ subtest 'no symlinks' => sub {
     };
     subtest 'visit' => sub {
         my @files;
-        path(".")->visit( sub { push @files, "$_[0]"; return 1; }, { recurse => 1 }, );
+        path(".")->visit( sub { push @files, "$_[0]" }, { recurse => 1 }, );
 
         is_deeply( [ sort @files ], [ sort @breadth ], "Breadth first iteration" )
           or diag explain \@files;
+    };
+    subtest 'visit state' => sub {
+        my $result = path(".")->visit( sub { $_[1]->{$_}++ }, { recurse => 1 }, );
+
+        is_deeply( [ sort keys %$result ], [ sort @breadth ], "Breadth first iteration" )
+          or diag explain $result;
+    };
+    subtest 'visit abort' => sub {
+        my $result =
+          path(".")->visit( sub { $_[1]->{$_}++; return \0 if /bbbb/ }, { recurse => 1 } );
+
+        is_deeply(
+            [ sort keys %$result ],
+            [qw/aaaa.txt bbbb.txt/],
+            "Breadth first iteration"
+        ) or diag explain $result;
     };
 };
 
@@ -112,7 +128,7 @@ subtest 'with symlinks' => sub {
         };
         subtest 'visit' => sub {
             my @files;
-            path(".")->visit( sub { push @files, "$_[0]"; return 1; }, { recurse => 1 }, );
+            path(".")->visit( sub { push @files, "$_[0]" }, { recurse => 1 }, );
             is_deeply( [ sort @files ], [ sort @nofollow ], "Don't follow symlinks" )
               or diag explain \@files;
         };
@@ -130,10 +146,8 @@ subtest 'with symlinks' => sub {
           },
           subtest 'visit' => sub {
             my @files;
-            path(".")->visit(
-                sub { push @files, "$_[0]"; return 1; },
-                { recurse => 1, follow_symlinks => 1 },
-            );
+            path(".")
+              ->visit( sub { push @files, "$_[0]" }, { recurse => 1, follow_symlinks => 1 }, );
             is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
               or diag explain \@files;
           },

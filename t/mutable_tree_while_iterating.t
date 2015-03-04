@@ -43,7 +43,6 @@ subtest 'visit' => sub {
                 my $path = shift;
                 $path->remove_tree if $path->child('.naughty')->is_file;
                 push @files, $path if $path->is_file;
-                return 1;
             },
             { recurse => 1 },
         );

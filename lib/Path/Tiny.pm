@@ -1612,34 +1612,47 @@ sub touchpath {
 
     path("/tmp")->visit( \&callback, \%options );
 
-Wraps the L</iterator> method to execute a callback for each directory entry
-(including both files and directories).  The current and parent directory
-entries ("." and "..") will not be visited.
+Wraps the L</iterator> method to execute a callback for each directory entry.
+It returns a hash reference with any state accumulated during
+iteration.
 
-The callback will receive each entry as the sole argument.
+The options are the same as for L</iterator>: C<recurse> and
+C<follow_symlinks>.  Both default to false.
 
-    path("/tmp")->visit(
+The callback function will receive a C<Path::Tiny> object as the first argument
+and a hash reference to accumulate state as the second argument.  For example:
+
+    # collect files sizes
+    my $sizes = path("/tmp")->visit(
         sub {
-            my $file = shift; # Path::Tiny object
-
-            ...
-
-            if ($condition) {
-                return 1; # keep traversing
-            }
-            else {
-                return; # terminate traversing
-            }
+            my ($path, $state) = @_;
+            return if $path->is_dir;
+            $state{$path} = -s $path;
         },
-        \%options,
+        { recurse => 1 }
     );
 
-The callback must return true if you want to traverse all entries in the
-directory.  If the callback returns true, it will continue to visit the
-directory entries.  But the callback returns false, traversing the directory
-will be terminated.
+For convenience, the C<Path::Tiny> object will also be locally aliased as the
+C<$_> global variable:
 
-The options are the same as for L</iterator>.
+    # print paths matching /foo/
+    path("/tmp")->visit( { say if /foo/ }, { recurse => 1} );
+
+If the callback returns a B<reference> to a false scalar value, iteration will
+terminate.  This is not the same as "pruning" a directory search; this just
+stops all iteration and returns the state hash reference.
+
+    # find up to 10 files larger than 100K
+    my $files = path("/tmp")->visit(
+        sub {
+            my ($path, $state) = @_;
+            $state{$path}++ if -s $path > 102400
+            return \0 if keys %$state == 10;
+        },
+        { recurse => 1 }
+    );
+
+If you want more flexible iteration, use a module like L<Path::Iterator::Rule>.
 
 Current API available since 0.062.
 
@@ -1651,10 +1664,14 @@ sub visit {
     my $args = _get_args( shift, qw/recurse follow_symlinks/ );
     Carp::croak("Callback for visit() must be a code reference")
       unless defined($cb) && ref($cb) eq 'CODE';
-    my $next = $self->iterator($args);
+    my $next  = $self->iterator($args);
+    my $state = {};
     while ( my $file = $next->() ) {
-        $cb->($file) or last;
+        local $_ = $file;
+        my $r = $cb->( $file, $state );
+        last if ref($r) && !$$r;
     }
+    return $state;
 }
 
 =method volume
