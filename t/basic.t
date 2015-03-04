@@ -158,4 +158,18 @@ is $file->parent,  '/foo/baz';
         $path, "FREEZE-THAW roundtrip" );
 }
 
+# assertions
+{
+    my $err = exception {
+        path("aljfakdlfadks")->assert( sub { $_->exists } )
+    };
+    like( $err, qr/failed assertion/, "assert exists" );
+    my $path;
+    $err = exception {
+        $path = path("t")->assert( sub { -d && -r _ } )
+    };
+    is( $err, '', "no exception if assertion succeeds" );
+    isa_ok( $path, "Path::Tiny", "assertion return value" );
+}
+
 done_testing();

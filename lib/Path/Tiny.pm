@@ -487,6 +487,33 @@ sub append_utf8 {
     }
 }
 
+=method assert
+
+    $path = path("foo.txt")->assert( sub { $_->exists } );
+
+Returns the invocant after asserting that a code reference argument returns
+true.  When the assertion code reference runs, it will have the invocant
+object in the C<$_> variable.  If it returns false, an exception will be
+thrown.  The assertion code reference may also throw its own exception.
+
+If no assertion is provided, the invocant is returned without error.
+
+=cut
+
+sub assert {
+    my ( $self, $assertion ) = @_;
+    return $self unless $assertion;
+    if ( ref $assertion eq 'CODE' ) {
+        local $_ = $self;
+        $assertion->()
+          or Path::Tiny::Error->throw( "assert", $self->[PATH], "failed assertion" );
+    }
+    else {
+        Carp::croak("argument to assert must be a code reference argument");
+    }
+    return $self;
+}
+
 =method basename
 
     $name = path("foo/bar.txt")->basename;        # bar.txt
