@@ -972,55 +972,6 @@ sub iterator {
     };
 }
 
-=method visit
-
-    path("/tmp")->visit( \&callback, \%options );
-
-Wraps the L</iterator> method to execute a callback for each directory entry
-(including both files and directories).  The current and parent directory
-entries ("." and "..") will not be visited.
-
-The callback will receive each entry as the sole argument.
-
-    path("/tmp")->visit(
-        sub {
-            my $file = shift; # Path::Tiny object
-
-            ...
-
-            if ($condition) {
-                return 1; # keep traversing
-            }
-            else {
-                return; # terminate traversing
-            }
-        },
-        \%options,
-    );
-
-The callback must return true if you want to traverse all entries in the
-directory.  If the callback returns true, it will continue to visit the
-directory entries.  But the callback returns false, traversing the directory
-will be terminated.
-
-The options are the same as for L</iterator>.
-
-Current API available since 0.062.
-
-=cut
-
-sub visit {
-    my $self = shift;
-    my $cb   = shift;
-    my $args = _get_args( shift, qw/recurse follow_symlinks/ );
-    Carp::croak("Callback for visit() must be a code reference")
-      unless defined($cb) && ref($cb) eq 'CODE';
-    my $next = $self->iterator($args);
-    while ( my $file = $next->() ) {
-        $cb->($file) or last;
-    }
-}
-
 =method lines, lines_raw, lines_utf8
 
     @contents = path("/tmp/foo.txt")->lines;
@@ -1655,6 +1606,55 @@ sub touchpath {
     my $parent = $self->parent;
     $parent->mkpath unless $parent->exists;
     $self->touch;
+}
+
+=method visit
+
+    path("/tmp")->visit( \&callback, \%options );
+
+Wraps the L</iterator> method to execute a callback for each directory entry
+(including both files and directories).  The current and parent directory
+entries ("." and "..") will not be visited.
+
+The callback will receive each entry as the sole argument.
+
+    path("/tmp")->visit(
+        sub {
+            my $file = shift; # Path::Tiny object
+
+            ...
+
+            if ($condition) {
+                return 1; # keep traversing
+            }
+            else {
+                return; # terminate traversing
+            }
+        },
+        \%options,
+    );
+
+The callback must return true if you want to traverse all entries in the
+directory.  If the callback returns true, it will continue to visit the
+directory entries.  But the callback returns false, traversing the directory
+will be terminated.
+
+The options are the same as for L</iterator>.
+
+Current API available since 0.062.
+
+=cut
+
+sub visit {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/recurse follow_symlinks/ );
+    Carp::croak("Callback for visit() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+    my $next = $self->iterator($args);
+    while ( my $file = $next->() ) {
+        $cb->($file) or last;
+    }
 }
 
 =method volume
