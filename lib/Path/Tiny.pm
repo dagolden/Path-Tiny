@@ -366,6 +366,10 @@ sub tempdir {
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = path($temp)->absolute;
     $self->[TEMP] = $temp;                # keep object alive while we are
+    # Some ActiveState Perls for Windows break Cwd in ways that lead
+    # File::Temp to get confused about what path to remove; this
+    # monkey-patches the object with our own view of the absolute path
+    $temp->{REALNAME} = $self->[CANON] if IS_WIN32;
     return $self;
 }
 

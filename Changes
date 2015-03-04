@@ -2,8 +2,6 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
-0.062     2015-03-04 13:59:31-05:00 America/New_York (TRIAL RELEASE)
-
     [ADDED]
 
     - Added 'assert' method
@@ -20,9 +18,14 @@ Revision history for Path-Tiny
 
     - Removed rendundant locking on tempfile use for spewing
 
+    - Work around File::Temp bugs on older ActiveState Windows Perls
+      https://bugs.activestate.com/show_bug.cgi?id=104767 
+
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
+
+0.062     2015-03-04 13:59:31-05:00 America/New_York (TRIAL RELEASE)
 
 0.061     2014-11-13 16:50:05-05:00 America/New_York
 

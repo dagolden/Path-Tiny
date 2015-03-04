@@ -1,6 +1,7 @@
 use 5.008001;
 use strict;
 use warnings;
+use Cwd; # hack around https://bugs.activestate.com/show_bug.cgi?id=104767
 use Test::More 0.96;
 use File::Spec::Unix;
 
