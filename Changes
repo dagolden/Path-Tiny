@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.063     2015-03-04 16:00:17-05:00 America/New_York (TRIAL RELEASE)
+
     [ADDED]
 
     - Added 'assert' method
