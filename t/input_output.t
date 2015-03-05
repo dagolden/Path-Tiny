@@ -20,6 +20,14 @@ sub _utf8_lines {
     return ( _lines(), $line3 );
 }
 
+sub _no_end_of_newline_lines {
+    return ( _lines(), "No end of newline" );
+}
+
+sub _utf8_no_end_of_newline_lines {
+    return ( _utf8_lines(), "No end of newline" );
+}
+
 subtest "spew -> slurp" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
@@ -106,20 +114,24 @@ subtest "spew -> lines (count)" => sub {
     my @exp = _lines;
     is( join( '', $file->lines( { count => 2 } ) ), join( '', @exp[ 0 .. 1 ] ),
         "lines" );
+    is( join( '', $file->lines( { count => -2 } ) ),
+        join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
 
 subtest "spew -> lines (count, less than)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     my @exp = _lines;
-    is( join( '', $file->lines( { count => 1 } ) ), $exp[0], "lines" );
+    is( join( '', $file->lines( { count => 1 } ) ),  $exp[0], "lines" );
+    is( join( '', $file->lines( { count => -1 } ) ), $exp[1], "lines" );
 };
 
 subtest "spew -> lines (count, more than)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     my @exp = _lines;
-    is( join( '|', $file->lines( { count => 3 } ) ), join( "|", @exp ), "lines" );
+    is( join( '|', $file->lines( { count => 3 } ) ),  join( "|", @exp ), "lines" );
+    is( join( '|', $file->lines( { count => -3 } ) ), join( "|", @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp)" => sub {
@@ -128,13 +140,52 @@ subtest "spew -> lines (count, chomp)" => sub {
     my @exp = map { s/[\r\n]+//; $_ } _lines;
     is( join( '', $file->lines( { chomp => 1, count => 2 } ) ),
         join( '', @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines( { chomp => 1, count => -2 } ) ),
+        join( '', @exp[ 0 .. 1 ] ), "lines" );
+};
+
+subtest "spew -> lines (count, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines( { count => 3 } ) ), join( '', @exp[ 0 .. 2 ] ),
+        "lines" );
+    is( join( '', $file->lines( { count => -3 } ) ),
+        join( '', @exp[ 0 .. 2 ] ), "lines" );
+};
+
+subtest "spew -> lines (count, less than, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines( { count => 1 } ) ),  $exp[0], "lines" );
+    is( join( '', $file->lines( { count => -1 } ) ), $exp[2], "lines" );
+};
+
+subtest "spew -> lines (count, more than, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my @exp = _no_end_of_newline_lines;
+    is( join( '|', $file->lines( { count => 4 } ) ),  join( "|", @exp ), "lines" );
+    is( join( '|', $file->lines( { count => -4 } ) ), join( "|", @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, chomp, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my @exp = map { s/[\r\n]+//; $_ } _no_end_of_newline_lines;
+    is( join( '', $file->lines( { chomp => 1, count => 3 } ) ),
+        join( '', @exp[ 0 .. 2 ] ), "lines" );
+    is( join( '', $file->lines( { chomp => 1, count => -3 } ) ),
+        join( '', @exp[ 0 .. 2 ] ), "lines" );
 };
 
 subtest "spew -> lines (count, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     my @exp = _utf8_lines;
-    is( join( '', $file->lines_utf8( { count => 3 } ) ), join( '', @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { count => 3 } ) ),  join( '', @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { count => -3 } ) ), join( '', @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp, UTF-8)" => sub {
@@ -143,6 +194,8 @@ subtest "spew -> lines (count, chomp, UTF-8)" => sub {
     my @exp = map { s/[\r\n]+//; $_ } _utf8_lines;
     is( join( '', $file->lines_utf8( { chomp => 1, count => 2 } ) ),
         join( '', @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines_utf8( { chomp => 1, count => -2 } ) ),
+        join( '', @exp[ 1 .. 2 ] ), "lines" );
 };
 
 subtest "spew -> lines (chomp, UTF-8)" => sub {
@@ -152,11 +205,38 @@ subtest "spew -> lines (chomp, UTF-8)" => sub {
     is( join( '', $file->lines_utf8( { chomp => 1 } ) ), join( '', @exp ), "lines" );
 };
 
+subtest "spew -> lines (count, UTF-8, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_no_end_of_newline_lines), "spew" );
+    my @exp = _utf8_no_end_of_newline_lines;
+    is( join( '', $file->lines_utf8( { count => 4 } ) ),  join( '', @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { count => -4 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, chomp, UTF-8, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_no_end_of_newline_lines), "spew" );
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_no_end_of_newline_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1, count => 2 } ) ),
+        join( '', @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines_utf8( { chomp => 1, count => -2 } ) ),
+        join( '', @exp[ 2 .. 3 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_lines), "spew" );
     my @exp = _lines;
-    is( join( '', $file->lines_raw( { count => 2 } ) ), join( '', @exp ), "lines" );
+    is( join( '', $file->lines_raw( { count => 2 } ) ),  join( '', @exp ), "lines" );
+    is( join( '', $file->lines_raw( { count => -2 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, raw, no end of newline)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_no_end_of_newline_lines), "spew" );
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines_raw( { count => 3 } ) ),  join( '', @exp ), "lines" );
+    is( join( '', $file->lines_raw( { count => -3 } ) ), join( '', @exp ), "lines" );
 };
 
 subtest "append -> slurp" => sub {
