@@ -10,6 +10,9 @@ Revision history for Path-Tiny
 
     - Added 'visit' method
 
+    - Added support for a negative count for 'lines' to get the
+      last lines of a file
+
     [FIXED]
 
     - Fixed tilde expansion if path has spaces
@@ -25,7 +28,6 @@ Revision history for Path-Tiny
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
-
 
 0.063     2015-03-04 16:00:17-05:00 America/New_York (TRIAL RELEASE)
 
