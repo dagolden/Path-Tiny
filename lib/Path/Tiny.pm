@@ -1673,7 +1673,7 @@ For convenience, the C<Path::Tiny> object will also be locally aliased as the
 C<$_> global variable:
 
     # print paths matching /foo/
-    path("/tmp")->visit( { say if /foo/ }, { recurse => 1} );
+    path("/tmp")->visit( sub { say if /foo/ }, { recurse => 1} );
 
 If the callback returns a B<reference> to a false scalar value, iteration will
 terminate.  This is not the same as "pruning" a directory search; this just
