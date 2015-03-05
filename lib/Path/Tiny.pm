@@ -73,16 +73,6 @@ sub _is_root {
     return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
 }
 
-#  pure-perl CWD can carp; also might die if path parts don't exist
-sub _safe_realpath {
-    my $path = shift;
-    require Cwd;
-    return eval {
-        local $SIG{__WARN__} = sub { };
-        Cwd::realpath($path);
-    };
-}
-
 # mode bits encoded for chmod in symbolic mode
 my %MODEBITS = ( om => 0007, gm => 0070, um => 0700 ); ## no critic
 { my $m = 0; $MODEBITS{$_} = ( 1 << $m++ ) for qw/ox ow or gx gw gr ux uw ur/ };
@@ -1267,24 +1257,31 @@ non-existent last component:
 
     $real = path("./aasdlfasdlf")->realpath; # works
 
-The underlying L<Cwd> module always worked this way on Unix, but died on
-Windows if the full path didn't exist.  As of version 0.062, it's safe to use
-on either platform.
+The underlying L<Cwd> module usually worked this way on Unix, but died on
+Windows (and some Unixes) if the full path didn't exist.  As of version 0.064,
+it's safe to use anywhere.
 
 Current API available since 0.001.
 
 =cut
 
+# Win32 and some Unixes need parent path resolved separately so realpath
+# doesn't throw an error resolving non-existent basename
 sub realpath {
     my $self = shift;
-    # Win32 with basename needs parent path resolved separately so realpath
-    # doesn't throw an error resolving non-existent basename
-    $self->_splitpath if IS_WIN32 && !defined $self->[FILE];
-    my $realpath = _safe_realpath( IS_WIN32
-          && length $self->[FILE] ? $self->parent->[PATH] : $self->[PATH] );
-    $self->_throw("resolving realpath") unless defined $realpath and length $realpath;
-    return ( IS_WIN32
-          && length $self->[FILE] ? path( $realpath, $self->[FILE] ) : path($realpath) );
+    require Cwd;
+    $self->_splitpath if !defined $self->[FILE];
+    my $check_parent =
+      length $self->[FILE] && $self->[FILE] ne '.' && $self->[FILE] ne '..';
+    my $realpath = eval {
+        # pure-perl Cwd can carp
+        local $SIG{__WARN__} = sub { };
+        Cwd::realpath( $check_parent ? $self->parent->[PATH] : $self->[PATH] );
+    };
+    # parent realpath must exist; not all Cwd::realpath will error if it doesn't
+    $self->_throw("resolving realpath")
+      unless defined $realpath && length $realpath && -e $realpath;
+    return ( $check_parent ? path( $realpath, $self->[FILE] ) : path($realpath) );
 }
 
 =method relative
