@@ -993,11 +993,18 @@ sub iterator {
     @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
-options.  Valid options are C<binmode>, C<count> and C<chomp>.  If C<binmode>
-is provided, it will be set on the handle prior to reading.  If C<count> is
-provided, up to that many lines will be returned. If C<chomp> is set, any
-end-of-line character sequences (C<CR>, C<CRLF>, or C<LF>) will be removed
-from the lines returned.
+options.  Valid options are C<binmode>, C<count> and C<chomp>.
+
+If C<binmode> is provided, it will be set on the handle prior to reading.
+
+If a positive C<count> is provided, that many lines will be returned from the
+start of the file.  If a negative C<count> is provided, the entire file will be
+read, but only the last C<abs(count)> will be returned.  If the count (positive
+or negative) exceeds the number of lines in the file, all lines will be
+returned.
+
+If C<chomp> is set, any end-of-line character sequences (C<CR>, C<CRLF>, or
+C<LF>) will be removed from the lines returned.
 
 Because the return is a list, C<lines> in scalar context will return the number
 of lines (and throw away the data).
@@ -1028,13 +1035,17 @@ sub lines {
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
         my ( @result, $counter );
-        _seek_start_of_last_n_lines( $self, $fh, -$args->{count} ) if $args->{count} < 0;
         while ( my $line = <$fh> ) {
             $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})$// if $chomp;
             push @result, $line;
+            # if count is negative, we read all lines
             last if ++$counter == $args->{count};
         }
-        return @result;
+        return (
+            ( $args->{count} > 0 || -$args->{count} > @result )
+            ? @result
+            : @result[ $args->{count} .. -1 ]
+        );
     }
     elsif ($chomp) {
         return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>; ## no critic
@@ -1042,61 +1053,6 @@ sub lines {
     else {
         return wantarray ? <$fh> : ( my $count =()= <$fh> );
     }
-}
-
-sub _seek_start_of_last_n_lines {
-    my ( $path, $fh, $n_lines ) = @_;
-
-    require Fcntl;
-
-    seek $fh, 0, Fcntl::SEEK_CUR() or $path->_throw('seek');
-    my $start_pos = tell $fh;
-    seek $fh, 0, Fcntl::SEEK_END() or $path->_throw('seek');
-    my $end_pos = tell $fh;
-    return unless $start_pos < $end_pos;
-
-    require POSIX;
-
-    my $bufsize    = POSIX::BUFSIZ();
-    my $pos        = $end_pos;
-    my $n_newlines = 0;
-    my $last_newline;
-
-    # read file from the end until we got enough lines
-    REVERSE_READ: {
-        my $is_first = 1;
-        do {
-            if ( $pos == $start_pos ) {
-                seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
-                return;
-            }
-
-            my $bytes_read = ( $pos - $start_pos ) % $bufsize;
-            $bytes_read ||= $bufsize;
-            $pos -= $bytes_read;
-            seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
-            $bytes_read = read $fh, my ($buffer), $bytes_read;
-            $path->_throw('read') unless defined $bytes_read;
-
-            # check last line has newline or not
-            if ($is_first) {
-                $last_newline = $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})$/;
-                undef $is_first;
-            }
-
-            $n_newlines += () = $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})/gms;
-        } while ( $n_newlines < $n_lines + ( $last_newline ? 1 : 0 ) );
-    }
-
-    seek $fh, $pos, Fcntl::SEEK_SET() or $path->_throw('seek');
-    my $bytes_read = read $fh, my ($buffer), $bufsize;
-    $path->_throw('read') unless defined $bytes_read;
-
-    # skip needless newlines then set position of filehandle
-    my $offset = 0;
-    my $count = $n_newlines - $n_lines + ( $last_newline ? 0 : 1 );
-    $offset = pos $buffer while $count-- > 0 && $buffer =~ m/(\x{0d}?\x{0a}|\x{0d})/gms;
-    seek $fh, $pos + $offset, Fcntl::SEEK_SET() or $path->_throw('seek');
 }
 
 sub lines_raw {
