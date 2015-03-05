@@ -1021,7 +1021,7 @@ actually faster than relying on C<:encoding(UTF-8)>, though a bit memory
 intensive.  If memory use is a concern, consider C<openr_utf8> and
 iterating directly on the handle.
 
-Current API available since 0.048.
+Current API available since 0.065.
 
 =cut
 
