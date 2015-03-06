@@ -2,8 +2,6 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
-0.064     2015-03-05 03:58:42-05:00 America/New_York (TRIAL RELEASE)
-
     [ADDED]
 
     - Added 'assert' method
@@ -28,6 +26,8 @@ Revision history for Path-Tiny
     [DOCUMENTED]
 
     - Fixed SYNOPSIS example
+
+0.064     2015-03-05 03:58:42-05:00 America/New_York (TRIAL RELEASE)
 
 0.063     2015-03-04 16:00:17-05:00 America/New_York (TRIAL RELEASE)
 
