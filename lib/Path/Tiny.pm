@@ -999,9 +999,8 @@ If C<binmode> is provided, it will be set on the handle prior to reading.
 
 If a positive C<count> is provided, that many lines will be returned from the
 start of the file.  If a negative C<count> is provided, the entire file will be
-read, but only the last C<abs(count)> will be returned.  If the count (positive
-or negative) exceeds the number of lines in the file, all lines will be
-returned.
+read, but only C<abs(count)> will be kept and returned.  If C<abs(count)>
+exceeds the number of lines in the file, all lines will be returned.
 
 If C<chomp> is set, any end-of-line character sequences (C<CR>, C<CRLF>, or
 C<LF>) will be removed from the lines returned.
@@ -1034,18 +1033,19 @@ sub lines {
     my $chomp = $args->{chomp};
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
-        my ( @result, $counter );
+        my ( $counter, $mod, @result ) = ( 0, abs( $args->{count} ) );
         while ( my $line = <$fh> ) {
             $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})$// if $chomp;
-            push @result, $line;
-            # if count is negative, we read all lines
-            last if ++$counter == $args->{count};
+            $result[ $counter++ ] = $line;
+            # for positive count, terminate after right number of lines
+            last if $counter == $args->{count};
+            # for negative count, eventually wrap around in the result array
+            $counter %= $mod;
         }
-        return (
-            ( $args->{count} > 0 || -$args->{count} > @result )
-            ? @result
-            : @result[ $args->{count} .. -1 ]
-        );
+        # reorder results if wrapped somewhere in the middle
+        splice( @result, 0, 0, splice( @result, $counter ) )
+          if $counter % $mod;
+        return @result;
     }
     elsif ($chomp) {
         return map { s/(?:\x{0d}?\x{0a}|\x{0d})$//; $_ } <$fh>; ## no critic
