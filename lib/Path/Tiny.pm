@@ -1042,9 +1042,9 @@ sub lines {
             # for negative count, eventually wrap around in the result array
             $counter %= $mod;
         }
-        # reorder results if wrapped somewhere in the middle
+        # reorder results if full and wrapped somewhere in the middle
         splice( @result, 0, 0, splice( @result, $counter ) )
-          if $counter % $mod;
+          if @result == $mod && $counter % $mod;
         return @result;
     }
     elsif ($chomp) {
