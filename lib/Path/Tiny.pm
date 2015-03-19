@@ -772,16 +772,22 @@ sub is_dir { -d $_[0]->[PATH] }
 
     $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
     $fh = path("/tmp/foo.txt")->filehandle({ locked => 1 }, $mode, $binmode);
+    $fh = path("/tmp/foo.txt")->filehandle({ exclusive => 1  }, $mode, $binmode);
 
 Returns an open file handle.  The C<$mode> argument must be a Perl-style
 read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
 is given, it is set during the C<open> call.
 
-An optional hash reference may be used to pass options.  The only option is
-C<locked>.  If true, handles opened for writing, appending or read-write are
-locked with C<LOCK_EX>; otherwise, they are locked with C<LOCK_SH>.  When using
-C<locked>, ">" or "+>" modes will delay truncation until after the lock is
-acquired.
+An optional hash reference may be used to pass options.
+
+The C<locked> option governs file locking; if true, handles opened for writing,
+appending or read-write are locked with C<LOCK_EX>; otherwise, they are
+locked with C<LOCK_SH>.  When using C<locked>, ">" or "+>" modes will delay
+truncation until after the lock is acquired.
+
+The C<exclusive> option causes the open() call to fail if the file already
+exists.  This corresponds to the O_EXCL flag to sysopen / open(2).
+C<exclusive> implies C<locked> and will set it for you if you forget it.
 
 See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
@@ -795,7 +801,8 @@ Current API available since 0.039.
 sub filehandle {
     my ( $self, @args ) = @_;
     my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
-    $args = _get_args( $args, qw/locked/ );
+    $args = _get_args( $args, qw/locked exclusive/ );
+    $args->{locked} = 1 if $args->{exclusive};
     my ( $opentype, $binmode ) = @args;
 
     $opentype = "<" unless defined $opentype;
@@ -814,6 +821,7 @@ sub filehandle {
             # sysopen in write mode without truncation
             my $flags = $opentype eq ">" ? Fcntl::O_WRONLY() : Fcntl::O_RDWR();
             $flags |= Fcntl::O_CREAT();
+            $flags |= Fcntl::O_EXCL() if $args->{exclusive};
             sysopen( $fh, $self->[PATH], $flags ) or $self->_throw("sysopen");
 
             # fix up the binmode since sysopen() can't specify layers like
@@ -1488,7 +1496,7 @@ sub spew {
     # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $temp = path( $self->[PATH] . $$ . int( rand( 2**31 ) ) );
-    my $fh = $temp->filehandle( ">", $binmode );
+    my $fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
