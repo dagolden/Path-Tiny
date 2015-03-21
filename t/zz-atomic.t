@@ -4,9 +4,11 @@ use warnings;
 use Test::More 0.96;
 
 BEGIN {
+    plan skip_all => "Can't mock random() with Path::Tiny already loaded"
+      if $INC{'Path/Tiny.pm'};
     eval "use Test::MockRandom 'Path::Tiny';";
     plan skip_all => "Test::MockRandom required for atomicity tests" if $@;
-};
+}
 
 use lib 't/lib';
 use TestUtils qw/exception/;
