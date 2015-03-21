@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added exclusive locking option to filehandle opens; spew now
+      exclusively locks tempfile used for atomic writes
+
 0.065     2015-03-06 05:59:56-05:00 America/New_York
 
     [ADDED]
