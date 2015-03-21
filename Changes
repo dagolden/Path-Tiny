@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.066     2015-03-20 23:59:08-04:00 America/New_York (TRIAL RELEASE)
+
     [ADDED]
 
     - Added exclusive locking option to filehandle opens; spew now
