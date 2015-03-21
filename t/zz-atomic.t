@@ -21,10 +21,11 @@ subtest "spew (atomic)" => sub {
     ok( $file->spew("original"), "spew" );
     is( $file->slurp, "original", "original file" );
 
-    my $tmp = $file->[Path::Tiny::PATH].$$."0";
+    my $tmp = $file->[Path::Tiny::PATH] . $$ . "0";
     open my $fh, ">", $tmp;
     ok( $fh, "opened collision file '$tmp'" );
-    print $fh "collide!"; close $fh;
+    print $fh "collide!";
+    close $fh;
 
     my $error = exception { ok( $file->spew("overwritten"), "spew" ) };
     ok( $error, "spew errors if the temp file exists" );
