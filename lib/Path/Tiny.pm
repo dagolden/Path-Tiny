@@ -791,7 +791,7 @@ C<exclusive> implies C<locked> and will set it for you if you forget it.
 
 See C<openr>, C<openw>, C<openrw>, and C<opena> for sugar.
 
-Current API available since 0.039.
+Current API available since 0.066.
 
 =cut
 
