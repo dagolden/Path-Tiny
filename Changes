@@ -2,6 +2,14 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [META]
+
+    - Jumping to 0.068 to get to an even-version for a stable release
+
+    [DOCUMENTED]
+
+    - Noted that 0.66 changed the 'filehandle' method
+
 0.066     2015-03-20 23:59:08-04:00 America/New_York (TRIAL RELEASE)
 
     [ADDED]
