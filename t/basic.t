@@ -172,6 +172,14 @@ is $file->parent,  '/foo/baz';
     };
     is( $err, '', "no exception if assertion succeeds" );
     isa_ok( $path, "Path::Tiny", "assertion return value" );
+
+    $err = exception {
+        path(".")->visit(
+            sub { $_[1]->{$_} = { path => $_ } },
+            { recurse => 1 },
+        );
+    };
+    is $err, "", 'no exception';
 }
 
 done_testing();

@@ -1726,7 +1726,7 @@ sub visit {
     while ( my $file = $next->() ) {
         local $_ = $file;
         my $r = $cb->( $file, $state );
-        last if ref($r) && !$$r;
+        last if ref($r) eq 'SCALAR' && !$$r;
     }
     return $state;
 }
