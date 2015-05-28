@@ -314,7 +314,7 @@ C<TEMPLATE> option and does the right thing.
     $temp = Path::Tiny->tempfile( "customXXXXXXXX" );             # ok
     $temp = Path::Tiny->tempfile( TEMPLATE => "customXXXXXXXX" ); # ok
 
-The tempfile path object will normalized to have an absolute path, even if
+The tempfile path object will be normalized to have an absolute path, even if
 created in a relative directory using C<DIR>.
 
 C<tempdir> is just like C<tempfile>, except it calls
@@ -324,7 +324,7 @@ Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
 
 B<Note>: for tempfiles, the filehandles from File::Temp are closed and not
-reused.  This is not as secure than using File::Temp handles directly, but is
+reused.  This is not as secure as using File::Temp handles directly, but is
 less prone to deadlocks or access problems on some platforms.  Think of what
 C<Path::Tiny> gives you to be just a temporary file B<name> that gets cleaned
 up.
