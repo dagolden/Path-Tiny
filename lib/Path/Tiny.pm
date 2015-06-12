@@ -670,9 +670,11 @@ sub chmod {
 
     path("/tmp/foo.txt")->copy("/tmp/bar.txt");
 
-Copies a file using L<File::Copy>'s C<copy> function.
+Copies a file using L<File::Copy>'s C<copy> function. Upon
+success, returns the C<Path::Tiny> object for the newly copied
+file.
 
-Current API available since 0.001.
+Current API available since 0.070.
 
 =cut
 
@@ -682,6 +684,8 @@ sub copy {
     require File::Copy;
     File::Copy::copy( $self->[PATH], $dest )
       or Carp::croak("copy failed for $self to $dest: $!");
+
+    return -d $dest ? path( $dest, $self->basename ) : path($dest);
 }
 
 =method digest
