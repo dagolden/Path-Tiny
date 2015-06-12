@@ -290,27 +290,45 @@ my $tmpdir = Path::Tiny->tempdir;
     );
 }
 
-{
+subtest "copy()" => sub {
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
-    my $copy = $tmpdir->child("bar.txt");
-    $file->copy($copy);
-    is( $copy->slurp, "Hello World\n", "file copied" );
-    # try some different chmods
-    ok( $copy->chmod(0000),   "chmod(0000)" );
-    ok( $copy->chmod("0400"), "chmod('0400')" );
-    SKIP: {
-        skip "No exception if run as root", 1 if $> == 0;
-        skip "No exception writing to read-only file", 1
-          unless
-          exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
-        my $error = exception { $file->copy($copy) };
-        ok( $error, "copy throws error if permission denied" );
-        like( $error, qr/\Q$file/, "error messages includes the source file name" );
-        like( $error, qr/\Q$copy/, "error messages includes the destination file name" );
-    }
-    ok( $copy->chmod("u+w"), "chmod('u+w')" );
-}
+
+    my $copy;
+    subtest "dest is a file" => sub {
+        $copy = $tmpdir->child("bar.txt");
+        my $result = $file->copy($copy);
+        is "$result" => "$copy", "returned the right file";
+
+        is( $copy->slurp, "Hello World\n", "file copied" );
+    };
+
+    subtest "dest is a dir" => sub {
+        # new tempdir nto to clobber the original foo.txt
+        my $tmpdir = Path::Tiny->tempdir;
+        my $result = $file->copy($tmpdir);
+
+        is "$result" => "$tmpdir/foo.txt", "returned the right file";
+
+        is $result->slurp, "Hello World\n", "file copied";
+    };
+    
+    subtest "try some different chmods" => sub {
+        ok( $copy->chmod(0000),   "chmod(0000)" );
+        ok( $copy->chmod("0400"), "chmod('0400')" );
+        SKIP: {
+            skip "No exception if run as root", 1 if $> == 0;
+            skip "No exception writing to read-only file", 1
+            unless
+            exception { open my $fh, ">", "$copy" or die }; # probe if actually read-only
+            my $error = exception { $file->copy($copy) };
+            ok( $error, "copy throws error if permission denied" );
+            like( $error, qr/\Q$file/, "error messages includes the source file name" );
+            like( $error, qr/\Q$copy/, "error messages includes the destination file name" );
+        }
+        ok( $copy->chmod("u+w"), "chmod('u+w')" );
+    };
+};
 
 {
     $tmpdir->child( "subdir", "touched.txt" )->touchpath->spew("Hello World\n");
