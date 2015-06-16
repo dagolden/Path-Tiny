@@ -1324,7 +1324,7 @@ sub relative {
         return path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) );
     }
     else {
-        return path( Path::Tiny::Util->abs2rel( $_[0]->[PATH], $_[1] ) );
+        return path( Path::TinyUtil->abs2rel( $_[0]->[PATH], $_[1] ) );
     }
 }
 
