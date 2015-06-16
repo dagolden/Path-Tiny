@@ -10,7 +10,7 @@ our $VERSION = '0.078';
 # Dependencies
 use Config;
 use Exporter 5.57   (qw/import/);
-use File::Spec 3.40 ();
+use File::Spec 0.86 ();          # shipped with 5.8.1
 use Carp ();
 
 our @EXPORT    = qw/path/;
@@ -71,6 +71,10 @@ sub _win32_vol {
 # object test
 sub _is_root {
     return IS_WIN32() ? ( $_[0] =~ /^$WIN32_ROOT$/ ) : ( $_[0] eq '/' );
+}
+
+BEGIN {
+    *_same = IS_WIN32() ? sub { lc( $_[0] ) eq lc( $_[1] ) } : sub { $_[0] eq $_[1] };
 }
 
 # mode bits encoded for chmod in symbolic mode
@@ -223,6 +227,7 @@ sub path {
     # canonicalize, but with unix slashes and put back trailing volume slash
     my $cpath = $path = File::Spec->canonpath($path);
     $path =~ tr[\\][/] if IS_WIN32();
+    $path = "/" if $path eq '/..'; # for old File::Spec
     $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$};
 
     # root paths must always have a trailing slash, but other paths must not
@@ -1414,6 +1419,10 @@ Current API available since 0.001.
 # doesn't throw an error resolving non-existent basename
 sub realpath {
     my $self = shift;
+    while ( -l $self->[PATH] ) {
+        my $resolved = readlink $self->[PATH] or $self->_throw( 'readlink', $self->[PATH] );
+        $self = path($resolved);
+    }
     require Cwd;
     $self->_splitpath if !defined $self->[FILE];
     my $check_parent =
@@ -1441,8 +1450,103 @@ Current API available since 0.001.
 
 =cut
 
-# Easy to get wrong, so wash it through File::Spec (sigh)
-sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
+sub relative {
+    my ( $self, $base ) = @_;
+    $base = "." unless defined $base and length $base;
+
+    # relative paths must be converted to absolute first
+    if ( $self->is_relative ) {
+        return $self->absolute->relative($base);
+    }
+
+    # normalize volumes if they exist
+    $base = path($base)->absolute;
+    if ( length $base->volume && !length $self->volume ) {
+        $self = $self->absolute;
+    }
+
+    # can't make paths relative across volumes
+    if ( !_same( $self->volume, $base->volume ) ) {
+        Carp::croak("relative() can't cross volumes: '$self' vs '$base'");
+    }
+
+    # if same absolute path, relative is current directory
+    return path(".") if _same( $self->[PATH], $base->[PATH] );
+
+    # if base is a prefix of self, chop prefix off self
+    if ( $base->subsumes($self) ) {
+        $base = "" if $base->is_rootdir;
+        my $relative = "$self";
+        $relative =~ s{\A$base/}{};
+        return path($relative);
+    }
+
+    # base is not a prefix, so must find a common prefix (even if root)
+    my ( @common, @self_parts, @base_parts );
+    @base_parts = split /\//, $base->_just_filepath;
+
+    # if self is rootdir, then common directory is root (shown as empty
+    # string for later joins); otherwise, must be computed from path parts.
+    if ( $self->is_rootdir ) {
+        @common = ("");
+        shift @base_parts;
+    }
+    else {
+        @self_parts = split /\//, $self->_just_filepath;
+
+        while ( @self_parts && @base_parts && _same( $self_parts[0], $base_parts[0] ) ) {
+            push @common, shift @base_parts;
+            shift @self_parts;
+        }
+    }
+
+    # if there are any symlinks from common to base, we have a problem, as
+    # you can't guarantee that updir from base reaches the common prefix;
+    # we must resolve symlinks and try again; likewise, any updirs are
+    # a problem as it throws off calculation of updirs needed to get from
+    # self's path to the common prefix.
+    if ( my $new_base = $self->_resolve_between( \@common, \@base_parts ) ) {
+        return $self->relative($new_base);
+    }
+
+    # otherwise, symlinks in common or from common to A don't matter as
+    # those don't involve updirs
+    my @new_path = ( ("..") x ( 0+ @base_parts ), @self_parts );
+    return path(@new_path);
+}
+
+sub _just_filepath {
+    my $self     = shift;
+    my $self_vol = $self->volume;
+    return "$self" if !length $self_vol;
+
+    ( my $self_path = "$self" ) =~ s{\A$self_vol}{};
+
+    return $self_path;
+}
+
+sub _resolve_between {
+    my ( $self, $common, $base ) = @_;
+    my $path = $self->volume . join( "/", @$common );
+    my $changed = 0;
+    for my $p (@$base) {
+        $path .= "/$p";
+        if ( $p eq '..' ) {
+            $changed = 1;
+            if ( -e $path ) {
+                $path = path($path)->realpath->[PATH];
+            }
+            else {
+                $path =~ s{/[^/]+/..$}{/};
+            }
+        }
+        if ( -l $path ) {
+            $changed = 1;
+            $path    = path($path)->realpath->[PATH];
+        }
+    }
+    return $changed ? path($path) : undef;
+}
 
 =method remove
 
@@ -1896,7 +2000,7 @@ sub throw {
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
-IS_BSD IS_WIN32 FREEZE THAW TO_JSON
+IS_BSD IS_WIN32 FREEZE THAW TO_JSON abs2rel
 
 =head1 SYNOPSIS
 

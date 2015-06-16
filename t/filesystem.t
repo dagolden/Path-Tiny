@@ -347,6 +347,8 @@ SKIP: {
     skip "symlink unavailable", 1 if $@;
     ok( $link->lstat->size, "lstat" );
 
+    is( $link->realpath, $file->realpath, "realpath resolves symlinks" );
+
     ok $link->remove, 'remove symbolic link';
     ok $file->remove;
 
