@@ -1684,7 +1684,7 @@ and a hash reference to accumulate state as the second argument.  For example:
         sub {
             my ($path, $state) = @_;
             return if $path->is_dir;
-            $state{$path} = -s $path;
+            $state->{$path} = -s $path;
         },
         { recurse => 1 }
     );
@@ -1703,7 +1703,7 @@ stops all iteration and returns the state hash reference.
     my $files = path("/tmp")->visit(
         sub {
             my ($path, $state) = @_;
-            $state{$path}++ if -s $path > 102400
+            $state->{$path}++ if -s $path > 102400
             return \0 if keys %$state == 10;
         },
         { recurse => 1 }
