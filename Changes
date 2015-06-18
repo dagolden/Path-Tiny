@@ -2,6 +2,15 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [CHANGED]
+
+    - The 'copy' menthod now returns the object for the copied file
+
+    [FIXED]
+
+    - The 'visit' method only dereferences the callback return value
+      for scalar refs, avoiding some common bugs
+
 0.068     2015-03-23 20:42:56-04:00 America/New_York
 
     [META]
