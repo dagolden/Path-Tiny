@@ -10,8 +10,9 @@ our $VERSION = '0.069';
 # Dependencies
 use Config;
 use Exporter 5.57   (qw/import/);
-use File::Spec 3.40 ();
+use File::Spec 3.29 ();
 use Carp ();
+use Path::TinyUtil;
 
 our @EXPORT    = qw/path/;
 our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
@@ -1321,7 +1322,15 @@ Current API available since 0.001.
 =cut
 
 # Easy to get wrong, so wash it through File::Spec (sigh)
-sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
+# Use vendored abs2rel subroutine if File::Spec is old.
+sub relative {
+    if ( $File::Spec::VERSION >= 3.40 ) {
+        return path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) );
+    }
+    else {
+        return path( Path::TinyUtil->abs2rel( $_[0]->[PATH], $_[1] ) );
+    }
+}
 
 =method remove
 
