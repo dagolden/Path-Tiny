@@ -10,7 +10,7 @@ Revision history for Path-Tiny
 
     [CHANGED]
 
-    - The 'copy' menthod now returns the object for the copied file
+    - The 'copy' method now returns the object for the copied file
 
     [FIXED]
 
