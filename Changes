@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed incorrect error argument for File::Path functions
+      (mkpath and remove_tree)
+
 0.070     2015-06-28 13:50:16-04:00 America/New_York
 
     - No changes from 0.069

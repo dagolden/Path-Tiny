@@ -1112,7 +1112,7 @@ sub mkpath {
     my ( $self, $args ) = @_;
     $args = {} unless ref $args eq 'HASH';
     my $err;
-    $args->{err} = \$err unless defined $args->{err};
+    $args->{error} = \$err unless defined $args->{error};
     require File::Path;
     my @dirs = File::Path::make_path( $self->[PATH], $args );
     if ( $err && @$err ) {
@@ -1369,8 +1369,8 @@ sub remove_tree {
     return 0 if !-e $self->[PATH] && !-l $self->[PATH];
     $args = {} unless ref $args eq 'HASH';
     my $err;
-    $args->{err}  = \$err unless defined $args->{err};
-    $args->{safe} = 1     unless defined $args->{safe};
+    $args->{error} = \$err unless defined $args->{error};
+    $args->{safe}  = 1     unless defined $args->{safe};
     require File::Path;
     my $count = File::Path::remove_tree( $self->[PATH], $args );
 
