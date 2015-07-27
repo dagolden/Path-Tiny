@@ -1839,6 +1839,9 @@ On Windows, that means they will not have CRLF translation from the C<:crlf> IO
 layer.  Installing L<Unicode::UTF8> 0.58 or later will speed up C<*_utf8>
 situations in many cases and is highly recommended.
 
+This module depends heavily on PerlIO layers for correct operation and thus
+requires Perl 5.008001 or later.
+
 =head1 EXCEPTION HANDLING
 
 Simple usage errors will generally croak.  Failures of underlying Perl
