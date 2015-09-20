@@ -238,6 +238,7 @@ sub path {
         require File::Glob;
         my ($homedir) = File::Glob::bsd_glob($1);
         $path =~ s{^(~[^/]*)}{$homedir};
+        $path =~ tr[\\][/] if IS_WIN32();
     }
 
     bless [ $path, $cpath ], __PACKAGE__;
