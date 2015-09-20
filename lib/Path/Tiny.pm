@@ -237,6 +237,7 @@ sub path {
     if ( $path =~ m{^(~[^/]*).*} ) {
         require File::Glob;
         my ($homedir) = File::Glob::bsd_glob($1);
+        $homedir =~ tr[\\][/] if IS_WIN32();
         $path =~ s{^(~[^/]*)}{$homedir};
     }
 

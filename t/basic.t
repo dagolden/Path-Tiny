@@ -6,6 +6,8 @@ use File::Spec;
 use Path::Tiny;
 use Cwd;
 
+my $IS_WIN32 = $^O eq 'MSWin32';
+
 use lib 't/lib';
 use TestUtils qw/exception/;
 
@@ -122,6 +124,7 @@ is $file->parent,  '/foo/baz';
 # tilde processing
 {
     my ($homedir) = glob('~');
+    $homedir =~ tr[\\][/] if $IS_WIN32;
     my $username = path($homedir)->basename;
     my ($root_homedir) = glob('~root');
     my ($missing_homedir) = glob('~idontthinkso');
