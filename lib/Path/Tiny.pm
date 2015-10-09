@@ -12,6 +12,7 @@ use Config;
 use Exporter 5.57   (qw/import/);
 use File::Spec 3.40 ();
 use Carp ();
+use File::Copy ();
 
 our @EXPORT    = qw/path/;
 our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
@@ -1126,7 +1127,7 @@ sub mkpath {
 
     path("foo.txt")->move("bar.txt");
 
-Just like C<rename>.
+Just like L<File::Copy>'s C<move>.
 
 Current API available since 0.001.
 
@@ -1135,7 +1136,7 @@ Current API available since 0.001.
 sub move {
     my ( $self, $dst ) = @_;
 
-    return rename( $self->[PATH], $dst )
+    return File::Copy::move( $self->[PATH], $dst )
       || $self->_throw( 'rename', $self->[PATH] . "' -> '$dst" );
 }
 
