@@ -1499,15 +1499,17 @@ sub spew {
     my $binmode = $args->{binmode};
     # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
-    my $temp = path( $self->[PATH] . $$ . int( rand( 2**31 ) ) );
+
+    # spewing need to follow the link
+    # and create the tempfile in the same dir
+    my $resolved_path = $self->[PATH];
+    $resolved_path = readlink $resolved_path while -l $resolved_path;
+
+    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
     my $fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
-    # spewing need to follow the link
-    # and replace the destination instead
-    my $resolved_path = $self->[PATH];
-    $resolved_path = readlink $resolved_path while -l $resolved_path;
     return $temp->move($resolved_path);
 }
 
