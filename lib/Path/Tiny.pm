@@ -1820,7 +1820,7 @@ IS_BSD IS_WIN32 FREEZE THAW TO_JSON
 
 =head1 DESCRIPTION
 
-This module provide a small, fast utility for working with file paths.  It is
+This module provides a small, fast utility for working with file paths.  It is
 friendlier to use than L<File::Spec> and provides easy access to functions from
 several other core file handling modules.  It aims to be smaller and faster
 than many alternatives on CPAN while helping people do many common things in
