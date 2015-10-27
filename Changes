@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed spewing to a symlink that crosses a filesystem boundary
+
 0.072     2015-07-20 16:07:20-04:00 America/New_York
 
     - No changes from 0.071

@@ -12,7 +12,6 @@ my %WriteMakefileArgs = (
     "ExtUtils::MakeMaker" => "6.17"
   },
   "DISTNAME" => "Path-Tiny",
-  "EXE_FILES" => [],
   "LICENSE" => "apache",
   "MIN_PERL_VERSION" => "5.008001",
   "NAME" => "Path::Tiny",
@@ -59,7 +58,7 @@ my %FallbackPrereqs = (
   "Digest" => "1.03",
   "Digest::SHA" => "5.45",
   "Exporter" => "5.57",
-  "ExtUtils::MakeMaker" => "6.17",
+  "ExtUtils::MakeMaker" => 0,
   "Fcntl" => 0,
   "File::Basename" => 0,
   "File::Copy" => 0,
