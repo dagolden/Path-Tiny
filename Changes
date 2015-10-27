@@ -6,6 +6,10 @@ Revision history for Path-Tiny
 
     - Fixed spewing to a symlink that crosses a filesystem boundary
 
+    [PREREQS]
+
+    - Add Test::MockRandom to META as an recommended test prerequisite.
+
 0.072     2015-07-20 16:07:20-04:00 America/New_York
 
     - No changes from 0.071
