@@ -12,6 +12,7 @@ use Exporter;
 our @ISA    = qw/Exporter/;
 our @EXPORT = qw(
   exception
+  pushd
   tempd
 );
 
@@ -30,9 +31,14 @@ sub exception(&) {
 }
 
 sub tempd {
+    return pushd( File::Temp->newdir );
+}
+
+sub pushd {
+    my $temp  = shift;
     my $guard = TestUtils::_Guard->new(
         {
-            temp   => File::Temp->newdir,
+            temp   => $temp,
             origin => getcwd(),
             code   => sub { chdir $_[0]{origin} },
         }

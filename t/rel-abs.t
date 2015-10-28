@@ -4,9 +4,11 @@ use warnings;
 use Test::More 0.96;
 
 use lib 't/lib';
-use TestUtils qw/exception tempd/;
+use TestUtils qw/exception pushd tempd/;
 
 use Path::Tiny;
+
+# absolute() tests
 
 my $rel1 = path(".");
 my $abs1 = $rel1->absolute;
@@ -62,23 +64,41 @@ for my $c (@symlink_free_cases) {
     is( path($path)->relative($base), $result, $label );
 }
 
-# XXX need to test where only one path is relative, which will depend on
-# CWD.  Should do it from both root and tempdir. Should implement depth
-# calculation logic differently than the code.
-#
-#   E.g. assuming CWD is "/":
-#      [ "A->rel(b)", "/foo/bar", "baz", "../foo/bar" ],
-#      [ "a->rel(B)", "foo/bar", "/baz", "../foo/bar" ],
-#
-#   E.g. assuming CWD is "/tmp":
-#      [ "A->rel(b)", "/foo/bar", "baz", "../../foo/bar" ],
-#      [ "a->rel(B)", "foo/bar", "/baz", "../tmp/foo/bar" ],
+my @one_rel_from_root = (
+    [ "A->rel(b) from rootdir", "/foo/bar", "baz",  "../foo/bar" ],
+    [ "a->rel(B) from rootdir", "foo/bar",  "/baz", "../foo/bar" ],
+);
 
-# XXX need to test common prefix case where both are abs but one
-# has volume and one doesn't.
+{
+    my $wd = pushd("/");
+    for my $c (@one_rel_from_root) {
+        my ( $label, $path, $base, $result ) = @$c;
+        is( path($path)->relative($base), $result, $label );
+    }
+}
 
-# XXX need to test A->rel(B) where A and B are different volumes,
-# including UNC and drive letters
+{
+    my $wd  = tempd("/");
+    my $cwd = Path::Tiny::cwd->realpath;
+
+    # A->rel(b) from tmpdir -- need to find updir from ./b to root
+    my $base = $cwd->child("baz");
+    my ( undef, @parts ) = split "/", $base;
+    my $up_to_root = path( "../" x @parts );
+    is(
+        path("/foo/bar")->relative("baz"),
+        $up_to_root->child("foo/bar"),
+        "A->rel(b) from tmpdir"
+    );
+
+    # a->rel(B) from tempdir -- path is .. + cwd + a
+    is(
+        path("foo/bar")->relative("/baz"),
+        path( "..", $cwd, "foo/bar" ),
+        "a->rel(B) from tmpdir"
+    );
+
+}
 
 # XXX need to test symlink cases on absolute paths with common roots:
 #
@@ -93,6 +113,12 @@ for my $c (@symlink_free_cases) {
 # (c) symlink in path from common to new base
 #
 #   ABCD->rel(ABE_FG) - common point AB -  result depends on E_F resolution
+
+# XXX need to test common prefix case where both are abs but one
+# has volume and one doesn't. (Win32: UNC and drive letters)
+
+# XXX need to test A->rel(B) where A and B are different volumes,
+# including UNC and drive letters
 
 ##subtest "A->rel(A)" => sub {
 ##    my $wd   = tempd;
