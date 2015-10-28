@@ -100,19 +100,73 @@ my @one_rel_from_root = (
 
 }
 
-# XXX need to test symlink cases on absolute paths with common roots:
-#
-# (a) symlink in common path
-#
-#   A_BCD->rel(A_BEF) - common point A_BC - result: ../../C/D
-#
-# (b) symlink in path from common to original path
-#
-#   ABC_DE->rel(ABFG) - common point AB - result: ../../C/D/E
-#
-# (c) symlink in path from common to new base
-#
-#   ABCD->rel(ABE_FG) - common point AB -  result depends on E_F resolution
+subtest "relative on absolute paths with symlinks" => sub {
+    my $wd   = tempd;
+    my $cwd  = path(".")->realpath;
+    my $deep = $cwd->child("foo/bar/baz/bam/bim/buz/wiz/was/woz");
+    $deep->mkpath();
+
+    eval { symlink "foo/bar/baz", "baz" };
+    plan skip_all => "No symlink support"
+      if $@;
+
+    # (a) symlink in common path
+    #
+    #   A_BCD->rel(A_BEF) - common point A_BC - result: ../../C/D
+    #
+    $cwd->child("A")->mkpath;
+    symlink $deep, "A/B" or die "$!";
+    my $path = $cwd->child("A/B/C/D");
+    $path->mkpath;
+    is( $path->relative( $cwd->child("A/B/E/F") ), "../../C/D", "A_BCD->rel(A_BEF)" );
+    $cwd->child("A")->remove_tree;
+    $deep->remove_tree;
+    $deep->mkpath;
+
+    # (b) symlink in path from common to original path
+    #
+    #   ABC_DE->rel(ABFG) - common point AB - result: ../../C/D/E
+    #
+    $cwd->child("A/B/C")->mkpath;
+    symlink $deep, "A/B/C/D" or die "$!";
+    $path = $cwd->child("A/B/C/D/E");
+    $path->mkpath;
+    is( $path->relative( $cwd->child("A/B/F/G") ), "../../C/D/E",
+        "ABC_DE->rel(ABC_FG)" );
+    $cwd->child("A")->remove_tree;
+    $deep->remove_tree;
+    $deep->mkpath;
+
+    # (c) symlink in path from common to new base; all path exist
+    #
+    #   ABCD->rel(ABE_FG) - common point AB -  result depends on E_F resolution
+    #
+    $path = $cwd->child("A/B/C/D");
+    $path->mkpath;
+    $cwd->child("A/B/E")->mkpath;
+    symlink $deep, "A/B/E/F" or die $!;
+    my $base = $cwd->child("A/B/E/F/G");
+    $base->mkpath;
+    my $expect = $path->relative( $deep->child("F/G") );
+    is( $path->relative($base), $expect, "ABCD->rel(ABE_FG) [real paths]" );
+    $cwd->child("A")->remove_tree;
+    $deep->remove_tree;
+    $deep->mkpath;
+
+    # (d) symlink in path from common to new base; paths after symlink
+    # don't exist
+    #
+    #   ABCD->rel(ABE_FG) - common point AB -  result depends on E_F resolution
+    #
+    $path = $cwd->child("A/B/C/D");
+    $path->mkpath;
+    $cwd->child("A/B/E")->mkpath;
+    symlink $deep, "A/B/E/F" or die $!;
+    my $base   = $cwd->child("A/B/E/F/G");
+    my $expect = $path->relative( $deep->child("F/G") );
+    is( $path->relative($base), $expect, "ABCD->rel(ABE_FG) [real paths]" );
+
+};
 
 # XXX need to test common prefix case where both are abs but one
 # has volume and one doesn't. (Win32: UNC and drive letters)
@@ -120,20 +174,5 @@ my @one_rel_from_root = (
 # XXX need to test A->rel(B) where A and B are different volumes,
 # including UNC and drive letters
 
-##subtest "A->rel(A)" => sub {
-##    my $wd   = tempd;
-##    my $deep = path("one/two/three");
-##    $deep->mkpath;
-##    eval { symlink $deep, "link" };
-##    plan skip_all => "No symlink support"
-##      if $@;
-##
-##    my $orig          = $deep->child("four/five");
-##    my $symlink_child = path("link")->absolute->child("four/five");
-##
-##    is( $symlink_child->relative( $deep->absolute ),
-##        "four/five", "short symlink path relative to longer absolute real path" );
-##};
-##
 done_testing;
 # COPYRIGHT
