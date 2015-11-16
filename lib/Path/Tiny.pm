@@ -5,7 +5,7 @@ use warnings;
 package Path::Tiny;
 # ABSTRACT: File path utility
 
-our $VERSION = '0.074';
+our $VERSION = '0.076';
 
 # Dependencies
 use Config;
