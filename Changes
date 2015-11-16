@@ -2,6 +2,15 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Tilde expansion on Windows was resulting in backslashes.  Now they
+      are correctly normalized to forward slashes.
+
+    [DOCS]
+
+    - Typos fixed
+
 0.073     2015-10-30 10:36:18-04:00 America/New_York (TRIAL RELEASE)
 
     [FIXED]
