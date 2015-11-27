@@ -330,6 +330,11 @@ less prone to deadlocks or access problems on some platforms.  Think of what
 C<Path::Tiny> gives you to be just a temporary file B<name> that gets cleaned
 up.
 
+B<Note 2>: if you don't want these cleaned up automatically when the object
+is destroyed, File::Temp requires different options for directories and
+files.  Use C<< CLEANUP => 0 >> for directories and C<< UNLINK => 0 >> for
+files.
+
 Current API available since 0.018.
 
 =cut
