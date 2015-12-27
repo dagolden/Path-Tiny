@@ -498,5 +498,24 @@ subtest "edit_utf8" => sub {
     );
 };
 
+subtest "edit_utf8 param" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8(_utf8_lines);
+    $file->edit_utf8(sub {
+        my $text = shift;
+        $text =~ s/\ALine/It's my line/;
+        $_ = $text;
+
+        return;
+    });
+    my $line3 = "\302\261\n";
+    utf8::decode($line3);
+    is(
+        $file->slurp_utf8,
+        ("It's my line1\r\nLine2\n$line3"),
+        "edit_utf8 callback param",
+    );
+};
+
 done_testing;
 # COPYRIGHT
