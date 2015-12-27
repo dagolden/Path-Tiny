@@ -1749,7 +1749,7 @@ sub visit {
     $vol = path("C:/tmp/foo.txt")->volume; # "C:"
 
 Returns the volume portion of the path.  This is equivalent
-equivalent to what L<File::Spec> would give from C<splitpath> and thus
+to what L<File::Spec> would give from C<splitpath> and thus
 usually is the empty string on Unix-like operating systems or the
 drive letter for an absolute path on C<MSWin32>.
 
