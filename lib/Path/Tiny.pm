@@ -1763,6 +1763,151 @@ sub volume {
     return $self->[VOL];
 }
 
+=method edit, edit_raw, edit_utf8
+
+    path("/tmp/foo.txt")->edit_utf8(sub {
+            s/string_to_replace/replacement/g;
+        });
+
+    path("/tmp/foo.txt")->edit_raw(sub {
+            s/\A/FilePrefix/;
+        });
+
+    path("/tmp/foo.bin")->edit(sub {
+            $_ .= "Suffix\n";
+        }, { binmode => ':raw'}
+        );
+
+These are convenience methods that allow "editing" the file by using
+a single callback (= read→modify→write). This slurps the file using
+slurp_utf8() or equivalent, places it inside the $_ variable, calls the
+callback given as a parameter, and then writes the new $_ (which will be
+mutated) back to the file.
+
+edit() also accepts the same arguments' hash reference as slurp() and spew().
+
+=cut
+
+sub edit_utf8 {
+    my ($self, $cb) = @_;
+
+    local $_ = $self->slurp_utf8;
+    $cb->();
+    $self->spew_utf8($_);
+
+    return;
+}
+
+sub edit_raw {
+    my ($self, $cb) = @_;
+
+    local $_ = $self->slurp_raw;
+    $cb->();
+    $self->spew_raw($_);
+
+    return;
+}
+
+sub edit
+{
+    my ($self, $cb, $args) = @_;
+
+    local $_ = $self->slurp($args);
+    $cb->();
+    $self->spew($args, $_);
+
+    return;
+}
+
+=method edit_lines_utf8 , edit_lines_raw , edit_lines
+
+    path("/tmp/foo.txt")->edit_lines_utf8(sub {
+        s/^/add_this_prefix_to_every_line = /;
+        });
+
+    path("/tmp/foo.txt")->edit_lines_raw(sub {
+        s/$/ LineSuffix/m;
+        });
+
+    path("/tmp/foo.txt")->edit_lines(sub {
+        s/$/ LineSuffix/m;
+        }, {binmode => ':raw'},
+    );
+
+These are convenience methods that allow "editing" the file by using
+a single callback (= read→modify→write). This iterates over the file's lines,
+places each line in $_, calls the callback and writes the new (and potentially
+mutated) $_ to the new version of the file.
+
+edit_lines() accepts the same arguments hash reference as spew() and slurp().
+
+=cut
+
+sub edit_lines_utf8 {
+    my ($self, $cb) = @_;
+
+    my $in_fh = $self->openr_utf8;
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->openw_utf8;
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->();
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
+sub edit_lines_raw {
+    my ($self, $cb) = @_;
+
+    my $in_fh = $self->openr_raw;
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->openw_raw;
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->();
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
+sub edit_lines {
+    my ($self, $cb, $args) = @_;
+
+    $args = _get_args( $args, qw/binmode/ );
+
+    my $in_fh = $self->filehandle('<', $args->{binmode});
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->filehandle('>', $args->{binmode});
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->();
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
 package Path::Tiny::Error;
 
 our @CARP_NOT = qw/Path::Tiny/;

@@ -485,5 +485,73 @@ subtest "openrw (raw)" => sub {
     is( $got, join( '', _lines ), "openr & read" );
 };
 
+subtest "edit_utf8" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8(_utf8_lines);
+    $file->edit_utf8(sub { s/^Line/Row/gm; });
+    my $line3 = "\302\261\n";
+    utf8::decode($line3);
+    is(
+        $file->slurp_utf8,
+        ("Row1\r\nRow2\n$line3"),
+        "edit_utf8",
+    );
+};
+
+subtest "edit_raw" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo Bar\nClam Bar\n");
+    $file->edit_raw(sub { s/Bar/Mangle/; });
+    is(
+        $file->slurp_raw,
+        "Foo Mangle\nClam Bar\n",
+        "edit_raw",
+    );
+};
+
+subtest "edit" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("One line\nTwo lines\nThree lines\n");
+    $file->edit(sub { s/line/row/; }, {binmode => ':raw'},);
+    is(
+        $file->slurp_raw,
+        "One row\nTwo lines\nThree lines\n",
+        "edit() was successful.",
+    );
+};
+
+subtest "edit_lines_utf8" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines_utf8(sub { s/\A/prefix = /gm; });
+    is(
+        $file->slurp_utf8,
+        ("prefix = Foo\nprefix = Bar\nprefix = Baz\nprefix = Quux\n"),
+        "edit_lines_utf8",
+    );
+};
+
+subtest "edit_lines_raw" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines_raw(sub { s/\A/prefix = /gm; });
+    is(
+        $file->slurp_raw,
+        ("prefix = Foo\nprefix = Bar\nprefix = Baz\nprefix = Quux\n"),
+        "edit_lines_utf8",
+    );
+};
+
+subtest "edit_lines" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines(sub { s/a/[replacement]/; }, {binmode => ':raw'});
+    is(
+        $file->slurp_raw,
+        ("Foo\nB[replacement]r\nB[replacement]z\nQuux\n"),
+        "edit_lines",
+    );
+};
+
 done_testing;
 # COPYRIGHT
