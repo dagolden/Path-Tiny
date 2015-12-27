@@ -1763,6 +1763,29 @@ sub volume {
     return $self->[VOL];
 }
 
+=method edit_utf8
+
+    path("/tmp/foo.txt")->edit_utf8(sub {
+            s/string_to_replace/replacement/g;
+        });
+
+This is a convenience method that allows "editing" the file by using
+a single callback (= read→modify→write). This slurps the file using
+slurp_utf8() , places it inside the $_ variable calls the callback given
+as a parameter and then writes it back to the file.
+
+=cut
+
+sub edit_utf8 {
+    my ($self, $cb) = @_;
+
+    local $_ = $self->slurp_utf8;
+    $cb->($_);
+    $self->spew_utf8($_);
+
+    return;
+}
+
 package Path::Tiny::Error;
 
 our @CARP_NOT = qw/Path::Tiny/;

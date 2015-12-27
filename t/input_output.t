@@ -485,5 +485,18 @@ subtest "openrw (raw)" => sub {
     is( $got, join( '', _lines ), "openr & read" );
 };
 
+subtest "edit_utf8" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8(_utf8_lines);
+    $file->edit_utf8(sub { s/^Line/Row/gm; });
+    my $line3 = "\302\261\n";
+    utf8::decode($line3);
+    is(
+        $file->slurp_utf8,
+        ("Row1\r\nRow2\n$line3"),
+        "edit_utf8",
+    );
+};
+
 done_testing;
 # COPYRIGHT
