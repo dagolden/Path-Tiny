@@ -1786,6 +1786,40 @@ sub edit_utf8 {
     return;
 }
 
+=method edit_lines_utf8
+
+    path("/tmp/foo.txt")->edit_lines_utf8(sub {
+        s/^/add_this_prefix_to_every_line = /;
+        });
+
+This is a convenience method that allows "editing" the file by using
+a single callback (= read→modify→write). This iterates over the files lines,
+places each line in $_, calls the callback and writes the modified $_ to
+the new version of the file.
+
+=cut
+
+sub edit_lines_utf8 {
+    my ($self, $cb) = @_;
+
+    my $in_fh = $self->openr_utf8;
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->openw_utf8;
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->($_);
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
 package Path::Tiny::Error;
 
 our @CARP_NOT = qw/Path::Tiny/;

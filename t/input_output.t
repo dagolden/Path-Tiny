@@ -517,5 +517,16 @@ subtest "edit_utf8 param" => sub {
     );
 };
 
+subtest "edit_lines_utf8" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines_utf8(sub { s/\A/prefix = /gm; });
+    is(
+        $file->slurp_utf8,
+        ("prefix = Foo\nprefix = Bar\nprefix = Baz\nprefix = Quux\n"),
+        "edit_lines_utf8",
+    );
+};
+
 done_testing;
 # COPYRIGHT
