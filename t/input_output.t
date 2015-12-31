@@ -498,6 +498,17 @@ subtest "edit_utf8" => sub {
     );
 };
 
+subtest "edit_raw" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo Bar\nClam Bar\n");
+    $file->edit_raw(sub { s/Bar/Mangle/; });
+    is(
+        $file->slurp_raw,
+        "Foo Mangle\nClam Bar\n",
+        "edit_raw",
+    );
+};
+
 subtest "edit_utf8 param" => sub {
     my $file = Path::Tiny->tempfile;
     $file->spew_utf8(_utf8_lines);
