@@ -509,6 +509,17 @@ subtest "edit_raw" => sub {
     );
 };
 
+subtest "edit" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("One line\nTwo lines\nThree lines\n");
+    $file->edit(sub { s/line/row/; }, {binmode => ':raw'},);
+    is(
+        $file->slurp_raw,
+        "One row\nTwo lines\nThree lines\n",
+        "edit() was successful.",
+    );
+};
+
 subtest "edit_lines_utf8" => sub {
     my $file = Path::Tiny->tempfile;
     $file->spew_utf8("Foo\nBar\nBaz\nQuux\n");

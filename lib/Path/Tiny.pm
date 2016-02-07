@@ -1763,7 +1763,7 @@ sub volume {
     return $self->[VOL];
 }
 
-=method edit_raw, edit_utf8
+=method edit, edit_raw, edit_utf8
 
     path("/tmp/foo.txt")->edit_utf8(sub {
             s/string_to_replace/replacement/g;
@@ -1773,11 +1773,18 @@ sub volume {
             s/\A/FilePrefix/;
         });
 
+    path("/tmp/foo.bin")->edit(sub {
+            $_ .= "Suffix\n";
+        }, { binmode => ':raw'}
+        );
+
 These are convenience methods that allow "editing" the file by using
 a single callback (= read→modify→write). This slurps the file using
 slurp_utf8() or equivalent, places it inside the $_ variable, calls the
 callback given as a parameter, and then writes the new $_ (which will be
 mutated) back to the file.
+
+edit() also accepts the same arguments' hash reference as slurp() and spew().
 
 =cut
 
@@ -1797,6 +1804,17 @@ sub edit_raw {
     local $_ = $self->slurp_raw;
     $cb->();
     $self->spew_raw($_);
+
+    return;
+}
+
+sub edit
+{
+    my ($self, $cb, $args) = @_;
+
+    local $_ = $self->slurp($args);
+    $cb->();
+    $self->spew($args, $_);
 
     return;
 }
