@@ -1776,7 +1776,8 @@ sub volume {
 These are convenience methods that allow "editing" the file by using
 a single callback (= read→modify→write). This slurps the file using
 slurp_utf8() or equivalent, places it inside the $_ variable, calls the
-callback given as a parameter, and then writes it back to the file.
+callback given as a parameter, and then writes the new $_ (which will be
+mutated) back to the file.
 
 =cut
 
@@ -1784,7 +1785,7 @@ sub edit_utf8 {
     my ($self, $cb) = @_;
 
     local $_ = $self->slurp_utf8;
-    $cb->($_);
+    $cb->();
     $self->spew_utf8($_);
 
     return;
@@ -1794,7 +1795,7 @@ sub edit_raw {
     my ($self, $cb) = @_;
 
     local $_ = $self->slurp_raw;
-    $cb->($_);
+    $cb->();
     $self->spew_raw($_);
 
     return;
@@ -1808,8 +1809,8 @@ sub edit_raw {
 
 This is a convenience method that allows "editing" the file by using
 a single callback (= read→modify→write). This iterates over the files lines,
-places each line in $_, calls the callback and writes the modified $_ to
-the new version of the file.
+places each line in $_, calls the callback and writes the new (and potentially
+mutated) $_ to the new version of the file.
 
 =cut
 
@@ -1823,7 +1824,7 @@ sub edit_lines_utf8 {
     local $_;
     while ($_ = <$in_fh>)
     {
-        $cb->($_);
+        $cb->();
         $temp_fh->print($_);
     }
     $temp_fh->close;
