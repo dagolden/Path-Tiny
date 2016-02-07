@@ -1527,9 +1527,9 @@ sub sibling {
     $data = path("foo.txt")->slurp_raw;
     $data = path("foo.txt")->slurp_utf8;
 
-Reads file contents into a scalar.  Takes an optional hash reference may be
-used to pass options.  The only option is C<binmode>, which is passed to
-C<binmode()> on the handle used for reading.
+Reads file contents into a scalar.  Takes an optional hash reference which may
+be used to pass options.  The only available option is C<binmode>, which is
+passed to C<binmode()> on the handle used for reading.
 
 C<slurp_raw> is like C<slurp> with a C<binmode> of C<:unix> for
 a fast, unbuffered, raw read.
