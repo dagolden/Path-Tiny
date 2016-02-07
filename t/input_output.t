@@ -538,7 +538,18 @@ subtest "edit_lines_raw" => sub {
     is(
         $file->slurp_raw,
         ("prefix = Foo\nprefix = Bar\nprefix = Baz\nprefix = Quux\n"),
-        "edit_lines_raw",
+        "edit_lines_utf8",
+    );
+};
+
+subtest "edit_lines" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines(sub { s/a/[replacement]/; }, {binmode => ':raw'});
+    is(
+        $file->slurp_raw,
+        ("Foo\nB[replacement]r\nB[replacement]z\nQuux\n"),
+        "edit_lines",
     );
 };
 

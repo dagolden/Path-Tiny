@@ -1819,7 +1819,7 @@ sub edit
     return;
 }
 
-=method edit_lines_utf8 , edit_lines_raw
+=method edit_lines_utf8 , edit_lines_raw , edit_lines
 
     path("/tmp/foo.txt")->edit_lines_utf8(sub {
         s/^/add_this_prefix_to_every_line = /;
@@ -1829,10 +1829,17 @@ sub edit
         s/$/ LineSuffix/m;
         });
 
+    path("/tmp/foo.txt")->edit_lines(sub {
+        s/$/ LineSuffix/m;
+        }, {binmode => ':raw'},
+    );
+
 These are convenience methods that allow "editing" the file by using
 a single callback (= read→modify→write). This iterates over the file's lines,
 places each line in $_, calls the callback and writes the new (and potentially
 mutated) $_ to the new version of the file.
+
+edit_lines() accepts the same arguments hash reference as spew() and slurp().
 
 =cut
 
@@ -1863,6 +1870,29 @@ sub edit_lines_raw {
     my $in_fh = $self->openr_raw;
     my $temp_path = Path::Tiny->tempfile;
     my $temp_fh = $temp_path->openw_raw;
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->();
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
+sub edit_lines {
+    my ($self, $cb, $args) = @_;
+
+    $args = _get_args( $args, qw/binmode/ );
+
+    my $in_fh = $self->filehandle('<', $args->{binmode});
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->filehandle('>', $args->{binmode});
 
     local $_;
     while ($_ = <$in_fh>)
