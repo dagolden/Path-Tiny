@@ -531,5 +531,16 @@ subtest "edit_lines_utf8" => sub {
     );
 };
 
+subtest "edit_lines_raw" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    $file->edit_lines_raw(sub { s/\A/prefix = /gm; });
+    is(
+        $file->slurp_raw,
+        ("prefix = Foo\nprefix = Bar\nprefix = Baz\nprefix = Quux\n"),
+        "edit_lines_raw",
+    );
+};
+
 done_testing;
 # COPYRIGHT

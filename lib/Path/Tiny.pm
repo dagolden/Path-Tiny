@@ -1819,14 +1819,18 @@ sub edit
     return;
 }
 
-=method edit_lines_utf8
+=method edit_lines_utf8 , edit_lines_raw
 
     path("/tmp/foo.txt")->edit_lines_utf8(sub {
         s/^/add_this_prefix_to_every_line = /;
         });
 
-This is a convenience method that allows "editing" the file by using
-a single callback (= read→modify→write). This iterates over the files lines,
+    path("/tmp/foo.txt")->edit_lines_raw(sub {
+        s/$/ LineSuffix/m;
+        });
+
+These are convenience methods that allow "editing" the file by using
+a single callback (= read→modify→write). This iterates over the file's lines,
 places each line in $_, calls the callback and writes the new (and potentially
 mutated) $_ to the new version of the file.
 
@@ -1838,6 +1842,27 @@ sub edit_lines_utf8 {
     my $in_fh = $self->openr_utf8;
     my $temp_path = Path::Tiny->tempfile;
     my $temp_fh = $temp_path->openw_utf8;
+
+    local $_;
+    while ($_ = <$in_fh>)
+    {
+        $cb->();
+        $temp_fh->print($_);
+    }
+    $temp_fh->close;
+    $in_fh->close;
+
+    $temp_path->move($self->[PATH]);
+
+    return;
+}
+
+sub edit_lines_raw {
+    my ($self, $cb) = @_;
+
+    my $in_fh = $self->openr_raw;
+    my $temp_path = Path::Tiny->tempfile;
+    my $temp_fh = $temp_path->openw_raw;
 
     local $_;
     while ($_ = <$in_fh>)
