@@ -139,15 +139,14 @@ subtest 'with symlinks' => sub {
             }
             is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
               or diag explain \@files;
-          },
+          };
           subtest 'visit' => sub {
             my @files;
             path(".")
               ->visit( sub { push @files, "$_[0]" }, { recurse => 1, follow_symlinks => 1 }, );
             is_deeply( [ sort @files ], [ sort @follow ], "Follow symlinks" )
               or diag explain \@files;
-          },
-          ;
+          };
     };
 };
 
