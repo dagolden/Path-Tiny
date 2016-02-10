@@ -1785,8 +1785,26 @@ Current API available since 0.077.
 
 =cut
 
+sub edit {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/binmode/ );
+    Carp::croak("Callback for edit() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+
+    local $_ =
+      $self->slurp( exists( $args->{binmode} ) ? { binmode => $args->{binmode} } : () );
+    $cb->();
+    $self->spew( $args, $_ );
+
+    return;
+}
+
+# this is done long-hand to benefit from slurp_utf8 optimizations
 sub edit_utf8 {
     my ( $self, $cb ) = @_;
+    Carp::croak("Callback for edit_utf8() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
 
     local $_ = $self->slurp_utf8;
     $cb->();
@@ -1795,25 +1813,7 @@ sub edit_utf8 {
     return;
 }
 
-sub edit_raw {
-    my ( $self, $cb ) = @_;
-
-    local $_ = $self->slurp_raw;
-    $cb->();
-    $self->spew_raw($_);
-
-    return;
-}
-
-sub edit {
-    my ( $self, $cb, $args ) = @_;
-
-    local $_ = $self->slurp($args);
-    $cb->();
-    $self->spew( $args, $_ );
-
-    return;
-}
+sub edit_raw { $_[2] = { binmode => ":unix" }; goto &edit }
 
 =method edit_lines, edit_lines_utf8, edit_lines_raw
 
@@ -1839,66 +1839,43 @@ Current API available since 0.077.
 
 =cut
 
-sub edit_lines_utf8 {
-    my ( $self, $cb ) = @_;
-
-    my $in_fh     = $self->openr_utf8;
-    my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh   = $temp_path->openw_utf8;
-
-    local $_;
-    while ( $_ = <$in_fh> ) {
-        $cb->();
-        $temp_fh->print($_);
-    }
-    $temp_fh->close;
-    $in_fh->close;
-
-    $temp_path->move( $self->[PATH] );
-
-    return;
-}
-
-sub edit_lines_raw {
-    my ( $self, $cb ) = @_;
-
-    my $in_fh     = $self->openr_raw;
-    my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh   = $temp_path->openw_raw;
-
-    local $_;
-    while ( $_ = <$in_fh> ) {
-        $cb->();
-        $temp_fh->print($_);
-    }
-    $temp_fh->close;
-    $in_fh->close;
-
-    $temp_path->move( $self->[PATH] );
-
-    return;
-}
-
 sub edit_lines {
-    my ( $self, $cb, $args ) = @_;
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/binmode/ );
+    Carp::croak("Callback for edit_lines() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
 
-    $args = _get_args( $args, qw/binmode/ );
+    my $binmode = $args->{binmode};
+    # get default binmode from caller's lexical scope (see "perldoc open")
+    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
 
-    my $in_fh     = $self->filehandle( '<', $args->{binmode} );
-    my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh   = $temp_path->filehandle( '>', $args->{binmode} );
+    # writing need to follow the link and create the tempfile in the same
+    # dir for later atomic rename
+    my $resolved_path = $self->[PATH];
+    $resolved_path = readlink $resolved_path while -l $resolved_path;
+    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
+
+    my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
+    my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
 
     local $_;
-    while ( $_ = <$in_fh> ) {
+    while (<$in_fh>) {
         $cb->();
         $temp_fh->print($_);
     }
-    $temp_fh->close;
-    $in_fh->close;
 
-    $temp_path->move( $self->[PATH] );
+    close $temp_fh or $self->_throw( 'close', $temp );
+    close $in_fh or $self->_throw('close');
 
-    return;
+    return $temp->move($resolved_path);
+}
+
+sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
+
+sub edit_lines_utf8 {
+    $_[2] = { binmode => ":raw:encoding(UTF-8)" };
+    goto &edit_lines;
 }
 
 package Path::Tiny::Error;
