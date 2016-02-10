@@ -10,7 +10,7 @@ our $VERSION = '0.077';
 # Dependencies
 use Config;
 use Exporter 5.57   (qw/import/);
-use File::Spec 3.40 ();
+use File::Spec 0.86 ();          # shipped with 5.8.1
 use Carp ();
 
 our @EXPORT    = qw/path/;
@@ -223,6 +223,7 @@ sub path {
     # canonicalize, but with unix slashes and put back trailing volume slash
     my $cpath = $path = File::Spec->canonpath($path);
     $path =~ tr[\\][/] if IS_WIN32();
+    $path = "/" if $path eq '/..'; # for old File::Spec
     $path .= "/" if IS_WIN32() && $path =~ m{^$UNC_VOL$};
 
     # root paths must always have a trailing slash, but other paths must not
@@ -1442,7 +1443,15 @@ Current API available since 0.001.
 =cut
 
 # Easy to get wrong, so wash it through File::Spec (sigh)
-sub relative { path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) ) }
+# Use vendored abs2rel subroutine if File::Spec is old.
+sub relative {
+    if ( $File::Spec::VERSION >= 3.40 ) {
+        return path( File::Spec->abs2rel( $_[0]->[PATH], $_[1] ) );
+    }
+    else {
+        return path( Path::Tiny::_FileSpec->abs2rel( $_[0]->[PATH], $_[1] ) );
+    }
+}
 
 =method remove
 
@@ -1891,12 +1900,130 @@ sub throw {
     die bless { op => $op, file => $file, err => $err, msg => $msg }, $class;
 }
 
+package Path::Tiny::_FileSpec;
+
+our @ISA = 'File::Spec';
+
+# Method Stolen out of recent File::Spec to permit use of older File::Spec versions
+# to continue supporting Perl 5.8.
+#
+# Takes a destination path and an optional base path returns a relative path
+# from the base path to the destination path:
+#
+#     $rel_path = File::Spec->abs2rel( $path ) ;
+#     $rel_path = File::Spec->abs2rel( $path, $base ) ;
+#
+# If $base is not present or '', then L<cwd()|Cwd> is used. If $base is
+# relative, then it is converted to absolute form using
+# L</rel2abs()>. This means that it is taken to be relative to
+# L<cwd()|Cwd>.
+#
+# On systems that have a grammar that indicates filenames, this ignores the
+# $base filename. Otherwise all path components are assumed to be
+# directories.
+#
+# If $path is relative, it is converted to absolute form using L</rel2abs()>.
+# This means that it is taken to be relative to L<cwd()|Cwd>.
+#
+# No checks against the filesystem are made, so the result may not be correct if
+# C<$base> contains symbolic links.  (Apply
+# L<Cwd::abs_path()|Cwd/abs_path> beforehand if that
+# is a concern.)  On VMS, there is interaction with the working environment, as
+# logicals and macros are expanded.
+#
+# Based on code written by Shigio Yamaguchi.
+
+sub abs2rel {
+    my ( $self, $path, $base ) = @_;
+    $base = $self->_cwd() unless defined $base and length $base;
+
+    ( $path, $base ) = map $self->canonpath($_), $path, $base;
+
+    my $path_directories;
+    my $base_directories;
+
+    if ( grep $self->file_name_is_absolute($_), $path, $base ) {
+        ( $path, $base ) = map $self->rel2abs($_), $path, $base;
+
+        my ($path_volume) = $self->splitpath( $path, 1 );
+        my ($base_volume) = $self->splitpath( $base, 1 );
+
+        # Can't relativize across volumes
+        return $path unless $path_volume eq $base_volume;
+
+        $path_directories = ( $self->splitpath( $path, 1 ) )[1];
+        $base_directories = ( $self->splitpath( $base, 1 ) )[1];
+
+        # For UNC paths, the user might give a volume like //foo/bar that
+        # strictly speaking has no directory portion.  Treat it as if it
+        # had the root directory for that volume.
+        if ( !length($base_directories) and $self->file_name_is_absolute($base) ) {
+            $base_directories = $self->rootdir;
+        }
+    }
+    else {
+        my $wd = ( $self->splitpath( $self->_cwd(), 1 ) )[1];
+        $path_directories = $self->catdir( $wd, $path );
+        $base_directories = $self->catdir( $wd, $base );
+    }
+
+    # Now, remove all leading components that are the same
+    my @pathchunks = $self->splitdir($path_directories);
+    my @basechunks = $self->splitdir($base_directories);
+
+    if ( $base_directories eq $self->rootdir ) {
+        return $self->curdir if $path_directories eq $self->rootdir;
+        shift @pathchunks;
+        return $self->canonpath( $self->catpath( '', $self->catdir(@pathchunks), '' ) );
+    }
+
+    my @common;
+    while (@pathchunks
+        && @basechunks
+        && $self->_same( $pathchunks[0], $basechunks[0] ) )
+    {
+        push @common, shift @pathchunks;
+        shift @basechunks;
+    }
+    return $self->curdir unless @pathchunks || @basechunks;
+
+    # @basechunks now contains the directories the resulting relative path
+    # must ascend out of before it can descend to $path_directory.  If there
+    # are updir components, we must descend into the corresponding directories
+    # (this only works if they are no symlinks).
+    my @reverse_base;
+    while ( defined( my $dir = shift @basechunks ) ) {
+        if ( $dir ne $self->updir ) {
+            unshift @reverse_base, $self->updir;
+            push @common, $dir;
+        }
+        elsif (@common) {
+            if ( @reverse_base && $reverse_base[0] eq $self->updir ) {
+                shift @reverse_base;
+                pop @common;
+            }
+            else {
+                unshift @reverse_base, pop @common;
+            }
+        }
+    }
+    my $result_dirs = $self->catdir( @reverse_base, @pathchunks );
+    return $self->canonpath( $self->catpath( '', $result_dirs, '' ) );
+}
+
+if ( $^O eq 'MSWin32' ) {
+    *_same = sub { lc( $_[1] ) eq lc( $_[2] ) }
+}
+else {
+    *_same = sub { $_[1] eq $_[2] }
+}
+
 1;
 
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
-IS_BSD IS_WIN32 FREEZE THAW TO_JSON
+IS_BSD IS_WIN32 FREEZE THAW TO_JSON abs2rel
 
 =head1 SYNOPSIS
 
