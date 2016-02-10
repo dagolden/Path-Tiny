@@ -1765,31 +1765,28 @@ sub volume {
 
 =method edit, edit_raw, edit_utf8
 
-    path("/tmp/foo.txt")->edit_utf8(sub {
-            s/string_to_replace/replacement/g;
-        });
+    path("foo.txt")->edit( \&callback, $options );
+    path("foo.txt")->edit_utf8( \&callback );
+    path("foo.txt")->edit_raw( \&callback );
 
-    path("/tmp/foo.txt")->edit_raw(sub {
-            s/\A/FilePrefix/;
-        });
+These are convenience methods that allow "editing" a file using a single
+callback argument. They slurp the file using C<slurp>, place the contents
+inside a localized C<$_> variable, call the callback function (without
+arguments), and then write C<$_> (presumably mutated) back to the
+file with C<spew>.
 
-    path("/tmp/foo.bin")->edit(sub {
-            $_ .= "Suffix\n";
-        }, { binmode => ':raw'}
-        );
+An optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to C<slurp> and C<spew>.
 
-These are convenience methods that allow "editing" the file by using
-a single callback (= read→modify→write). This slurps the file using
-slurp_utf8() or equivalent, places it inside the $_ variable, calls the
-callback given as a parameter, and then writes the new $_ (which will be
-mutated) back to the file.
+C<edit_utf8> and C<edit_raw> act like their respective C<slurp_*> and
+C<spew_*> methods.
 
-edit() also accepts the same arguments' hash reference as slurp() and spew().
+Current API available since 0.077.
 
 =cut
 
 sub edit_utf8 {
-    my ($self, $cb) = @_;
+    my ( $self, $cb ) = @_;
 
     local $_ = $self->slurp_utf8;
     $cb->();
@@ -1799,7 +1796,7 @@ sub edit_utf8 {
 }
 
 sub edit_raw {
-    my ($self, $cb) = @_;
+    my ( $self, $cb ) = @_;
 
     local $_ = $self->slurp_raw;
     $cb->();
@@ -1808,102 +1805,98 @@ sub edit_raw {
     return;
 }
 
-sub edit
-{
-    my ($self, $cb, $args) = @_;
+sub edit {
+    my ( $self, $cb, $args ) = @_;
 
     local $_ = $self->slurp($args);
     $cb->();
-    $self->spew($args, $_);
+    $self->spew( $args, $_ );
 
     return;
 }
 
-=method edit_lines_utf8 , edit_lines_raw , edit_lines
+=method edit_lines, edit_lines_utf8, edit_lines_raw
 
-    path("/tmp/foo.txt")->edit_lines_utf8(sub {
-        s/^/add_this_prefix_to_every_line = /;
-        });
+    path("foo.txt")->edit_lines( \&callback, $options );
+    path("foo.txt")->edit_lines_utf8( \&callback );
+    path("foo.txt")->edit_lines_raw( \&callback );
 
-    path("/tmp/foo.txt")->edit_lines_raw(sub {
-        s/$/ LineSuffix/m;
-        });
+These are convenience methods that allow "editing" a file's lines using a
+single callback argument.  They iterate over the file: for each line, the
+line is put into a localizesd C<$_> variable, the callback function is
+executed (without arguments) and then C<$_> is written to a temporary file.
+When iteration is finished, the temporary file is atomically renamed over
+the original.
 
-    path("/tmp/foo.txt")->edit_lines(sub {
-        s/$/ LineSuffix/m;
-        }, {binmode => ':raw'},
-    );
+An optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to the method that open handles for reading and
+writing.
 
-These are convenience methods that allow "editing" the file by using
-a single callback (= read→modify→write). This iterates over the file's lines,
-places each line in $_, calls the callback and writes the new (and potentially
-mutated) $_ to the new version of the file.
+C<edit_lines_utf8> and C<edit_lines_raw> act like their respective
+C<slurp_*> and C<spew_*> methods.
 
-edit_lines() accepts the same arguments hash reference as spew() and slurp().
+Current API available since 0.077.
 
 =cut
 
 sub edit_lines_utf8 {
-    my ($self, $cb) = @_;
+    my ( $self, $cb ) = @_;
 
-    my $in_fh = $self->openr_utf8;
+    my $in_fh     = $self->openr_utf8;
     my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh = $temp_path->openw_utf8;
+    my $temp_fh   = $temp_path->openw_utf8;
 
     local $_;
-    while ($_ = <$in_fh>)
-    {
+    while ( $_ = <$in_fh> ) {
         $cb->();
         $temp_fh->print($_);
     }
     $temp_fh->close;
     $in_fh->close;
 
-    $temp_path->move($self->[PATH]);
+    $temp_path->move( $self->[PATH] );
 
     return;
 }
 
 sub edit_lines_raw {
-    my ($self, $cb) = @_;
+    my ( $self, $cb ) = @_;
 
-    my $in_fh = $self->openr_raw;
+    my $in_fh     = $self->openr_raw;
     my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh = $temp_path->openw_raw;
+    my $temp_fh   = $temp_path->openw_raw;
 
     local $_;
-    while ($_ = <$in_fh>)
-    {
+    while ( $_ = <$in_fh> ) {
         $cb->();
         $temp_fh->print($_);
     }
     $temp_fh->close;
     $in_fh->close;
 
-    $temp_path->move($self->[PATH]);
+    $temp_path->move( $self->[PATH] );
 
     return;
 }
 
 sub edit_lines {
-    my ($self, $cb, $args) = @_;
+    my ( $self, $cb, $args ) = @_;
 
     $args = _get_args( $args, qw/binmode/ );
 
-    my $in_fh = $self->filehandle('<', $args->{binmode});
+    my $in_fh     = $self->filehandle( '<', $args->{binmode} );
     my $temp_path = Path::Tiny->tempfile;
-    my $temp_fh = $temp_path->filehandle('>', $args->{binmode});
+    my $temp_fh   = $temp_path->filehandle( '>', $args->{binmode} );
 
     local $_;
-    while ($_ = <$in_fh>)
-    {
+    while ( $_ = <$in_fh> ) {
         $cb->();
         $temp_fh->print($_);
     }
     $temp_fh->close;
     $in_fh->close;
 
-    $temp_path->move($self->[PATH]);
+    $temp_path->move( $self->[PATH] );
 
     return;
 }

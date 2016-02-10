@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [ADDED]
+
+    - Added 'edit' and 'edit_lines' plus _utf8 and _raw variants; this
+      is similar to perl's -i flag (though without backups)
+
 0.076     2015-11-16 10:47:24-05:00 America/New_York
 
     - no changes from 0.075
