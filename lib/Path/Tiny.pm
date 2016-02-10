@@ -753,6 +753,121 @@ sub dirname {
     return length $self->[DIR] ? $self->[DIR] : ".";
 }
 
+=method edit, edit_raw, edit_utf8
+
+    path("foo.txt")->edit( \&callback, $options );
+    path("foo.txt")->edit_utf8( \&callback );
+    path("foo.txt")->edit_raw( \&callback );
+
+These are convenience methods that allow "editing" a file using a single
+callback argument. They slurp the file using C<slurp>, place the contents
+inside a localized C<$_> variable, call the callback function (without
+arguments), and then write C<$_> (presumably mutated) back to the
+file with C<spew>.
+
+An optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to C<slurp> and C<spew>.
+
+C<edit_utf8> and C<edit_raw> act like their respective C<slurp_*> and
+C<spew_*> methods.
+
+Current API available since 0.077.
+
+=cut
+
+sub edit {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/binmode/ );
+    Carp::croak("Callback for edit() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+
+    local $_ =
+      $self->slurp( exists( $args->{binmode} ) ? { binmode => $args->{binmode} } : () );
+    $cb->();
+    $self->spew( $args, $_ );
+
+    return;
+}
+
+# this is done long-hand to benefit from slurp_utf8 optimizations
+sub edit_utf8 {
+    my ( $self, $cb ) = @_;
+    Carp::croak("Callback for edit_utf8() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+
+    local $_ = $self->slurp_utf8;
+    $cb->();
+    $self->spew_utf8($_);
+
+    return;
+}
+
+sub edit_raw { $_[2] = { binmode => ":unix" }; goto &edit }
+
+=method edit_lines, edit_lines_utf8, edit_lines_raw
+
+    path("foo.txt")->edit_lines( \&callback, $options );
+    path("foo.txt")->edit_lines_utf8( \&callback );
+    path("foo.txt")->edit_lines_raw( \&callback );
+
+These are convenience methods that allow "editing" a file's lines using a
+single callback argument.  They iterate over the file: for each line, the
+line is put into a localized C<$_> variable, the callback function is
+executed (without arguments) and then C<$_> is written to a temporary file.
+When iteration is finished, the temporary file is atomically renamed over
+the original.
+
+An optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to the method that open handles for reading and
+writing.
+
+C<edit_lines_utf8> and C<edit_lines_raw> act like their respective
+C<slurp_*> and C<spew_*> methods.
+
+Current API available since 0.077.
+
+=cut
+
+sub edit_lines {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/binmode/ );
+    Carp::croak("Callback for edit_lines() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+
+    my $binmode = $args->{binmode};
+    # get default binmode from caller's lexical scope (see "perldoc open")
+    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
+
+    # writing need to follow the link and create the tempfile in the same
+    # dir for later atomic rename
+    my $resolved_path = $self->[PATH];
+    $resolved_path = readlink $resolved_path while -l $resolved_path;
+    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
+
+    my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
+    my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
+
+    local $_;
+    while (<$in_fh>) {
+        $cb->();
+        $temp_fh->print($_);
+    }
+
+    close $temp_fh or $self->_throw( 'close', $temp );
+    close $in_fh or $self->_throw('close');
+
+    return $temp->move($resolved_path);
+}
+
+sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
+
+sub edit_lines_utf8 {
+    $_[2] = { binmode => ":raw:encoding(UTF-8)" };
+    goto &edit_lines;
+}
+
 =method exists, is_file, is_dir
 
     if ( path("/tmp")->exists ) { ... }     # -e
@@ -1761,121 +1876,6 @@ sub volume {
     my ($self) = @_;
     $self->_splitpath unless defined $self->[VOL];
     return $self->[VOL];
-}
-
-=method edit, edit_raw, edit_utf8
-
-    path("foo.txt")->edit( \&callback, $options );
-    path("foo.txt")->edit_utf8( \&callback );
-    path("foo.txt")->edit_raw( \&callback );
-
-These are convenience methods that allow "editing" a file using a single
-callback argument. They slurp the file using C<slurp>, place the contents
-inside a localized C<$_> variable, call the callback function (without
-arguments), and then write C<$_> (presumably mutated) back to the
-file with C<spew>.
-
-An optional hash reference may be used to pass options.  The only option is
-C<binmode>, which is passed to C<slurp> and C<spew>.
-
-C<edit_utf8> and C<edit_raw> act like their respective C<slurp_*> and
-C<spew_*> methods.
-
-Current API available since 0.077.
-
-=cut
-
-sub edit {
-    my $self = shift;
-    my $cb   = shift;
-    my $args = _get_args( shift, qw/binmode/ );
-    Carp::croak("Callback for edit() must be a code reference")
-      unless defined($cb) && ref($cb) eq 'CODE';
-
-    local $_ =
-      $self->slurp( exists( $args->{binmode} ) ? { binmode => $args->{binmode} } : () );
-    $cb->();
-    $self->spew( $args, $_ );
-
-    return;
-}
-
-# this is done long-hand to benefit from slurp_utf8 optimizations
-sub edit_utf8 {
-    my ( $self, $cb ) = @_;
-    Carp::croak("Callback for edit_utf8() must be a code reference")
-      unless defined($cb) && ref($cb) eq 'CODE';
-
-    local $_ = $self->slurp_utf8;
-    $cb->();
-    $self->spew_utf8($_);
-
-    return;
-}
-
-sub edit_raw { $_[2] = { binmode => ":unix" }; goto &edit }
-
-=method edit_lines, edit_lines_utf8, edit_lines_raw
-
-    path("foo.txt")->edit_lines( \&callback, $options );
-    path("foo.txt")->edit_lines_utf8( \&callback );
-    path("foo.txt")->edit_lines_raw( \&callback );
-
-These are convenience methods that allow "editing" a file's lines using a
-single callback argument.  They iterate over the file: for each line, the
-line is put into a localizesd C<$_> variable, the callback function is
-executed (without arguments) and then C<$_> is written to a temporary file.
-When iteration is finished, the temporary file is atomically renamed over
-the original.
-
-An optional hash reference may be used to pass options.  The only option is
-C<binmode>, which is passed to the method that open handles for reading and
-writing.
-
-C<edit_lines_utf8> and C<edit_lines_raw> act like their respective
-C<slurp_*> and C<spew_*> methods.
-
-Current API available since 0.077.
-
-=cut
-
-sub edit_lines {
-    my $self = shift;
-    my $cb   = shift;
-    my $args = _get_args( shift, qw/binmode/ );
-    Carp::croak("Callback for edit_lines() must be a code reference")
-      unless defined($cb) && ref($cb) eq 'CODE';
-
-    my $binmode = $args->{binmode};
-    # get default binmode from caller's lexical scope (see "perldoc open")
-    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
-
-    # writing need to follow the link and create the tempfile in the same
-    # dir for later atomic rename
-    my $resolved_path = $self->[PATH];
-    $resolved_path = readlink $resolved_path while -l $resolved_path;
-    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
-
-    my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
-    my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
-
-    local $_;
-    while (<$in_fh>) {
-        $cb->();
-        $temp_fh->print($_);
-    }
-
-    close $temp_fh or $self->_throw( 'close', $temp );
-    close $in_fh or $self->_throw('close');
-
-    return $temp->move($resolved_path);
-}
-
-sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
-
-sub edit_lines_utf8 {
-    $_[2] = { binmode => ":raw:encoding(UTF-8)" };
-    goto &edit_lines;
 }
 
 package Path::Tiny::Error;
