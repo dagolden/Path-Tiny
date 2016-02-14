@@ -2087,6 +2087,12 @@ Exception objects will stringify as the C<msg> field.
 
 =head1 CAVEATS
 
+=head2 Subclassing not supported
+
+For speed, this class is implemented as an array based object and uses many
+direction function calls internally.  You must not subclass it and expect
+things to work properly.
+
 =head2 File locking
 
 If flock is not supported on a platform, it will not be used, even if
