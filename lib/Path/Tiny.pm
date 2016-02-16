@@ -1444,11 +1444,42 @@ sub realpath {
 
     $rel = path("/tmp/foo/bar")->relative("/tmp"); # foo/bar
 
-Returns a C<Path::Tiny> object with a relative path name.
-Given the trickiness of this, it's a thin wrapper around
-C<< File::Spec->abs2rel() >>.
+Returns a C<Path::Tiny> object with a path relative to a new base path
+given as an argument.  If no argument is given, the current directory will
+be used as the new base path.
 
-Current API available since 0.001.
+If either path is already relative, it will be made absolute based on the
+current directly before determining the new relative path.
+
+The algorithm is roughly as follows:
+
+=for :list
+* If the original and new base path are on different volumes, an exception
+  will be thrown.
+* If the original and new base are identical, the relative path is C<".">.
+* If the new base subsumes the original, the relative path is the original
+  path with the new base chopped off the front
+* If the new base does not subsume the original, a common prefix path is
+  determined (possibly the root directory) and the relative path will
+  consist of updirs (C<"..">) to reach the common prefix, followed by the
+  original path less the common prefix.
+
+Unlike C<File::Spec::rel2abs>, in the last case above, the calculation based
+on a common prefix takes into account symlinks that could affect the updir
+process.  Given an original path "/A/B" and a new base "/A/C",
+(where "A", "B" and "C" could each have multiple path components):
+
+=for :list
+* Symlinks in "A" don't change the result unless the last component of A is
+  a symlink and the first component of "C" is an updir.
+* Symlinks in "B" don't change the result and will exist in the result as
+  given.
+* Symlinks and updirs in "C" must be resolved to actual paths, taking into
+  account the possibility that not all path components might exist on the
+  filesystem.
+
+Current API available since 0.001.  New algorithm (that accounts for
+symlinks) available since 0.079.
 
 =cut
 
