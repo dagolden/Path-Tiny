@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [FIXED]
+
+    - Fixed lines_utf8() with chomping for repeated empty lines.
+
 0.077     2016-02-10 14:17:32-07:00 America/Mazatlan (TRIAL RELEASE)
 
     [ADDED]

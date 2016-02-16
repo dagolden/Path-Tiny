@@ -1212,7 +1212,9 @@ sub lines_utf8 {
         && $args->{chomp}
         && !$args->{count} )
     {
-        return split /(?:\x{0d}?\x{0a}|\x{0d})/, slurp_utf8($self); ## no critic
+        my $slurp = slurp_utf8($self);
+        chomp $slurp;
+        return split /(?:\x{0d}?\x{0a}|\x{0d})/, $slurp, -1; ## no critic
     }
     else {
         $args->{binmode} = ":raw:encoding(UTF-8)";
