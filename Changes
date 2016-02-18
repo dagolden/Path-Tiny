@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.081     2016-02-18 16:55:37-05:00 America/New_York (TRIAL RELEASE)
+
     [Fixed]
 
     - Fixed lines_utf8+chomp and relative() bugs on Windows
