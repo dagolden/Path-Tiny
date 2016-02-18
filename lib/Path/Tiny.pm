@@ -1205,6 +1205,8 @@ sub lines_raw {
     }
 }
 
+my $CRLF = qr/(?:\x{0d}?\x{0a}|\x{0d})/;
+
 sub lines_utf8 {
     my $self = shift;
     my $args = _get_args( shift, qw/binmode chomp count/ );
@@ -1213,8 +1215,8 @@ sub lines_utf8 {
         && !$args->{count} )
     {
         my $slurp = slurp_utf8($self);
-        chomp $slurp;
-        return split /(?:\x{0d}?\x{0a}|\x{0d})/, $slurp, -1; ## no critic
+        $slurp =~ s/$CRLF$//; # like chomp, but full CR?LF|CR
+        return split $CRLF, $slurp, -1; ## no critic
     }
     else {
         $args->{binmode} = ":raw:encoding(UTF-8)";
