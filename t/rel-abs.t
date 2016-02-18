@@ -97,7 +97,7 @@ my @one_rel_from_root = (
     # a->rel(B) from tempdir -- path is .. + cwd + a
     is(
         path("foo/bar")->relative("/baz"),
-        path( "..", $cwd, "foo/bar" ),
+        path( "..", $cwd->_just_filepath, "foo/bar" ),
         "a->rel(B) from tmpdir"
     );
 

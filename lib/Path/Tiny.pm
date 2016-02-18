@@ -1487,18 +1487,15 @@ symlinks) available since 0.079.
 
 sub relative {
     my ( $self, $base ) = @_;
-    $base = "." unless defined $base and length $base;
+    $base = path( defined $base && length $base ? $base : '.' );
 
     # relative paths must be converted to absolute first
-    if ( $self->is_relative ) {
-        return $self->absolute->relative($base);
-    }
+    $self = $self->absolute if $self->is_relative;
+    $base = $base->absolute if $base->is_relative;
 
     # normalize volumes if they exist
-    $base = path($base)->absolute;
-    if ( length $base->volume && !length $self->volume ) {
-        $self = $self->absolute;
-    }
+    $self = $self->absolute if ! length $self->volume && length $base->volume;
+    $base = $base->absolute if length $self->volume && ! length $base->volume;
 
     # can't make paths relative across volumes
     if ( !_same( $self->volume, $base->volume ) ) {
