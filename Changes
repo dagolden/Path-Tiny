@@ -2,6 +2,21 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [!!! INCOMPATIBLE CHANGES !!!]
+
+    - (This warning repeated from 0.079-TRIAL) The relative() method no
+      longer uses File::Spec's buggy rel2bs method.  The new Path::Tiny
+      algorithm should be comparable and passes File::Spec rel2abs test
+      cases, except that it correctly accounts for symlinks.  For common
+      use, you are not likely to notice any difference. For uncommon use,
+      this should be an improvement.  As a side benefit, this change drops
+      the minimum File::Spec version required, allowing Path::Tiny to be
+      fatpacked if desired.
+
+    [Changes]
+
+    - no other changes from 0.081
+
 0.081     2016-02-18 16:55:37-05:00 America/New_York (TRIAL RELEASE)
 
     [Fixed]
