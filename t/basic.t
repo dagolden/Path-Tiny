@@ -106,6 +106,9 @@ is $file->parent,  '/foo/baz';
 
     $file = path('one/two/three');
     is $file->relative('one'), 'two/three';
+
+    $file = path('/one[0/two');
+    is $file->relative( '/one[0' ), 'two', 'path with regex special char';
 }
 
 {

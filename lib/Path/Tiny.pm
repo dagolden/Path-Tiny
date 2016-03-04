@@ -1509,7 +1509,7 @@ sub relative {
     if ( $base->subsumes($self) ) {
         $base = "" if $base->is_rootdir;
         my $relative = "$self";
-        $relative =~ s{\A$base/}{};
+        $relative =~ s{\A\Q$base/}{};
         return path($relative);
     }
 
