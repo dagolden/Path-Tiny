@@ -1494,8 +1494,8 @@ sub relative {
     $base = $base->absolute if $base->is_relative;
 
     # normalize volumes if they exist
-    $self = $self->absolute if ! length $self->volume && length $base->volume;
-    $base = $base->absolute if length $self->volume && ! length $base->volume;
+    $self = $self->absolute if !length $self->volume && length $base->volume;
+    $base = $base->absolute if length $self->volume  && !length $base->volume;
 
     # can't make paths relative across volumes
     if ( !_same( $self->volume, $base->volume ) ) {
@@ -1552,7 +1552,7 @@ sub _just_filepath {
     my $self_vol = $self->volume;
     return "$self" if !length $self_vol;
 
-    ( my $self_path = "$self" ) =~ s{\A$self_vol}{};
+    ( my $self_path = "$self" ) =~ s{\A\Q$self_vol}{};
 
     return $self_path;
 }
