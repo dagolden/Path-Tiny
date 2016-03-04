@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Fixed relative() for the case with regex metacharacters in the path
+
 0.082     2016-03-01 18:23:26-05:00 America/New_York
 
     [!!! INCOMPATIBLE CHANGES !!!]
