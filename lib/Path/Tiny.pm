@@ -1256,7 +1256,9 @@ sub mkpath {
 
     path("foo.txt")->move("bar.txt");
 
-Just like C<rename>.
+Move the current path to the given destination path using Perl's
+built-in L<rename|perlfunc/rename> function. Returns the result
+of the C<rename> function.
 
 Current API available since 0.001.
 
