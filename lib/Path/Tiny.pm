@@ -681,9 +681,9 @@ sub chmod {
 
     path("/tmp/foo.txt")->copy("/tmp/bar.txt");
 
-Copies a file using L<File::Copy>'s C<copy> function. Upon
-success, returns the C<Path::Tiny> object for the newly copied
-file.
+Copies the current path to the given destination using L<File::Copy>'s
+C<copy> function. Upon success, returns the C<Path::Tiny> object for the
+newly copied file.
 
 Current API available since 0.070.
 
