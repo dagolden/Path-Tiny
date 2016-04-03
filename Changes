@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.086     2016-04-03 13:49:37-04:00 America/New_York
+
     [Documented]
 
     - Improved documentation of copy and move.
