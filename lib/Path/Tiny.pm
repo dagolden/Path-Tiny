@@ -116,7 +116,7 @@ sub _symbolic_chmod {
 my $WARNED_BSD_NFS = 0;
 
 sub _throw {
-    my ( $self, $function, $file ) = @_;
+    my ( $self, $function, $file, $msg ) = @_;
     if (   IS_BSD()
         && $function =~ /^flock/
         && $! =~ /operation not supported/i
@@ -128,7 +128,9 @@ sub _throw {
         }
     }
     else {
-        Path::Tiny::Error->throw( $function, ( defined $file ? $file : $self->[PATH] ), $! );
+        $msg = $! unless defined $msg;
+        Path::Tiny::Error->throw( $function, ( defined $file ? $file : $self->[PATH] ),
+            $msg );
     }
     return;
 }
@@ -394,6 +396,24 @@ sub _parse_file_temp_args {
 sub _splitpath {
     my ($self) = @_;
     @{$self}[ VOL, DIR, FILE ] = File::Spec->splitpath( $self->[PATH] );
+}
+
+sub _resolve_symlinks {
+    my ($self) = @_;
+    my $new = $self;
+    my ( $count, %seen ) = 0;
+    while ( -l $new->[PATH] ) {
+        if ( $seen{ $new->[PATH] }++ ) {
+            $self->_throw( 'readlink', $self->[PATH], "symlink loop detected" );
+        }
+        if ( ++$count > 100 ) {
+            $self->_throw( 'readlink', $self->[PATH], "maximum symlink depth exceeded" );
+        }
+        my $resolved = readlink $new->[PATH] or $new->_throw( 'readlink', $new->[PATH] );
+        $resolved = path($resolved);
+        $new = $resolved->is_absolute ? $resolved : $new->sibling($resolved);
+    }
+    return $new;
 }
 
 #--------------------------------------------------------------------------#
@@ -847,9 +867,8 @@ sub edit_lines {
 
     # writing need to follow the link and create the tempfile in the same
     # dir for later atomic rename
-    my $resolved_path = $self->[PATH];
-    $resolved_path = readlink $resolved_path while -l $resolved_path;
-    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
+    my $resolved_path = $self->_resolve_symlinks;
+    my $temp          = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
 
     my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
     my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
@@ -1425,10 +1444,7 @@ Current API available since 0.001.
 # doesn't throw an error resolving non-existent basename
 sub realpath {
     my $self = shift;
-    while ( -l $self->[PATH] ) {
-        my $resolved = readlink $self->[PATH] or $self->_throw( 'readlink', $self->[PATH] );
-        $self = path($resolved);
-    }
+    $self = $self->_resolve_symlinks;
     require Cwd;
     $self->_splitpath if !defined $self->[FILE];
     my $check_parent =
@@ -1761,8 +1777,7 @@ sub spew {
 
     # spewing need to follow the link
     # and create the tempfile in the same dir
-    my $resolved_path = $self->[PATH];
-    $resolved_path = readlink $resolved_path while -l $resolved_path;
+    my $resolved_path = $self->_resolve_symlinks;
 
     my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
     my $fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );

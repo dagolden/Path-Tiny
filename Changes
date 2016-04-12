@@ -2,6 +2,15 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Fixed bugs in relative symlink resolution for realpath, spew and
+      edit_lines.
+
+    [Changes]
+
+    - Symlink resolution will detect circular loops and throw an error.
+
 0.086     2016-04-03 13:49:37-04:00 America/New_York
 
     [Documented]
