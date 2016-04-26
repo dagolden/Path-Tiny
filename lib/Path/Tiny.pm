@@ -1792,7 +1792,15 @@ sub spew_raw { splice @_, 1, 0, { binmode => ":unix" }; goto &spew }
 sub spew_utf8 {
     if ( defined($HAS_UU) ? $HAS_UU : ( $HAS_UU = _check_UU() ) ) {
         my $self = shift;
-        spew( $self, { binmode => ":unix" }, map { Unicode::UTF8::encode_utf8($_) } @_ );
+        my @data;
+        foreach my $fragment (@_) {
+            if (ref $fragment eq 'ARRAY') {
+                push @data, map { Unicode::UTF8::encode_utf8($_) } @$fragment;
+            } else {
+                push @data, Unicode::UTF8::encode_utf8($fragment);
+            }
+        }
+        spew( $self, { binmode => ":unix" }, @data );
     }
     else {
         splice @_, 1, 0, { binmode => ":unix:encoding(UTF-8)" };
