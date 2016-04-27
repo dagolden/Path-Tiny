@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Changes]
+
+    - Path::Tiny will prefer PerlIO::utf8_strict over encoding(UTF-8)
+      if available and Unicode::UTF8 is not installed.
+
     [Fixes]
 
     - The 'touch' method can now set the current time on files that aren't
