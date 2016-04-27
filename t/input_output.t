@@ -70,6 +70,14 @@ subtest "spew -> slurp (UTF-8)" => sub {
     ok( utf8::is_utf8($got), "is UTF8" );
 };
 
+subtest "spew -> slurp (UTF-8, arrayref)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8( [_utf8_lines] ), "spew" );
+    my $got = $file->slurp_utf8();
+    is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
+};
+
 subtest "spew -> slurp (raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_lines), "spew" );

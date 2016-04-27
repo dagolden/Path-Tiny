@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Fix spew_utf8 to allow array references as input.
+
 0.088     2016-04-15 08:41:07-04:00 America/New_York
 
     - No changes from 0.087
