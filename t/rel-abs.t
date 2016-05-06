@@ -2,6 +2,7 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
+use Config;
 
 use lib 't/lib';
 use TestUtils qw/exception pushd tempd/;
@@ -109,9 +110,8 @@ subtest "relative on absolute paths with symlinks" => sub {
     my $deep = $cwd->child("foo/bar/baz/bam/bim/buz/wiz/was/woz");
     $deep->mkpath();
 
-    eval { symlink "foo/bar/baz", "baz" };
     plan skip_all => "No symlink support"
-      if $@;
+      unless $Config{d_symlink};
 
     my ( $path, $base, $expect );
 
