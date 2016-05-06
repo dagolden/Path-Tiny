@@ -21,7 +21,9 @@ if ( $^O ne 'MSWin32' ) {
     my $path2 = path($tempdir)->child("bar");
     ok( !-e $path2, "target directory not created yet" );
     ok( $path2->mkpath( { mode => 0700 } ), "mkpath on directory with mode" );
-    is( $path2->stat->mode & 0777, 0700, "correct mode" );
+    if ( $^O ne 'msys' ) {
+        is( $path2->stat->mode & 0777, 0700, "correct mode" );
+    }
     ok( -d $path2, "target directory created" );
 }
 
