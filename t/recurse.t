@@ -68,8 +68,14 @@ subtest 'no symlinks' => sub {
 };
 
 subtest 'with symlinks' => sub {
-    plan skip_all => "No symlink support"
-      unless $Config{d_symlink};
+    {
+        my $newtmp = Path::Tiny->tempdir;
+        my $file   = $newtmp->child("foo.txt");
+        my $link   = $newtmp->child("bar.txt");
+        $file->spew("Hello World\n");
+        eval { symlink $file => $link; die unless -l $link };
+    }
+    plan skip_all => "No symlink support" if $@;
 
     my $wd = tempd;
 

@@ -343,7 +343,7 @@ SKIP: {
     my $file   = $newtmp->child("foo.txt");
     my $link   = $newtmp->child("bar.txt");
     $file->spew("Hello World\n");
-    eval { symlink $file => $link };
+    eval { symlink $file => $link; die unless -l $link };
     skip "symlink unavailable", 1 if $@;
     ok( $link->lstat->size, "lstat" );
 

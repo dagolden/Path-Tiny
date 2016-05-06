@@ -10,7 +10,15 @@ use Config;
 use Path::Tiny;
 use Cwd 'abs_path';
 
-plan skip_all => "No symlink support" unless $Config{d_symlink};
+{
+    my $newtmp = Path::Tiny->tempdir;
+    my $file   = $newtmp->child("foo.txt");
+    my $link   = $newtmp->child("bar.txt");
+    $file->spew("Hello World\n");
+    eval { symlink $file => $link; die unless -l $link };
+}
+
+plan skip_all => "No symlink support" if $@;
 
 subtest "relative symlinks with updir" => sub {
     my $temp = Path::Tiny->tempdir;
