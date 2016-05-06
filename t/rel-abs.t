@@ -109,7 +109,7 @@ subtest "relative on absolute paths with symlinks" => sub {
     my $deep = $cwd->child("foo/bar/baz/bam/bim/buz/wiz/was/woz");
     $deep->mkpath();
 
-    eval { symlink "foo/bar/baz", "baz" };
+    eval { symlink "foo/bar/baz", "baz"; die unless -l "baz" };
     plan skip_all => "No symlink support"
       if $@;
 
