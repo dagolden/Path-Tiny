@@ -4,6 +4,7 @@ use warnings;
 use Test::More 0.96;
 use File::Temp qw(tmpnam tempdir);
 use File::Spec;
+use Config;
 use Cwd;
 
 use lib 't/lib';
@@ -344,7 +345,7 @@ SKIP: {
     my $link   = $newtmp->child("bar.txt");
     $file->spew("Hello World\n");
     eval { symlink $file => $link };
-    skip "symlink unavailable", 1 if $@;
+    skip "symlink unavailable", 1 unless $Config{d_symlink};
     ok( $link->lstat->size, "lstat" );
 
     is( $link->realpath, $file->realpath, "realpath resolves symlinks" );
