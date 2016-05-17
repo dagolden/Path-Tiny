@@ -7,6 +7,13 @@ Revision history for Path-Tiny
     - The 'touch' method can now set the current time on files that aren't
       owned, as long as they are writeable.
 
+    [Tests]
+
+    - Improved consistency of symlink support inspection; now always
+      looks at $Config{d_symlink}.
+
+    - Skips impossible test on 'msys' platform.
+
 0.090     2016-05-02 07:08:58-04:00 America/New_York
 
     - No changes from 0.089
