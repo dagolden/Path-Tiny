@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.091     2016-05-17 13:32:21-04:00 America/New_York (TRIAL RELEASE)
+
     [Changes]
 
     - Path::Tiny will prefer PerlIO::utf8_strict over encoding(UTF-8)
