@@ -1925,9 +1925,15 @@ sub touch {
         my $fh = $self->openw;
         close $fh or $self->_throw('close');
     }
-    $epoch = defined($epoch) ? $epoch : time();
-    utime $epoch, $epoch, $self->[PATH]
-      or $self->_throw("utime ($epoch)");
+    if ( defined $epoch ) {
+        utime $epoch, $epoch, $self->[PATH]
+          or $self->_throw("utime ($epoch)");
+    }
+    else {
+        # literal undef prevents warnings :-(
+        utime undef, undef, $self->[PATH]
+          or $self->_throw("utime ()");
+    }
     return $self;
 }
 

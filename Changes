@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - The 'touch' method can now set the current time on files that aren't
+      owned, as long as they are writeable.
+
 0.090     2016-05-02 07:08:58-04:00 America/New_York
 
     - No changes from 0.089
