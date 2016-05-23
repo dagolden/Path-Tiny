@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.094     2016-05-23 12:45:19-04:00 America/New_York
+
     - Fixed Changes note typo in 0.092.  0.092 had no changes since 0.091,
       not 0.090, meaning that all 0.091 changes were (and are) included.
 
