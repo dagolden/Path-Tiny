@@ -1982,12 +1982,11 @@ sub touchpath {
 
     path("/tmp")->visit( \&callback, \%options );
 
-Wraps the L</iterator> method to execute a callback for each directory entry.
-It returns a hash reference with any state accumulated during
-iteration.
+Executes a callback for each child of a directory.  It returns a hash
+reference with any state accumulated during iteration.
 
-The options are the same as for L</iterator>: C<recurse> and
-C<follow_symlinks>.  Both default to false.
+The options are the same as for L</iterator> (which it uses internally):
+C<recurse> and C<follow_symlinks>.  Both default to false.
 
 The callback function will receive a C<Path::Tiny> object as the first argument
 and a hash reference to accumulate state as the second argument.  For example:
