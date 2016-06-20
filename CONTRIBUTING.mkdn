@@ -3,7 +3,7 @@
 Thank you for considering contributing to this distribution.  This file
 contains instructions that will help you work with the source code.
 
-The distribution is managed with Dist::Zilla.  This means than many of the
+The distribution is managed with Dist::Zilla.  This means that many of the
 usual files you might expect are not in the repository, but are generated at
 release time, as is much of the documentation.  Some generated files are
 kept in the repository as a convenience (e.g. Makefile.PL or cpanfile).
@@ -51,7 +51,20 @@ the documentation you see.
 If you see typos or documentation issues in the generated docs, please
 email or open a bug ticket instead of patching.
 
-### Installing and using Dist::Zilla
+### Where to send patches and pull requests
+
+If you found this distribution on Github, sending a pull-request is the
+best way to contribute.
+
+If a pull-request isn't possible, a bug ticket with a patch file is the
+next best option.
+
+As a last resort, an email to the author(s) is acceptable.
+
+## Installing and using Dist::Zilla
+
+Dist::Zilla is not required for contributing, but if you'd like to learn
+more, this section will get you up to speed.
 
 Dist::Zilla is a very powerful authoring tool, optimized for maintaining a
 large number of distributions with a high degree of automation, but it has a
