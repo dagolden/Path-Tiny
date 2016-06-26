@@ -26,6 +26,16 @@ ok $file, "Got a filename via tmpnam()";
 ok -e $file, "$file should exist";
 ok $file->is_file, "it's a file!";
 
+{
+    my $tmp_binary = Path::Tiny->tempfile;
+    $tmp_binary->spew({ binmode => ":raw" }, pack('s<',0) );
+    ok( $tmp_binary->is_binary, 'identified a binary file' );
+
+    my $tmp_ascii = Path::Tiny->tempfile;
+    $tmp_ascii->spew('hello world');
+    ok( ! $tmp_ascii->is_binary, 'identified an ascii file' );
+}
+
 if ( -e "/dev/null" ) {
     ok( path("/dev/null")->is_file, "/dev/null is_file, too" );
 }

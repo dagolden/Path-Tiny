@@ -772,6 +772,18 @@ sub is_file { -e $_[0]->[PATH] && !-d _ }
 
 sub is_dir { -d $_[0]->[PATH] }
 
+
+=method is_binary
+
+    if ( path("/tmp/foo")->is_binary ) { ... }     # -B
+
+Takes a heuristic guess at whether the file contains binary as opposed
+to ASCII text.
+
+=cut
+
+sub is_binary { -B $_[0]->[PATH] }
+
 =method filehandle
 
     $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
