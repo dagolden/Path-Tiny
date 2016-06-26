@@ -28,7 +28,7 @@ ok $file->is_file, "it's a file!";
 
 {
     my $tmp_binary = Path::Tiny->tempfile;
-    $tmp_binary->spew({ binmode => ":raw" }, pack('s<',0) );
+    $tmp_binary->spew({ binmode => ":raw" }, pack('i',0) );
     ok( $tmp_binary->is_binary, 'identified a binary file' );
 
     my $tmp_ascii = Path::Tiny->tempfile;
