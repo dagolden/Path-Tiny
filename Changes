@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Tests]
+
+    - Improved method for hiding some modules during tests.
+
 0.094     2016-05-23 12:45:19-04:00 America/New_York
 
     - Fixed Changes note typo in 0.092.  0.092 had no changes since 0.091,
