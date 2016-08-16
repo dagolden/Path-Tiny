@@ -332,7 +332,8 @@ The tempfile path object will be normalized to have an absolute path, even if
 created in a relative directory using C<DIR>.
 
 C<tempdir> is just like C<tempfile>, except it calls
-C<< File::Temp->newdir >> instead.
+C<< File::Temp->newdir >> instead.  Temporary directories are purged when
+the program exits, rather than when the Path::Tiny object is destroyed.
 
 Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
