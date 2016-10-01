@@ -329,7 +329,10 @@ C<TEMPLATE> option and does the right thing.
     $temp = Path::Tiny->tempfile( TEMPLATE => "customXXXXXXXX" ); # ok
 
 The tempfile path object will be normalized to have an absolute path, even if
-created in a relative directory using C<DIR>.
+created in a relative directory using C<DIR>.  If you want it to have
+the C<realpath> instead, pass a leading options hash like this:
+
+    $real_temp = tempfile({realpath => 1}, @options);
 
 C<tempdir> is just like C<tempfile>, except it calls
 C<< File::Temp->newdir >> instead.
@@ -348,12 +351,20 @@ is destroyed, File::Temp requires different options for directories and
 files.  Use C<< CLEANUP => 0 >> for directories and C<< UNLINK => 0 >> for
 files.
 
-Current API available since 0.018.
+B<Note 3>: Don't lose the temporary object by chaining a method call instead
+of storing it:
+
+    my $lost = tempdir()->child("foo"); # tempdir cleaned up right away
+
+Current API available since 0.097.
 
 =cut
 
 sub tempfile {
     shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
+    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
+    $opts = _get_args( $opts, qw/realpath/ );
+
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
@@ -361,19 +372,22 @@ sub tempfile {
     require File::Temp;
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
-    my $self = path($temp)->absolute;
+    my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
     $self->[TEMP] = $temp;                # keep object alive while we are
     return $self;
 }
 
 sub tempdir {
     shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
+    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
+    $opts = _get_args( $opts, qw/realpath/ );
+
     my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
 
     # File::Temp->newdir demands leading template
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
-    my $self = path($temp)->absolute;
+    my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
     $self->[TEMP] = $temp;                # keep object alive while we are
     # Some ActiveState Perls for Windows break Cwd in ways that lead
     # File::Temp to get confused about what path to remove; this

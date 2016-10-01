@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Additions]
+
+    - Added 'realpath' option for 'tempfile' and 'tempdir' for situations
+      where an absolute temporary path just isn't enough.
+
 0.096     2016-07-02 21:25:33-04:00 America/New_York
 
     - No changes from 0.095

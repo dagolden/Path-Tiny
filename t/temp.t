@@ -59,5 +59,15 @@ subtest "survives absolute" => sub {
     ok( -d $tempdir, "exists" );
 };
 
+subtest "realpath option" => sub {
+    my $wd = tempd;
+
+    my $tempdir = Path::Tiny->tempdir( { realpath => 1 }, DIR => '.' );
+    is( $tempdir, $tempdir->realpath, "tempdir has realpath" );
+
+    my $tempfile = Path::Tiny->tempfile( { realpath => 1 }, DIR => '.' );
+    is( $tempfile, $tempfile->realpath, "tempfile has realpath" );
+};
+
 done_testing;
 # COPYRIGHT
