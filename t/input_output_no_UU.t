@@ -12,6 +12,6 @@ use lib map {
 
 note "Hiding Unicode::UTF8";
 
-do "t/input_output.t";
+do "./t/input_output.t";
 
 # COPYRIGHT
