@@ -949,7 +949,7 @@ sub is_dir { -d $_[0]->[PATH] }
     $fh = path("/tmp/foo.txt")->filehandle({ exclusive => 1  }, $mode, $binmode);
 
 Returns an open file handle.  The C<$mode> argument must be a Perl-style
-read/write mode string ("<" ,">", "<<", etc.).  If a C<$binmode>
+read/write mode string ("<" ,">", ">>", etc.).  If a C<$binmode>
 is given, it is set during the C<open> call.
 
 An optional hash reference may be used to pass options.
