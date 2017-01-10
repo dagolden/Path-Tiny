@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.099     2017-01-10 15:12:13-05:00 America/New_York (TRIAL RELEASE)
+
     [Tests]
 
     - Fixed tests for eventual removal of '.' from `@INC` in Perl.
