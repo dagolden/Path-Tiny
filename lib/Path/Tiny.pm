@@ -1513,7 +1513,7 @@ The algorithm is roughly as follows:
   consist of updirs (C<"..">) to reach the common prefix, followed by the
   original path less the common prefix.
 
-Unlike C<File::Spec::rel2abs>, in the last case above, the calculation based
+Unlike C<File::Spec::abs2rel>, in the last case above, the calculation based
 on a common prefix takes into account symlinks that could affect the updir
 process.  Given an original path "/A/B" and a new base "/A/C",
 (where "A", "B" and "C" could each have multiple path components):

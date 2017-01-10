@@ -10,6 +10,8 @@ Revision history for Path-Tiny
 
     - Fixed filehandle mode typo.
 
+    - Fixed typo in relative() that mentioned rel2abs instead of abs2rel.
+
 0.098     2016-10-09 23:25:11-04:00 America/New_York
 
     - No changes from 0.097-TRIAL.
@@ -101,8 +103,8 @@ Revision history for Path-Tiny
     [!!! INCOMPATIBLE CHANGES !!!]
 
     - (This warning repeated from 0.079-TRIAL) The relative() method no
-      longer uses File::Spec's buggy rel2bs method.  The new Path::Tiny
-      algorithm should be comparable and passes File::Spec rel2abs test
+      longer uses File::Spec's buggy abs2rel method.  The new Path::Tiny
+      algorithm should be comparable and passes File::Spec abs2rel test
       cases, except that it correctly accounts for symlinks.  For common
       use, you are not likely to notice any difference. For uncommon use,
       this should be an improvement.  As a side benefit, this change drops
@@ -125,7 +127,7 @@ Revision history for Path-Tiny
 
     - The relative() method no longer uses File::Spec's buggy rel2bs
       method.  The new Path::Tiny algorithm should be comparable and passes
-      File::Spec rel2abs test cases, except that it correctly accounts for
+      File::Spec abs2rel test cases, except that it correctly accounts for
       symlinks.  For common use, you are not likely to notice any
       difference. For uncommon use, this should be an improvement.  As a
       side benefit, this change drops the minimum File::Spec version
