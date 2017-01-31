@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Additions]
+
+    - Added 'cached_temp' method.
+
 0.100     2017-01-14 22:47:55-05:00 America/New_York
 
     - No changes from 0.099-TRIAL.

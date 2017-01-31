@@ -356,6 +356,10 @@ of storing it:
 
     my $lost = tempdir()->child("foo"); # tempdir cleaned up right away
 
+B<Note 4>: The cached object may be accessed with the L</cached_temp> method.
+Keeping a reference to, or modifying the cached object may break the
+behavior documented above and is not supported.  Use at your own risk.
+
 Current API available since 0.097.
 
 =cut
@@ -624,6 +628,27 @@ Current API available since 0.001.
 =cut
 
 sub canonpath { $_[0]->[CANON] }
+
+=method cached_temp
+
+Returns the cached C<File::Temp> or C<File::Temp::Dir> object if the
+C<Path::Tiny> object was created with C</tempfile> or C</tempdir>.
+If there is no such object, this method throws.
+
+B<WARNING>: Keeping a reference to, or modifying the cached object may
+break the behavior documented for temporary files and directories created
+with C<Path::Tiny> and is not supported.  Use at your own risk.
+
+Current API available since 0.101.
+
+=cut
+
+sub cached_temp {
+    my $self = shift;
+    $self->_throw( "cached_temp", $self, "has no cached File::Temp object" )
+      unless defined $self->[TEMP];
+    return $self->[TEMP];
+}
 
 =method child
 

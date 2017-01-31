@@ -12,7 +12,8 @@ use Path::Tiny;
 
 subtest "tempdir" => sub {
     my $tempdir = Path::Tiny->tempdir;
-    my $string  = $tempdir->stringify;
+    isa_ok( $tempdir->cached_temp, 'File::Temp::Dir', "cached_temp" );
+    my $string = $tempdir->stringify;
     ok( $tempdir->exists, "tempdir exists" );
     undef $tempdir;
     ok( !-e $string, "tempdir destroyed" );
@@ -20,7 +21,8 @@ subtest "tempdir" => sub {
 
 subtest "tempfile" => sub {
     my $tempfile = Path::Tiny->tempfile;
-    my $string   = $tempfile->stringify;
+    isa_ok( $tempfile->cached_temp, 'File::Temp', "cached_temp" );
+    my $string = $tempfile->stringify;
     ok( $tempfile->exists, "tempfile exists" );
     undef $tempfile;
     ok( !-e $string, "tempfile destroyed" );
@@ -67,6 +69,12 @@ subtest "realpath option" => sub {
 
     my $tempfile = Path::Tiny->tempfile( { realpath => 1 }, DIR => '.' );
     is( $tempfile, $tempfile->realpath, "tempfile has realpath" );
+};
+
+subtest "cached_temp on non tempfile" => sub {
+    my $path = path("abcdefg");
+    eval { $path->cached_temp };
+    like( $@, qr/has no cached File::Temp object/, "cached_temp error message" );
 };
 
 done_testing;
