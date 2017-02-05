@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.101     2017-02-05 09:56:46-05:00 America/New_York (TRIAL RELEASE)
+
     [Changes]
 
     - The 'absolute' method now always returns an absolute path, even if a
