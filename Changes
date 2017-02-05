@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Changes]
+
+    - The 'absolute' method now always returns an absolute path, even if a
+      user provided a relative path for the base path.  The old, odd
+      behavior was documented, but people often don't read docs.  The new
+      behavior avoids suprises.
+
     [Additions]
 
     - Added 'cached_temp' method.

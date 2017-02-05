@@ -450,9 +450,9 @@ sub _resolve_symlinks {
     $abs = path("foo/bar")->absolute("/tmp");
 
 Returns a new C<Path::Tiny> object with an absolute path (or itself if already
-absolute).  Unless an argument is given, the current directory is used as the
-absolute base path.  The argument must be absolute or you won't get an absolute
-result.
+absolute).  If no argument is given, the current directory is used as the
+absolute base path.  If an argument is given, it will be converted to an
+absolute path (if it is not already) and used as the absolute base path.
 
 This will not resolve upward directories ("foo/../bar") unless C<canonpath>
 in L<File::Spec> would normally do so on your platform.  If you need them
@@ -461,7 +461,7 @@ resolved, you must call the more expensive C<realpath> method instead.
 On Windows, an absolute path without a volume component will have it added
 based on the current drive.
 
-Current API available since 0.001.
+Current API available since 0.101.
 
 =cut
 
@@ -486,7 +486,8 @@ sub absolute {
 
     # relative path on any OS
     require Cwd;
-    return path( ( defined($base) ? $base : Cwd::getcwd() ), $_[0]->[PATH] );
+    return path( ( defined($base) ? path($base)->absolute : Cwd::getcwd() ),
+        $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
