@@ -2,6 +2,13 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Bug fixes]
+
+    - Path::Tiny 0.101 on Windows made `$path->absolute("/foo")` return an
+      absolute path starting with 'C:/foo', which was an unintentional
+      behavior change.  This relase now uses any absolute base without
+      further normalization.
+
 0.101     2017-02-05 09:56:46-05:00 America/New_York (TRIAL RELEASE)
 
     [Changes]

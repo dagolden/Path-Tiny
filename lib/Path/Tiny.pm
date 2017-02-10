@@ -484,10 +484,15 @@ sub absolute {
         return $self if $self->is_absolute;
     }
 
-    # relative path on any OS
+    # no base means use current directory as base
     require Cwd;
-    return path( ( defined($base) ? path($base)->absolute : Cwd::getcwd() ),
-        $_[0]->[PATH] );
+    return path( Cwd::getcwd(), $_[0]->[PATH] ) unless defined $base;
+
+    # relative base should be made absolute; we check is_absolute rather
+    # than unconditionally make base absolute so that "/foo" doesn't become
+    # "C:/foo" on Windows.
+    $base = path($base);
+    return path( ( $base->is_absolute ? $base : $base->absolute ), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
