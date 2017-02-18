@@ -335,7 +335,8 @@ the C<realpath> instead, pass a leading options hash like this:
     $real_temp = tempfile({realpath => 1}, @options);
 
 C<tempdir> is just like C<tempfile>, except it calls
-C<< File::Temp->newdir >> instead.
+C<< File::Temp->newdir >> instead.  Temporary directories are purged when
+the program exits, rather than when the Path::Tiny object is destroyed.
 
 Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
