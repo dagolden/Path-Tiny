@@ -152,6 +152,15 @@ my $tmpdir = Path::Tiny->tempdir;
         my ($file) = grep { $_ eq $dir->child('file.x') } @contents;
         ok $file;
         is -d $file, '';
+        
+        # Make sure non-scalar ref returns from callback
+        #  don't cause an error
+        ok($dir->visit(
+            sub {
+                my ($path, $state) = @_;
+                $state->{$path} = { key => 'value' };
+            }
+        ));
     };
 
     ok $dir->remove_tree;
