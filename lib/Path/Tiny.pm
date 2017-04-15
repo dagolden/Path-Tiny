@@ -114,10 +114,11 @@ sub _symbolic_chmod {
 # flock doesn't work on NFS on BSD.  Since program authors often can't control
 # or detect that, we warn once instead of being fatal if we can detect it and
 # people who need it strict can fatalize the 'flock' category
-
-#<<< No perltidy
-{ package flock; use if Path::Tiny::IS_BSD(), 'warnings::register' }
-#>>>
+{
+    package #hide from PAUSE
+        flock;
+    use if Path::Tiny::IS_BSD(), 'warnings::register'
+}
 
 my $WARNED_BSD_NFS = 0;
 
