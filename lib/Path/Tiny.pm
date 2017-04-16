@@ -1066,6 +1066,7 @@ sub filehandle {
 
     unless ($fh) {
         my $mode = $opentype . $binmode;
+        local $@;
         open $fh, $mode, $self->[PATH] or $self->_throw("open ($mode)");
     }
 
