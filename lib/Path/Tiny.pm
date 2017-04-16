@@ -14,7 +14,7 @@ use File::Spec 0.86 ();          # shipped with 5.8.1
 use Carp ();
 
 our @EXPORT    = qw/path/;
-our @EXPORT_OK = qw/cwd rootdir tempfile tempdir/;
+our @EXPORT_OK = qw/cwd rootdir tempfile tempdir path_plugins /;
 
 use constant {
     PATH     => 0,
@@ -411,6 +411,37 @@ sub _parse_file_temp_args {
         :                          ()
     );
     return ( \@template, \%args );
+}
+
+=construct path_plugins
+
+    path_plugins( '+Serialize', 'Some::Other::Plugin' );
+
+Injects the exported methods of the given plugin modules into
+C<Path::Tiny>. Names prefixed with a C<+> will be expanded to the
+C<Path::Tiny::*> namespace.
+
+Returns the name of all plugins currently used.
+
+=cut
+
+my %plugins;
+
+sub path_plugins {
+    my @plugins = @_;
+
+    # TODO what namespace we want for plugins,
+    # Path::Tiny::* or Path::Tiny::Plugin::* ?
+    s/^\+/Path::Tiny::/ for @plugins;
+
+    for my $plugin ( @plugins ) {
+        eval "use $plugin; 1" 
+            or die "couldn't use '$plugin': $@";
+        $plugin->import;
+        $plugins{$plugin} = 1;
+    }
+
+    return keys %plugins;
 }
 
 #--------------------------------------------------------------------------#
