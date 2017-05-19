@@ -1143,6 +1143,13 @@ The default is the same as:
         follow_symlinks => 0,
     } );
 
+The default is the same as:
+
+    $iter = path("/tmp")->iterator( {
+        recurse         => 0,
+        follow_symlinks => 0,
+    } );
+
 For a more powerful, recursive iterator with built-in loop avoidance, see
 L<Path::Iterator::Rule>.
 
