@@ -232,6 +232,8 @@ sub path {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
+    my ($tilde) = $path =~ m{^(~[^/]*).*};
+
     # canonicalize, but with unix slashes and put back trailing volume slash
     my $cpath = $path = File::Spec->canonpath($path);
     $path =~ tr[\\][/] if IS_WIN32();
@@ -247,11 +249,14 @@ sub path {
     }
 
     # do any tilde expansions
-    if ( $path =~ m{^(~[^/]*).*} ) {
+    if ( defined $tilde ) {
         require File::Glob;
-        my ($homedir) = File::Glob::bsd_glob($1);
+        my ($homedir) = File::Glob::bsd_glob($tilde);
         $homedir =~ tr[\\][/] if IS_WIN32();
-        $path =~ s{^(~[^/]*)}{$homedir};
+        $path =~ s{^\Q$tilde\E}{$homedir};
+    }
+    else {
+        $path =~ s{^~}{./~};
     }
 
     bless [ $path, $cpath ], __PACKAGE__;
