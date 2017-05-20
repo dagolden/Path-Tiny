@@ -108,7 +108,7 @@ is $file->parent,  '/foo/baz';
     is $file->relative('one'), 'two/three';
 
     $file = path('/one[0/two');
-    is $file->relative( '/one[0' ), 'two', 'path with regex special char';
+    is $file->relative('/one[0'), 'two', 'path with regex special char';
 }
 
 {
@@ -128,8 +128,8 @@ is $file->parent,  '/foo/baz';
 {
     my ($homedir) = glob('~');
     $homedir =~ tr[\\][/] if $IS_WIN32;
-    my $username = path($homedir)->basename;
-    my ($root_homedir) = glob('~root');
+    my $username          = path($homedir)->basename;
+    my ($root_homedir)    = glob('~root');
     my ($missing_homedir) = glob('~idontthinkso');
 
 #<<< No perltidy
@@ -160,7 +160,7 @@ is $file->parent,  '/foo/baz';
 #>>>
 
     for my $test (@tests) {
-        is(path($test->[0]), defined $test->[1] ? $test->[1] : $test->[0], $test->[2]);
+        is( path( $test->[0] ), defined $test->[1] ? $test->[1] : $test->[0], $test->[2] );
     }
 
     my $indirect = path('.')->child('~');
@@ -191,10 +191,7 @@ is $file->parent,  '/foo/baz';
     isa_ok( $path, "Path::Tiny", "assertion return value" );
 
     $err = exception {
-        path(".")->visit(
-            sub { $_[1]->{$_} = { path => $_ } },
-            { recurse => 1 },
-        );
+        path(".")->visit( sub { $_[1]->{$_} = { path => $_ } }, { recurse => 1 }, );
     };
     is $err, "", 'no exception';
 }
