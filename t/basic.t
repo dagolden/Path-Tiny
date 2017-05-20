@@ -132,6 +132,7 @@ is $file->parent,  '/foo/baz';
     my ($root_homedir) = glob('~root');
     my ($missing_homedir) = glob('~idontthinkso');
 
+#<<< No perltidy
     my @tests = (
       # [arg for path(), expected string (undef if eq arg for path()), test string]
         ['~',                     $homedir,                 'Test my homedir' ],
@@ -152,11 +153,21 @@ is $file->parent,  '/foo/baz';
         ["~fun\ttimes",           undef,                    'Test tab' ],
         ["~new\nline",            undef,                    'Test newline' ],
         ['~'.$username.' file',   undef,                    'Test \'~$username file\'' ],
+        ['./~',                   undef,                    'Test literal tilde under current directory' ],
+        ['./~idontthinkso',       undef,                    'Test tilde name under current directory' ],
+        ['./foo/~idontthinkso',   'foo/~idontthinkso',      'Test tilde name in a deeper directory' ],
     );
+#>>>
 
     for my $test (@tests) {
         is(path($test->[0]), defined $test->[1] ? $test->[1] : $test->[0], $test->[2]);
     }
+
+    my $indirect = path('.')->child('~');
+    is( $indirect, './~',
+        'Test indirect forms of literal tilde under current directory' );
+    is( $indirect->basename, '~', 'Indirect form: basename' );
+    is( $indirect->parent,   '.', 'Indirect form: parent' );
 }
 
 # freeze/thaw

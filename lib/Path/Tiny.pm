@@ -221,6 +221,9 @@ sub path {
     # stringify objects
     $path = "$path";
 
+    # detect leading tilde before canonicalization
+    my $starts_with_tilde = substr( $path, 0, 1 ) eq '~';
+
     # expand relative volume paths on windows; put trailing slash on UNC root
     if ( IS_WIN32() ) {
         $path = _win32_vol( $path, $1 ) if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|$)};
@@ -247,11 +250,17 @@ sub path {
     }
 
     # do any tilde expansions
-    if ( $path =~ m{^(~[^/]*).*} ) {
+    if ($starts_with_tilde) {
         require File::Glob;
-        my ($homedir) = File::Glob::bsd_glob($1);
+        my ($tilde_part) = $path =~ m{^(~[^/]*)};
+        my ($homedir)    = File::Glob::bsd_glob($tilde_part);
         $homedir =~ tr[\\][/] if IS_WIN32();
-        $path =~ s{^(~[^/]*)}{$homedir};
+        $path =~ s{^\Q$tilde_part\E}{$homedir};
+    }
+    elsif ( substr( $path, 0, 1 ) eq '~' ) {
+        # didn't originally start with tilde, but now does after
+        # canonicalization, so we 'escape' it via prepending './'
+        $path = "./$path";
     }
 
     bless [ $path, $cpath ], __PACKAGE__;
