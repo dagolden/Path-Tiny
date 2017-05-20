@@ -152,11 +152,14 @@ is $file->parent,  '/foo/baz';
         ["~fun\ttimes",           undef,                    'Test tab' ],
         ["~new\nline",            undef,                    'Test newline' ],
         ['~'.$username.' file',   undef,                    'Test \'~$username file\'' ],
+        ['./~',                   undef,                    'Test literal tilde under current directory' ],
     );
 
     for my $test (@tests) {
         is(path($test->[0]), defined $test->[1] ? $test->[1] : $test->[0], $test->[2]);
     }
+
+    is(path('.')->child('~'), './~', 'Test indirect forms of literal tilde under current directory');
 }
 
 # freeze/thaw
