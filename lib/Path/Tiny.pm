@@ -665,6 +665,11 @@ Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
 file or directories.
 
+B<WARNING>: because the argument could contain C<..> or refer to symlinks,
+there is no guarantee that the new path refers to an actual descendent of
+the original.  If this is important to you, transform parent and child with
+L</realpath> and check them with L</subsumes>.
+
 Current API available since 0.001.
 
 =cut
