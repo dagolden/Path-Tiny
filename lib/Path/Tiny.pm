@@ -503,8 +503,9 @@ sub absolute {
     path("foo.txt")->append_raw(@data);
     path("foo.txt")->append_utf8(@data);
 
-Appends data to a file.  The file is locked with C<flock> prior to writing.  An
-optional hash reference may be used to pass options.  Valid options are:
+Appends data to a file.  The file is locked with C<flock> prior to writing
+and closed afterwards.  An optional hash reference may be used to pass
+options.  Valid options are:
 
 =for :list
 * C<binmode>: passed to C<binmode()> on the handle used for writing.
@@ -1342,7 +1343,7 @@ sub mkpath {
 
 Move the current path to the given destination path using Perl's
 built-in L<rename|perlfunc/rename> function. Returns the result
-of the C<rename> function.
+of the C<rename> function (except it throws an exception if it fails).
 
 Current API available since 0.001.
 
