@@ -293,7 +293,7 @@ sub cwd {
 =construct rootdir
 
     $path = Path::Tiny->rootdir; # /
-    $path = rootdir;             # optional export 
+    $path = rootdir;             # optional export
 
 Gives you C<< File::Spec->rootdir >> as a C<Path::Tiny> object if you're too
 picky for C<path("/")>.
@@ -1989,7 +1989,8 @@ Returns the path object so it can be easily chained with other methods:
     # won't die if foo.txt doesn't exist
     $content = path("foo.txt")->touch->slurp;
 
-Current API available since 0.015.
+Current API available since 0.015. Optional C<$epoch_secs> available since
+0.104.
 
 =cut
 
@@ -2023,10 +2024,10 @@ Current API available since 0.022.
 =cut
 
 sub touchpath {
-    my ($self) = @_;
+    my ( $self, $epoch ) = @_;
     my $parent = $self->parent;
     $parent->mkpath unless $parent->exists;
-    $self->touch;
+    $self->touch($epoch);
 }
 
 =method visit
