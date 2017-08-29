@@ -111,6 +111,8 @@ my $tmpdir = Path::Tiny->tempdir;
     ok $dir->child('file.x')->touch;
     ok $dir->child('0')->touch;
     ok $dir->child('foo/bar/baz.txt')->touchpath;
+    ok $dir->child('foo/bar/baz/file.txt')->touchpath($epoch);
+    is $dir->child('foo/bar/baz/file.txt')->stat->mtime, $epoch;
 
     subtest 'iterator' => sub {
         my @contents;
