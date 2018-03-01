@@ -109,6 +109,9 @@ is $file->parent,  '/foo/baz';
 
     $file = path('/one[0/two');
     is $file->relative( '/one[0' ), 'two', 'path with regex special char';
+    
+    $file = path('/tmp/foo/~root');
+    is $file->relative('/tmp/foo'), '~root', 'relative path begins with tilde';
 }
 
 {
