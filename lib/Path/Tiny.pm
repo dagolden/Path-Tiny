@@ -1594,7 +1594,8 @@ sub relative {
         $base = "" if $base->is_rootdir;
         my $relative = "$self";
         $relative =~ s{\A\Q$base/}{};
-        return path($relative);
+        # Avoid redundant path cleanup and inappropriate tilde expansion
+        return bless [ $relative, $relative ], __PACKAGE__;
     }
 
     # base is not a prefix, so must find a common prefix (even if root)
