@@ -262,6 +262,8 @@ sub path {
 
     # do any tilde expansions
     if ( defined $tilde ) {
+        # Escape File::Glob metacharacters
+        $tilde =~ s/([\[\{\*\?\\])/\\$1/g;
         require File::Glob;
         my ($homedir) = File::Glob::bsd_glob($tilde);
         $homedir =~ tr[\\][/] if IS_WIN32();
