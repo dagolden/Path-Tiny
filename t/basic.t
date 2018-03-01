@@ -152,6 +152,11 @@ is $file->parent,  '/foo/baz';
         ["~fun\ttimes",           undef,                    'Test tab' ],
         ["~new\nline",            undef,                    'Test newline' ],
         ['~'.$username.' file',   undef,                    'Test \'~$username file\'' ],
+        ['~idontthinkso[123]',    undef,                    'Test File::Glob metacharacter ['],
+        ['~idontthinkso*',        undef,                    'Test File::Glob metacharacter *'],
+        ['~idontthinkso?',        undef,                    'Test File::Glob metacharacter ?'],
+        ['~idontthinkso\\x',      undef,                    'Test File::Glob metacharacter \\'],
+        ['~idontthinkso{a}',      undef,                    'Test File::Glob metacharacter {'],
     );
 
     for my $test (@tests) {
