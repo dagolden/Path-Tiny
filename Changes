@@ -13,6 +13,10 @@ Revision history for Path-Tiny
       allows detecting and warning, for example, with the Luster filesystem
       on Linux.
 
+    [Tests]
+
+    - Improve reliability and diagnostics of tests run via 'do'.
+
 0.104     2017-02-17 07:17:00-05:00 America/New_York
 
     - No changes from 0.103-TRIAL.
