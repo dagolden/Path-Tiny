@@ -552,4 +552,6 @@ subtest "edit_lines" => sub {
 };
 
 done_testing;
+
+1;
 # COPYRIGHT
