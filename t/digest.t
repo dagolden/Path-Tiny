@@ -8,6 +8,7 @@ use TestUtils qw/exception/;
 
 use Path::Tiny;
 use Digest;
+use Digest::MD5; # for dependency detection
 
 my $dir  = Path::Tiny->tempdir;
 my $file = $dir->child('foo.bin');

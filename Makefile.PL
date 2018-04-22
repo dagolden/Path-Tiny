@@ -35,6 +35,7 @@ my %WriteMakefileArgs = (
     "warnings" => 0
   },
   "TEST_REQUIRES" => {
+    "Digest::MD5" => 0,
     "ExtUtils::MakeMaker" => 0,
     "File::Basename" => 0,
     "File::Spec" => "0.86",
@@ -56,6 +57,7 @@ my %FallbackPrereqs = (
   "Carp" => 0,
   "Cwd" => 0,
   "Digest" => "1.03",
+  "Digest::MD5" => 0,
   "Digest::SHA" => "5.45",
   "Exporter" => "5.57",
   "ExtUtils::MakeMaker" => 0,
