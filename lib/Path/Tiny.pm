@@ -2,6 +2,10 @@ use 5.008001;
 use strict;
 use warnings;
 
+=encoding utf8
+
+=cut
+
 package Path::Tiny;
 # ABSTRACT: File path utility
 
@@ -952,6 +956,59 @@ sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
 sub edit_lines_utf8 {
     $_[2] = { binmode => ":raw:encoding(UTF-8)" };
     goto &edit_lines;
+}
+
+=method process_lines, process_lines_utf8, process_lines_raw
+
+    path("foo.txt")->process_lines( \&callback, $options );
+    path("foo.txt")->process_lines_utf8( \&callback );
+    path("foo.txt")->process_lines_raw( \&callback );
+
+These are convenience methods that allow "processing" a file's lines using a
+single callback argument.  They iterate over the file: for each line, the
+line is put into a localized C<$_> variable and the callback function is
+executed (without arguments).
+
+An optional hash reference may be used to pass options.  The only option is
+C<binmode>, which is passed to the method that open handles for reading and
+writing.
+
+C<process_lines_utf8> and C<process_lines_raw> act like their respective
+C<slurp_*> and C<spew_*> methods.
+
+Current API available since 0.105.
+
+=cut
+
+sub process_lines {
+    my $self = shift;
+    my $cb   = shift;
+    my $args = _get_args( shift, qw/binmode/ );
+    Carp::croak("Callback for process_lines() must be a code reference")
+      unless defined($cb) && ref($cb) eq 'CODE';
+
+    my $binmode = $args->{binmode};
+    # get default binmode from caller's lexical scope (see "perldoc open")
+    $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
+
+    # writing need to follow the link and create the tempfile in the same
+    # dir for later atomic rename
+    my $resolved_path = $self->_resolve_symlinks;
+    my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
+
+    local $_;
+    while (<$in_fh>) {
+        $cb->();
+    }
+
+    close $in_fh or $self->_throw('close');
+}
+
+sub process_lines_raw { $_[2] = { binmode => ":unix" }; goto &process_lines }
+
+sub process_lines_utf8 {
+    $_[2] = { binmode => ":raw:encoding(UTF-8)" };
+    goto &process_lines;
 }
 
 =method exists, is_file, is_dir

@@ -551,5 +551,30 @@ subtest "edit_lines" => sub {
         "edit_lines", );
 };
 
+subtest "process_lines_utf8" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_utf8("Foo\nBar\nBaz\nQuux\n");
+    my $counter = 0;
+    $file->process_lines_utf8( sub { $counter++ if m/\AB/; } );
+    is( $counter, 2, "process_lines_utf8" );
+};
+
+subtest "process_lines_raw" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    my $counter = 0;
+    $file->process_lines_raw( sub { $counter++ if m/\AB/; } );
+    is( $counter, 2, "process_lines_utf8" );
+};
+
+subtest "process_lines" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("Foo\nBar\nBaz\nQuux\n");
+    my $counter = 0;
+    $file->process_lines_raw( sub { $counter++ if m/\AB/; } );
+    is( $counter, 2, "process_lines_utf8" );
+};
+
+
 done_testing;
 # COPYRIGHT
