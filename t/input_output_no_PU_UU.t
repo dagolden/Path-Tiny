@@ -11,6 +11,6 @@ use lib map {
 
 note "Hiding Unicode::UTF8 and PerlIO::utf8_strict";
 
-do "./t/input_output.t";
+do "./t/input_output.t" or die $@ || $!;
 
 # COPYRIGHT
