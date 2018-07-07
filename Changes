@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.105     2018-07-07 10:09:04-04:00 America/New_York (TRIAL RELEASE)
+
     [Additions]
 
     - The PERL_PATH_TINY_NO_FLOCK environment variable has been added to
