@@ -1022,6 +1022,8 @@ Current API available since 0.066.
 # Note: must put binmode on open line, not subsequent binmode() call, so things
 # like ":unix" actually stop perlio/crlf from being added
 
+my $WARNED_PERL_PATH_TINY_NO_FLOCK = 0;
+
 sub filehandle {
     my ( $self, @args ) = @_;
     my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
@@ -1037,8 +1039,20 @@ sub filehandle {
       unless defined $binmode;
     $binmode = "" unless defined $binmode;
 
+    # allow flock to be explicitly turned off via env PERL_PATH_TINY_NO_FLOCK=1
+    # and provide one warning because you don't want to turn this on by accident
+    my $no_flock = 0;
+    if ( defined $ENV{PERL_PATH_TINY_NO_FLOCK} && $ENV{PERL_PATH_TINY_NO_FLOCK} ) {
+        if ( !$WARNED_PERL_PATH_TINY_NO_FLOCK ) {
+            # TODO: stop Test::FailWarnings complaining ...
+            #warnings::warn( flock => "environment variable PERL_PATH_TINY_NO_FLOCK is true so flock will not be used when accessing files (are you sure you want to do this?)" );
+            $WARNED_PERL_PATH_TINY_NO_FLOCK++;
+        }
+        $no_flock = 1;
+    }
+
     my ( $fh, $lock, $trunc );
-    if ( $HAS_FLOCK && $args->{locked} ) {
+    if ( !$no_flock && $HAS_FLOCK && $args->{locked} ) {
         require Fcntl;
         # truncating file modes shouldn't truncate until lock acquired
         if ( grep { $opentype eq $_ } qw( > +> ) ) {
@@ -2231,6 +2245,14 @@ A C<Path::Tiny::Error> object will be a hash reference with the following fields
 * C<msg> — a string combining the above data and a Carp-like short stack trace
 
 Exception objects will stringify as the C<msg> field.
+
+=head1 ENVIRONMENT
+
+=head2 PERL_PATH_TINY_NO_FLOCK
+
+If the environment variable C<PERL_PATH_TINY_NO_FLOCK> is set to a true
+value then flock will NOT be used when accessing files (this is not 
+recommended).
 
 =head1 CAVEATS
 
