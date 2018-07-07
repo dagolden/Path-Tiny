@@ -22,6 +22,17 @@ if ($IS_BSD) {
 }
 
 subtest 'write locks blocks read lock' => sub {
+    my $rc = check_flock();
+    is( $rc >> 8, 0, "process failed to get lock" );
+};
+
+subtest 'flock ignored if PERL_PATH_TINY_NO_FLOCK=1' => sub {
+    $ENV{PERL_PATH_TINY_NO_FLOCK} = 1;
+    my $rc = check_flock();
+    ok( $rc, "process managed to get lock" );
+};
+
+sub check_flock {
     my $file = Path::Tiny->tempfile;
     ok $file, "Got a tempfile";
     my $fh = $file->openw( { locked => 1 } );
@@ -39,7 +50,7 @@ exit flock( \$fh, LOCK_SH|LOCK_NB );
 HERE
     my $rc = system( $^X, $locktester );
     isnt( $rc, -1, "ran process to try to get lock" );
-    is( $rc >> 8, 0, "process failed to get lock" );
+    return $rc;
 };
 
 done_testing;
