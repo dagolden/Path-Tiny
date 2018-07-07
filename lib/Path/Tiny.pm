@@ -115,11 +115,15 @@ sub _symbolic_chmod {
 # or detect that, we warn once instead of being fatal if we can detect it and
 # people who need it strict can fatalize the 'flock' category
 
+# Some file systems (eg lustre) may throw up 'function not implemented' on flock.
+# Again, we warn once instead of making this fatal.
+
 #<<< No perltidy
-{ package flock; use if Path::Tiny::IS_BSD(), 'warnings::register' }
+{ package flock; use if 1, 'warnings::register' }
 #>>>
 
 my $WARNED_BSD_NFS = 0;
+my $WARNED_FUNCTION_NOT_IMPL = 0;
 
 sub _throw {
     my ( $self, $function, $file, $msg ) = @_;
@@ -131,6 +135,15 @@ sub _throw {
         if ( !$WARNED_BSD_NFS ) {
             warnings::warn( flock => "No flock for NFS on BSD: continuing in unsafe mode" );
             $WARNED_BSD_NFS++;
+        }
+    }
+    elsif ( $function =~ /^flock/
+        && $! =~ /function not implemented/i
+        && !warnings::fatal_enabled('flock') )
+    {
+        if ( !$WARNED_FUNCTION_NOT_IMPL ) {
+            warnings::warn( flock => "Caught error 'function not implemented' - flock does not appear to be available on this file system: continuing in unsafe mode" );
+            $WARNED_FUNCTION_NOT_IMPL++;
         }
     }
     else {
