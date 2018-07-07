@@ -2,6 +2,17 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Additions]
+
+    - The PERL_PATH_TINY_NO_FLOCK environment variable has been added to
+      allow users to disable file locking (and any associated warnings).
+
+    [Changes]
+
+    - Detection of unsupported 'flock' is no longer BSD-specific.  This
+      allows detecting and warning, for example, with the Luster filesystem
+      on Linux.
+
 0.104     2017-02-17 07:17:00-05:00 America/New_York
 
     - No changes from 0.103-TRIAL.

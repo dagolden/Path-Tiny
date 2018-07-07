@@ -11,9 +11,7 @@ use TestUtils qw/exception/;
 use Fcntl ':flock';
 use Path::Tiny;
 
-my $IS_BSD = $^O =~ /bsd$/;
-
-if ($IS_BSD) {
+{
     # is temp partition lockable?
     my $file = Path::Tiny->tempfile;
     open my $fh, ">>", $file;
@@ -23,13 +21,13 @@ if ($IS_BSD) {
 
 subtest 'write locks blocks read lock' => sub {
     my $rc = check_flock();
-    is( $rc >> 8, 0, "process failed to get lock" );
+    is( $rc >> 8, 0, "subprocess failed to get lock" );
 };
 
 subtest 'flock ignored if PERL_PATH_TINY_NO_FLOCK=1' => sub {
     $ENV{PERL_PATH_TINY_NO_FLOCK} = 1;
     my $rc = check_flock();
-    ok( $rc, "process managed to get lock" );
+    is( $rc >> 8, 1, "subprocess managed to get lock" );
 };
 
 sub check_flock {
@@ -51,6 +49,6 @@ HERE
     my $rc = system( $^X, $locktester );
     isnt( $rc, -1, "ran process to try to get lock" );
     return $rc;
-};
+}
 
 done_testing;

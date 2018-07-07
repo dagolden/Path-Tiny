@@ -23,7 +23,6 @@ use constant {
     DIR      => 3,
     FILE     => 4,
     TEMP     => 5,
-    IS_BSD   => ( scalar $^O =~ /bsd$/ ),
     IS_WIN32 => ( $^O eq 'MSWin32' ),
 };
 
@@ -111,39 +110,26 @@ sub _symbolic_chmod {
     return $mode;
 }
 
-# flock doesn't work on NFS on BSD.  Since program authors often can't control
-# or detect that, we warn once instead of being fatal if we can detect it and
-# people who need it strict can fatalize the 'flock' category
-
-# Some file systems (eg lustre) may throw up 'function not implemented' on flock.
-# Again, we warn once instead of making this fatal.
+# flock doesn't work on NFS on BSD or on some filesystems like lustre.
+# Since program authors often can't control or detect that, we warn once
+# instead of being fatal if we can detect it and people who need it strict
+# can fatalize the 'flock' category
 
 #<<< No perltidy
-{ package flock; use if 1, 'warnings::register' }
+{ package flock; use warnings::register }
 #>>>
 
-my $WARNED_BSD_NFS = 0;
-my $WARNED_FUNCTION_NOT_IMPL = 0;
+my $WARNED_NO_FLOCK = 0;
 
 sub _throw {
     my ( $self, $function, $file, $msg ) = @_;
-    if (   IS_BSD()
-        && $function =~ /^flock/
-        && $! =~ /operation not supported/i
+    if (   $function =~ /^flock/
+        && $! =~ /operation not supported|function not implemented/i
         && !warnings::fatal_enabled('flock') )
     {
-        if ( !$WARNED_BSD_NFS ) {
-            warnings::warn( flock => "No flock for NFS on BSD: continuing in unsafe mode" );
-            $WARNED_BSD_NFS++;
-        }
-    }
-    elsif ( $function =~ /^flock/
-        && $! =~ /function not implemented/i
-        && !warnings::fatal_enabled('flock') )
-    {
-        if ( !$WARNED_FUNCTION_NOT_IMPL ) {
-            warnings::warn( flock => "Caught error 'function not implemented' - flock does not appear to be available on this file system: continuing in unsafe mode" );
-            $WARNED_FUNCTION_NOT_IMPL++;
+        if ( !$WARNED_NO_FLOCK ) {
+            warnings::warn( flock => "Flock not available: '$!': continuing in unsafe mode" );
+            $WARNED_NO_FLOCK++;
         }
     }
     else {
@@ -1022,8 +1008,6 @@ Current API available since 0.066.
 # Note: must put binmode on open line, not subsequent binmode() call, so things
 # like ":unix" actually stop perlio/crlf from being added
 
-my $WARNED_PERL_PATH_TINY_NO_FLOCK = 0;
-
 sub filehandle {
     my ( $self, @args ) = @_;
     my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
@@ -1039,20 +1023,8 @@ sub filehandle {
       unless defined $binmode;
     $binmode = "" unless defined $binmode;
 
-    # allow flock to be explicitly turned off via env PERL_PATH_TINY_NO_FLOCK=1
-    # and provide one warning because you don't want to turn this on by accident
-    my $no_flock = 0;
-    if ( defined $ENV{PERL_PATH_TINY_NO_FLOCK} && $ENV{PERL_PATH_TINY_NO_FLOCK} ) {
-        if ( !$WARNED_PERL_PATH_TINY_NO_FLOCK ) {
-            # TODO: stop Test::FailWarnings complaining ...
-            #warnings::warn( flock => "environment variable PERL_PATH_TINY_NO_FLOCK is true so flock will not be used when accessing files (are you sure you want to do this?)" );
-            $WARNED_PERL_PATH_TINY_NO_FLOCK++;
-        }
-        $no_flock = 1;
-    }
-
     my ( $fh, $lock, $trunc );
-    if ( !$no_flock && $HAS_FLOCK && $args->{locked} ) {
+    if ( $HAS_FLOCK && $args->{locked} && !$ENV{PERL_PATH_TINY_NO_FLOCK} ) {
         require Fcntl;
         # truncating file modes shouldn't truncate until lock acquired
         if ( grep { $opentype eq $_ } qw( > +> ) ) {
@@ -2159,7 +2131,7 @@ sub throw {
 =for Pod::Coverage
 openr_utf8 opena_utf8 openw_utf8 openrw_utf8
 openr_raw opena_raw openw_raw openrw_raw
-IS_BSD IS_WIN32 FREEZE THAW TO_JSON abs2rel
+IS_WIN32 FREEZE THAW TO_JSON abs2rel
 
 =head1 SYNOPSIS
 
@@ -2218,7 +2190,7 @@ All paths are forced to have Unix-style forward slashes.  Stringifying
 the object gives you back the path (after some clean up).
 
 File input/output methods C<flock> handles before reading or writing,
-as appropriate (if supported by the platform).
+as appropriate (if supported by the platform and/or filesystem).
 
 The C<*_utf8> methods (C<slurp_utf8>, C<lines_utf8>, etc.) operate in raw
 mode.  On Windows, that means they will not have CRLF translation from the
@@ -2251,7 +2223,7 @@ Exception objects will stringify as the C<msg> field.
 =head2 PERL_PATH_TINY_NO_FLOCK
 
 If the environment variable C<PERL_PATH_TINY_NO_FLOCK> is set to a true
-value then flock will NOT be used when accessing files (this is not 
+value then flock will NOT be used when accessing files (this is not
 recommended).
 
 =head1 CAVEATS
@@ -2267,17 +2239,26 @@ things to work properly.
 If flock is not supported on a platform, it will not be used, even if
 locking is requested.
 
+In situations where a platform normally would support locking, but the
+flock fails due to a filesystem limitation, Path::Tiny has some heuristics
+to detect this and will warn once and continue in an unsafe mode.  If you
+want this failure to be fatal, you can fatalize the 'flock' warnings
+category:
+
+    use warnings FATAL => 'flock';
+
 See additional caveats below.
 
 =head3 NFS and BSD
 
 On BSD, Perl's flock implementation may not work to lock files on an
-NFS filesystem.  Path::Tiny has some heuristics to detect this
-and will warn once and let you continue in an unsafe mode.  If you
-want this failure to be fatal, you can fatalize the 'flock' warnings
-category:
+NFS filesystem.  If detected, this situation will warn once, as described
+above.
 
-    use warnings FATAL => 'flock';
+=head3 Lustre
+
+The Lustre filesystem does not support flock.  If detected, this situation
+will warn once, as described above.
 
 =head3 AIX and locking
 
