@@ -29,10 +29,10 @@ my %WriteMakefileArgs = (
     "File::Temp" => "0.19",
     "File::stat" => 0,
     "constant" => 0,
-    "if" => 0,
     "overload" => 0,
     "strict" => 0,
-    "warnings" => 0
+    "warnings" => 0,
+    "warnings::register" => 0
   },
   "TEST_REQUIRES" => {
     "Digest::MD5" => 0,
@@ -73,12 +73,12 @@ my %FallbackPrereqs = (
   "File::stat" => 0,
   "Test::More" => "0.96",
   "constant" => 0,
-  "if" => 0,
   "lib" => 0,
   "open" => 0,
   "overload" => 0,
   "strict" => 0,
-  "warnings" => 0
+  "warnings" => 0,
+  "warnings::register" => 0
 );
 
 
