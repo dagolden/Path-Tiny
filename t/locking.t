@@ -25,7 +25,7 @@ subtest 'write locks blocks read lock' => sub {
 };
 
 subtest 'flock ignored if PERL_PATH_TINY_NO_FLOCK=1' => sub {
-    $ENV{PERL_PATH_TINY_NO_FLOCK} = 1;
+    local $ENV{PERL_PATH_TINY_NO_FLOCK} = 1;
     my $rc = check_flock();
     is( $rc >> 8, 1, "subprocess managed to get lock" );
 };
