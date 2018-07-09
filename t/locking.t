@@ -19,6 +19,9 @@ use Path::Tiny;
       or plan skip_all => "Can't lock tempfiles on this OS/filesystem";
 }
 
+# Guard against external environment
+local $ENV{PERL_PATH_TINY_NO_FLOCK} = 0;
+
 subtest 'write locks blocks read lock' => sub {
     my $rc = check_flock();
     is( $rc >> 8, 0, "subprocess failed to get lock" );
