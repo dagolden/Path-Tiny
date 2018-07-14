@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.106     2018-07-14 09:37:00-04:00 America/New_York
+
     [Tests]
 
     - Protected t/locking.t from PERL_PATH_TINY_NO_FLOCK already
