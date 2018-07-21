@@ -19,11 +19,13 @@ ok $file, 'Got a filename via tmpnam()';
 }
 
 my $called_handler;
-$SIG{__DIE__} = sub { ++$called_handler };
 
-$file->slurp_utf8;
+{
+    local $SIG{__DIE__} = sub { ++$called_handler };
+    $file->slurp_utf8;
+}
 
-ok !$called_handler, 'outer $SIG{__DIE__} handler called';
+ok !$called_handler, 'outer $SIG{__DIE__} handler no called';
 
 unlink $file;
 
