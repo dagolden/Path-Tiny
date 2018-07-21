@@ -25,4 +25,6 @@ $file->slurp_utf8;
 
 ok !$called_handler, 'outer $SIG{__DIE__} handler called';
 
+unlink $file;
+
 done_testing;
