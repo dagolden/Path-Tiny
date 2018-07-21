@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Fixed a bug where failure to load optional modules would trigger
+      an external $SIG{__DIE__} handler.
+
 0.106     2018-07-14 09:37:00-04:00 America/New_York
 
     [Tests]
