@@ -40,13 +40,23 @@ sub THAW   { return path( $_[2] ) }
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
-    !!eval { require Unicode::UTF8; Unicode::UTF8->VERSION(0.58); 1 };
+    !!eval {
+        local $SIG{__DIE__}; # prevent outer handler from being called
+        require Unicode::UTF8;
+        Unicode::UTF8->VERSION(0.58);
+        1;
+    };
 }
 
 my $HAS_PU; # has PerlIO::utf8_strict; lazily populated
 
 sub _check_PU {
-    !!eval { require PerlIO::utf8_strict; PerlIO::utf8_strict->VERSION(0.003); 1 };
+    !!eval {
+        local $SIG{__DIE__}; # prevent outer handler from being called
+        require PerlIO::utf8_strict;
+        PerlIO::utf8_strict->VERSION(0.003);
+        1;
+    };
 }
 
 my $HAS_FLOCK = $Config{d_flock} || $Config{d_fcntl_can_lock} || $Config{d_lockf};
