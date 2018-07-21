@@ -40,19 +40,22 @@ sub THAW   { return path( $_[2] ) }
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
 sub _check_UU {
+    local $SIG{__DIE__}; # prevent outer handler from being called
     !!eval {
-        local $SIG{__DIE__}; # prevent outer handler from being called
         require Unicode::UTF8;
         Unicode::UTF8->VERSION(0.58);
         1;
     };
 }
 
-my $HAS_PU; # has PerlIO::utf8_strict; lazily populated
+my $HAS_PU;              # has PerlIO::utf8_strict; lazily populated
 
 sub _check_PU {
+    local $SIG{__DIE__}; # prevent outer handler from being called
     !!eval {
-        local $SIG{__DIE__}; # prevent outer handler from being called
+        # MUST preload Encode or $SIG{__DIE__} localization fails
+        # on some Perl 5.8.8 (maybe other 5.8.*) compiled with -O2.
+        require Encode;
         require PerlIO::utf8_strict;
         PerlIO::utf8_strict->VERSION(0.003);
         1;
