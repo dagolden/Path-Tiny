@@ -25,7 +25,7 @@ my $called_handler;
     $file->slurp_utf8;
 }
 
-ok !$called_handler, 'outer $SIG{__DIE__} handler no called';
+ok !$called_handler, 'outer $SIG{__DIE__} handler should not be called';
 
 unlink $file;
 
