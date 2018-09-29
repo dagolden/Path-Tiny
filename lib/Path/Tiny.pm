@@ -1490,6 +1490,40 @@ sub _non_empty {
     return ( ( defined($string) && length($string) ) ? $string : "." );
 }
 
+=method closest
+
+    $parent = path("foo/bar/baz")->closest("foo"); # foo
+    $parent = path("foo/bar/baz")->closest("baz"); # bar
+    
+    $parent = path("foo/bar/baz")->closest("other"); # 0
+    $parent = path("foo/bar/baz")->closest("other", "other/dir"); # other/dir
+
+Returns a C<Path::Tiny> object corresponding to the parent directory matching the searched pattern from the
+original directory or file. Returning undef if not found. An optional default path argument can be provided if none is found. 
+
+Current API available since 0.109.
+
+=cut
+
+sub closest {
+    my ( $self, $needle, $default ) = @_;
+    
+    return $self unless ( $needle ); # just return self if no search if performed
+    
+    my $path = $self->absolute->parent;
+
+     # self checking loop
+    while ( ! $path->is_rootdir ) {
+        
+        return $path if ( $path->basename eq $needle  );
+        
+        $path = $path->parent;
+    }
+    
+    return ( $default ) ? path( $default ) : 0;
+
+}
+
 =method realpath
 
     $real = path("/baz/foo/../bar")->realpath;
