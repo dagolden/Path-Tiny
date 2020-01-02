@@ -80,20 +80,13 @@ if ($IS_WIN32) {
         [ "path('\\d1','\\d2')",     '/d1/d2' ],
         [ "path('\\d1','\\d2\\')",   '/d1/d2' ],
         [ "path('d1','d2','d3')",    'd1/d2/d3' ],
-        [ "path('A:/d1','d2','d3')", 'A:/d1/d2/d3' ],
-        [ "path('A:/')",             'A:/' ],
         [ "path('\\', 'foo')",       '/foo' ],
-        [ "path('A:', 'foo')",       'A:/foo' ],
         [ "path('a','b','c')",       'a/b/c' ],
         [ "path('a','b','.\\c')",    'a/b/c' ],
         [ "path('.\\a','b','c')",    'a/b/c' ],
         [ "path('c')",               'c' ],
         [ "path('.\\c')",            'c' ],
         [ "path('a/..','../b')",     '../b' ],
-        [ "path('A:', 'foo')",       'A:/foo' ],
-        [ "path('a:/')",             'A:/' ],
-        [ "path('A:f')",             'A:/f' ],
-        [ "path('A:/')",             'A:/' ],
         [ "path('a\\..\\..\\b\\c')", '../b/c' ],
         [ "path('//a\\b//c')",       '//a/b/c' ],
         [ "path('/a/..../c')",       '/a/..../c' ],
@@ -119,6 +112,17 @@ if ($IS_WIN32) {
         [ "path('//server/share')",      '//server/share/' ],
         [ "path('//d1','d2')",           '//d1/d2/' ],
     );
+    # These test require no "A:" drive mapped
+    if ( Cwd::getdcwd("A:") eq '' ) {
+        push @win32_tests,
+          [ "path('A:/d1','d2','d3')", 'A:/d1/d2/d3' ],
+          [ "path('A:/')",             'A:/' ],
+          [ "path('A:', 'foo')",       'A:/foo' ],
+          [ "path('A:', 'foo')",       'A:/foo' ],
+          [ "path('A:f')",             'A:/f' ],
+          [ "path('A:/')",             'A:/' ],
+          [ "path('a:/')",             'A:/' ],;
+    }
 }
 
 # XXX not sure how to adapt this sanely for use with Path::Tiny testing, so
