@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    - Fixes tests on Windows, particularly with newer File::Spec.
+
 0.108     2018-07-30 15:35:23-04:00 America/New_York
 
     - No changes from 0.107-TRIAL.
