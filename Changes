@@ -2,6 +2,9 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    - Another test fix on Windows, possibly due to a behavior change in
+      Cwd::getdcwd.
+
 0.110     2020-01-13 13:11:38-05:00 America/New_York
 
     - No changes from 0.109-TRIAL.
