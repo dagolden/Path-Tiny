@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Fixes]
+
+    - Uses \z instead of $ in regular expressions
+
 0.112     2020-01-28 22:12:16-05:00 America/New_York
 
     - No changes from 0.111-TRIAL.
