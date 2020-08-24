@@ -2,10 +2,9 @@ use 5.008001;
 use strict;
 use warnings;
 use Test::More 0.96;
-use Config;
 
 use lib 't/lib';
-use TestUtils qw/exception pushd tempd/;
+use TestUtils qw/exception pushd tempd has_symlinks/;
 
 use Path::Tiny;
 
@@ -111,7 +110,7 @@ subtest "relative on absolute paths with symlinks" => sub {
     $deep->mkpath();
 
     plan skip_all => "No symlink support"
-      unless $Config{d_symlink};
+      unless has_symlinks();
 
     my ( $path, $base, $expect );
 

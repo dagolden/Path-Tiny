@@ -4,13 +4,12 @@ use warnings;
 use Test::More 0.96;
 
 use lib 't/lib';
-use TestUtils qw/exception/;
+use TestUtils qw/exception has_symlinks/;
 
-use Config;
 use Path::Tiny;
 use Cwd 'abs_path';
 
-plan skip_all => "No symlink support" unless $Config{d_symlink};
+plan skip_all => "No symlink support" unless has_symlinks();
 
 subtest "relative symlinks with updir" => sub {
     my $temp = Path::Tiny->tempdir;

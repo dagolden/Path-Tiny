@@ -4,11 +4,10 @@ use warnings;
 use Test::More 0.96;
 use File::Temp qw(tmpnam tempdir);
 use File::Spec;
-use Config;
 use Cwd;
 
 use lib 't/lib';
-use TestUtils qw/exception/;
+use TestUtils qw/exception has_symlinks/;
 
 use Path::Tiny;
 
@@ -344,8 +343,8 @@ SKIP: {
     my $file   = $newtmp->child("foo.txt");
     my $link   = $newtmp->child("bar.txt");
     $file->spew("Hello World\n");
+    skip "symlink unavailable", 1 unless has_symlinks();
     eval { symlink $file => $link };
-    skip "symlink unavailable", 1 unless $Config{d_symlink};
     ok( $link->lstat->size, "lstat" );
 
     is( $link->realpath, $file->realpath, "realpath resolves symlinks" );

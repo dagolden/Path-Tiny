@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Tests]
+
+    - Fixes tests on MSYS without symlinks enabled.
+
 0.114     2020-04-26 10:10:29-04:00 America/New_York
 
     - No changes from 0.113-TRIAL.

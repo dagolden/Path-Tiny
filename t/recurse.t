@@ -3,10 +3,9 @@ use strict;
 use warnings;
 use Test::More 0.92;
 use File::Temp;
-use Config;
 
 use lib 't/lib';
-use TestUtils qw/exception tempd/;
+use TestUtils qw/exception tempd has_symlinks/;
 
 use Path::Tiny;
 
@@ -69,7 +68,7 @@ subtest 'no symlinks' => sub {
 
 subtest 'with symlinks' => sub {
     plan skip_all => "No symlink support"
-      unless $Config{d_symlink};
+      unless has_symlinks();
 
     my $wd = tempd;
 

@@ -6,6 +6,7 @@ package TestUtils;
 
 use Carp;
 use Cwd qw/getcwd/;
+use Config;
 use File::Temp 0.19 ();
 
 use Exporter;
@@ -14,11 +15,21 @@ our @EXPORT = qw(
   exception
   pushd
   tempd
+  has_symlinks
 );
 
 # If we have Test::FailWarnings, use it
 BEGIN {
     eval { require Test::FailWarnings; 1 } and do { Test::FailWarnings->import };
+}
+
+sub has_symlinks {
+    return $Config{d_symlink}
+      unless $^O eq 'msys';
+
+    # msys needs both `d_symlink` and a special environment variable
+    return unless $Config{d_symlink};
+    return $ENV{MSYS} =~ /winsymlinks:nativestrict/;
 }
 
 sub exception(&) {
