@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Tests]
+
+    - Skip symlink tests on Windows by actually testing symlinks, as Perl
+      5.33.5 adds notional support but it's not possible without elevated
+      privileges.
+
 0.116     2021-01-22 10:32:22-05:00 America/New_York
 
     - No changes from 0.115-TRIAL.
