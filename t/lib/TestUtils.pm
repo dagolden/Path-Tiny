@@ -25,11 +25,19 @@ BEGIN {
 
 sub has_symlinks {
     return $Config{d_symlink}
-      unless $^O eq 'msys';
+      unless $^O eq 'msys' || $^O eq 'MSWin32';
 
-    # msys needs both `d_symlink` and a special environment variable
-    return unless $Config{d_symlink};
-    return $ENV{MSYS} =~ /winsymlinks:nativestrict/;
+    if ($^O eq 'msys') {
+        # msys needs both `d_symlink` and a special environment variable
+        return unless $Config{d_symlink};
+        return $ENV{MSYS} =~ /winsymlinks:nativestrict/;
+    } elsif ($^O eq 'MSWin32') {
+        # Perl 5.33.5 adds symlink support for MSWin32 but needs elevated
+        # privileges so verify if we can use it for testing.
+        my $wd=tempd();
+        open my $fh, ">", "foo";
+        return eval { symlink "foo", "bar" };
+    }
 }
 
 sub exception(&) {
