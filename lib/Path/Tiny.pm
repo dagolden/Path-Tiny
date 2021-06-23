@@ -796,8 +796,8 @@ sub copy {
 =method digest
 
     $obj = path("/tmp/foo.txt")->digest;        # SHA-256
-    $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
-    $obj = path("/tmp/foo.txt")->digest( { chunk_size => 1e6 }, "MD5" );
+    $obj = path("/tmp/foo.txt")->digest("SHA3-256"); # user-selected
+    $obj = path("/tmp/foo.txt")->digest( { chunk_size => 1e6 }, "SHA3-256" );
 
 Returns a hexadecimal digest for a file.  An optional hash reference of options may
 be given.  The only option is C<chunk_size>.  If C<chunk_size> is given, that many
