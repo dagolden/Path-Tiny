@@ -8,7 +8,7 @@ use TestUtils qw/exception/;
 
 use Path::Tiny;
 use Digest;
-use Digest::MD5; # for dependency detection
+use Digest::SHA3; # for dependency detection
 
 my $dir  = Path::Tiny->tempdir;
 my $file = $dir->child('foo.bin');
@@ -29,16 +29,16 @@ is( $file->digest, $sha_hex, 'digest SHA-256' );
 is( $file->digest( { chunk_size => 10 } ), $sha_hex, 'digest SHA-256 (chunked)' );
 
 is(
-    $file->digest('MD5'),
-    'ce05aca61c0e58d7396073b668bcafd0',
-    'digest MD5 (hardcoded)',
+    $file->digest('SHA3-256'),
+    '2447daf270288ec4ff7b73f6bb86343aa7adbcf5ad0a3eea80aeb2d8df19bbda',
+    'digest SHA3-256 (hardcoded)',
 );
 
-my $md5 = Digest->new('MD5');
-$md5->add($chunk);
-my $md5_hex = $md5->hexdigest;
-is( $file->digest('MD5'), $md5_hex, 'digest MD5', );
-is( $file->digest( { chunk_size => 10 }, 'MD5' ), $md5_hex, 'digest MD5 (chunked)' );
+my $sha3 = Digest->new('SHA3-256');
+$sha3->add($chunk);
+my $sha3_hex = $sha3->hexdigest;
+is( $file->digest('SHA3-256'), $sha3_hex, 'digest SHA3-256', );
+is( $file->digest( { chunk_size => 10 }, 'SHA3-256' ), $sha3_hex, 'digest SHA3-256 (chunked)' );
 
 done_testing;
 # COPYRIGHT

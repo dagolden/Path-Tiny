@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    - Rewrite test for digest() from MD5 to SHA3-256
+
 0.118     2021-02-04 19:09:58-05:00 America/New_York
 
     - No changes from 0.117-TRIAL.
