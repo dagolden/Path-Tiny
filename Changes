@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Changes]
+
+    - The `tempdir` and `tempfile` methods may be called on a Path::Tiny object
+      representing a directory, in which case the directory will be used as the
+      container for the temporary object (as if the `DIR` argument were used).
+
 0.118     2021-02-04 19:09:58-05:00 America/New_York
 
     - No changes from 0.117-TRIAL.
