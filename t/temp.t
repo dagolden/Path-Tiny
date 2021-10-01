@@ -77,5 +77,72 @@ subtest "cached_temp on non tempfile" => sub {
     like( $@, qr/has no cached File::Temp object/, "cached_temp error message" );
 };
 
+subtest "tempdir w/ leading template as instance method" => sub {
+    my $wd = tempd;
+
+    my $basedir = Path::Tiny->cwd;
+    my $repodir = $basedir->child('whatever');
+    $repodir->remove_tree if $repodir->exists;
+    $repodir->mkpath;
+    my $tempdir = $repodir->tempdir( TEMPLATE => "helloXXXXX" );
+    like( $tempdir, qr/hello/, "found template" );
+    ok( scalar($repodir->children) > 0, 'something was created' );
+    my $basename = $tempdir->basename;
+    ok( -d $repodir->child($basename), "right directory exists" );
+};
+
+subtest "tempdir w/ leading template as instance method" => sub {
+    my $wd = tempd;
+
+    my $basedir = Path::Tiny->cwd;
+    my $repodir = $basedir->child('whatever');
+    $repodir->remove_tree if $repodir->exists;
+    $repodir->mkpath;
+    my $tempdir = $repodir->tempdir("helloXXXXX");
+    like( $tempdir, qr/hello/, "found template" );
+    ok( scalar($repodir->children) > 0, 'something was created' );
+    my $basename = $tempdir->basename;
+    ok( -d $repodir->child($basename), "right directory exists" );
+};
+
+subtest "tempfile w/ leading template as instance method" => sub {
+    my $wd = tempd;
+
+    my $basedir = Path::Tiny->cwd;
+    my $repodir = $basedir->child('whatever');
+    $repodir->remove_tree if $repodir->exists;
+    $repodir->mkpath;
+    my $tempfile = $repodir->tempfile( TEMPLATE => "helloXXXXX" );
+    like( $tempfile, qr/hello/, "found template" );
+    ok( scalar($repodir->children) > 0, 'something was created' );
+    my $basename = $tempfile->basename;
+    ok( -e $repodir->child($basename), "right file exists" );
+};
+
+subtest "tempfile w/out leading template as instance method" => sub {
+    my $wd = tempd;
+
+    my $basedir = Path::Tiny->cwd;
+    my $repodir = $basedir->child('whatever');
+    $repodir->remove_tree if $repodir->exists;
+    $repodir->mkpath;
+    my $tempfile = $repodir->tempfile("helloXXXXX");
+    like( $tempfile, qr/hello/, "found template" );
+    ok( scalar($repodir->children) > 0, 'something was created' );
+    my $basename = $tempfile->basename;
+    ok( -e $repodir->child($basename), "right file exists" );
+};
+
+subtest "tempfile, instance method, overridden DIR" => sub {
+    my $wd = tempd;
+
+    my $basedir = Path::Tiny->cwd;
+    my $repodir = $basedir->child('whatever');
+    $repodir->remove_tree if $repodir->exists;
+    $repodir->mkpath;
+    my $tempfile = $repodir->tempfile("helloXXXXX", DIR => '/');
+    ok( $tempfile->parent ne '/' ), "DIR is overridden";
+};
+
 done_testing;
 # COPYRIGHT

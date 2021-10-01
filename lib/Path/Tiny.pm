@@ -323,6 +323,8 @@ sub rootdir { path( File::Spec->rootdir ) }
 
     $temp = Path::Tiny->tempfile( @options );
     $temp = Path::Tiny->tempdir( @options );
+    $temp = $dirpath->tempfile( @options );
+    $temp = $dirpath->tempdir( @options );
     $temp = tempfile( @options ); # optional export
     $temp = tempdir( @options );  # optional export
 
@@ -352,6 +354,17 @@ C<< File::Temp->newdir >> instead.
 Both C<tempfile> and C<tempdir> may be exported on request and used as
 functions instead of as methods.
 
+As of X.XXX, the methods can be called on an instances representing a
+directory. In this case, the directory is used as the base to create the
+temporary file/directory, setting the C<DIR> option in File::Temp.
+
+    my $target_dir = path('/to/destination');
+    my $tempfile = $target_dir->tempfile('foobarXXXXXX');
+    $tempfile->spew('A lot of data...');  # not atomic
+    $tempfile->rename($target_dir->child('foobar')); # hopefully atomic
+
+In this case, any value set for option C<DIR> is ignored.
+
 B<Note>: for tempfiles, the filehandles from File::Temp are closed and not
 reused.  This is not as secure as using File::Temp handles directly, but is
 less prone to deadlocks or access problems on some platforms.  Think of what
@@ -377,11 +390,8 @@ Current API available since 0.097.
 =cut
 
 sub tempfile {
-    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
-    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
-    $opts = _get_args( $opts, qw/realpath/ );
+    my ( $opts, $maybe_template, $args ) = _parse_file_temp_args(@_);
 
-    my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
 
@@ -394,13 +404,8 @@ sub tempfile {
 }
 
 sub tempdir {
-    shift if @_ && $_[0] eq 'Path::Tiny'; # called as method
-    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
-    $opts = _get_args( $opts, qw/realpath/ );
+    my ( $opts, $maybe_template, $args ) = _parse_file_temp_args(@_);
 
-    my ( $maybe_template, $args ) = _parse_file_temp_args(@_);
-
-    # File::Temp->newdir demands leading template
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
     my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
@@ -414,6 +419,19 @@ sub tempdir {
 
 # normalize the various ways File::Temp does templates
 sub _parse_file_temp_args {
+    if ( @_ && $_[0] eq 'Path::Tiny' ) { shift } # class method
+    elsif ( @_ && eval{$_[0]->isa('Path::Tiny')} ) {
+        my $dir = shift;
+        if (! $dir->is_dir) {
+            my ( undef, undef, undef, $called_as ) = caller(1);
+            $called_as =~ s{^.*::}{};
+            $dir->_throw( $called_as, $dir, "is not a directory object" );
+        }
+        push @_, DIR => $dir->stringify; # no overriding
+    }
+    my $opts = ( @_ && ref $_[0] eq 'HASH' ) ? shift @_ : {};
+    $opts = _get_args( $opts, qw/realpath/ );
+
     my $leading_template = ( scalar(@_) % 2 == 1 ? shift(@_) : '' );
     my %args = @_;
     %args = map { uc($_), $args{$_} } keys %args;
@@ -422,7 +440,8 @@ sub _parse_file_temp_args {
         : $leading_template      ? $leading_template
         :                          ()
     );
-    return ( \@template, \%args );
+
+    return ( $opts, \@template, \%args );
 }
 
 #--------------------------------------------------------------------------#
