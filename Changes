@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.119     2021-10-20 18:15:24-04:00 America/New_York (TRIAL RELEASE)
+
     [Changes]
 
     - The `tempdir` and `tempfile` methods may be called on a Path::Tiny object
