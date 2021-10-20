@@ -140,8 +140,9 @@ subtest "tempfile, instance method, overridden DIR" => sub {
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
     $repodir->mkpath;
-    my $tempfile = $repodir->tempfile("helloXXXXX", DIR => '/');
-    ok( $tempfile->parent ne '/' ), "DIR is overridden";
+    my $bd = $basedir->stringify;
+    my $tempfile = $repodir->tempfile("helloXXXXX", DIR => $bd);
+    ok( $tempfile->parent ne $bd ), "DIR is overridden";
 };
 
 done_testing;
