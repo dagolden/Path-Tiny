@@ -390,7 +390,8 @@ Current API available since 0.097.
 =cut
 
 sub tempfile {
-    my ( $opts, $maybe_template, $args ) = _parse_file_temp_args(@_);
+    my ( $opts, $maybe_template, $args )
+        = _parse_file_temp_args(tempfile => @_);
 
     # File::Temp->new demands TEMPLATE
     $args->{TEMPLATE} = $maybe_template->[0] if @$maybe_template;
@@ -404,7 +405,8 @@ sub tempfile {
 }
 
 sub tempdir {
-    my ( $opts, $maybe_template, $args ) = _parse_file_temp_args(@_);
+    my ( $opts, $maybe_template, $args )
+        = _parse_file_temp_args(tempdir => @_);
 
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
@@ -419,12 +421,11 @@ sub tempdir {
 
 # normalize the various ways File::Temp does templates
 sub _parse_file_temp_args {
+    my $called_as = shift;
     if ( @_ && $_[0] eq 'Path::Tiny' ) { shift } # class method
     elsif ( @_ && eval{$_[0]->isa('Path::Tiny')} ) {
         my $dir = shift;
         if (! $dir->is_dir) {
-            my ( undef, undef, undef, $called_as ) = caller(1);
-            $called_as =~ s{^.*::}{};
             $dir->_throw( $called_as, $dir, "is not a directory object" );
         }
         push @_, DIR => $dir->stringify; # no overriding
