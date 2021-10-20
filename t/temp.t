@@ -84,7 +84,7 @@ subtest "tempdir w/ leading template as instance method" => sub {
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
     $repodir->mkpath;
-    my $tempdir = $repodir->tempdir( TEMPLATE => "helloXXXXX" );
+    my $tempdir = $repodir->tempdir("helloXXXXX");
     like( $tempdir, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
     my $basename = $tempdir->basename;
@@ -105,7 +105,7 @@ subtest "tempdir w/ leading template as instance method" => sub {
     ok( -d $repodir->child($basename), "right directory exists" );
 };
 
-subtest "tempfile w/ leading template as instance method" => sub {
+subtest "tempfile w/out leading template as instance method" => sub {
     my $wd = tempd;
 
     my $basedir = Path::Tiny->cwd;
@@ -126,7 +126,7 @@ subtest "tempfile w/out leading template as instance method" => sub {
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
     $repodir->mkpath;
-    my $tempfile = $repodir->tempfile("helloXXXXX");
+    my $tempfile = $repodir->tempfile( TEMPLATE => "helloXXXXX");
     like( $tempfile, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
     my $basename = $tempfile->basename;
