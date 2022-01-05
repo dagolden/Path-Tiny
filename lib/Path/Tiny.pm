@@ -1772,6 +1772,38 @@ sub sibling {
     return path( $self->parent->[PATH], @_ );
 }
 
+sub size {
+    my $self  = shift();
+    my $bytes = -s $self->[PATH];
+
+    return $bytes;
+}
+
+sub human_size {
+    my $self = shift();
+    my $size = $self->size();
+
+    if (!defined $size) {
+        return undef;
+    }
+
+    if ($size > 1024**5) {
+        $size = sprintf("%.1fP", $size / 1024**5);
+    } elsif ($size > 1024**4) {
+        $size = sprintf("%.1fT", $size / 1024**4);
+    } elsif ($size > 1024**3) {
+        $size = sprintf("%.1fG", $size / 1024**3);
+    } elsif ($size > 1024**2) {
+        $size = sprintf("%.1fM", $size / 1024**2);
+    } elsif ($size > 1024) {
+        $size = sprintf("%.1fK", $size / 1024);
+    } elsif ($size >= 0) {
+        $size = sprintf("%dB", $size);
+    }
+
+    return $size;
+}
+
 =method slurp, slurp_raw, slurp_utf8
 
     $data = path("foo.txt")->slurp;
