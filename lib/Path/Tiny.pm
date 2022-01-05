@@ -1772,12 +1772,34 @@ sub sibling {
     return path( $self->parent->[PATH], @_ );
 }
 
+=method size
+
+    $bytes = path("/tmp/foo.txt")->size; # 2831
+
+Returns the file size in bytes of the C<Path::Tiny> object, or C<undef> if the
+file does not exist.
+
+B<NOTE>: This is a wrapper around the built-in C<-s> method, and is intended to
+increase code readability.
+
+=cut
+
 sub size {
     my $self  = shift();
     my $bytes = -s $self->[PATH];
 
     return $bytes;
 }
+
+=method human_size
+
+    $str = path("/tmp/foo.txt")->human_size; # 2.8k
+    $str = path("/tmp/big.iso")->human_size; # 4.6g
+
+Returns the file size of the C<Path::Tiny> object in a B<human readable> string,
+or C<undef> if the file does not exist.
+
+=cut
 
 sub human_size {
     my $self = shift();
