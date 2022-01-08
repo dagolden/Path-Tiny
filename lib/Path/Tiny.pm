@@ -1772,6 +1772,75 @@ sub sibling {
     return path( $self->parent->[PATH], @_ );
 }
 
+=method size, size_human
+
+    my $p = path("foo"); # with size 1025 bytes
+
+    $p->size;                            # "1025"
+    $p->size_human;                      # "1.1 K"
+    $p->size_human( {format => "iec"} ); # "1.1 KiB"
+
+Returns the size of a file.  The C<size> method is just a wrapper around C<-s>.
+
+The C<size_human> method provides a human-readable string similar to
+C<ls -lh>.  Like C<ls>, it rounds upwards and provides one decimal place for
+single-digit sizes and no decimal places for larger sizes.  The only available
+option is C<format>, which has three valid values:
+
+=for :list
+* 'ls' (the default): base-2 sizes, with C<ls> style single-letter suffixes (K, M, etc.)
+* 'iec': base-2 sizes, with IEC binary suffixes (KiB, MiB, etc.)
+* 'si': base-10 sizes, with SI decimal suffixes (kB, MB, etc.)
+
+If C<-s> would return C<undef>, C<size_human> returns the empty string.
+
+Current API available since 0.122.
+
+=cut
+
+sub size { -s $_[0]->[PATH] }
+
+my %formats = (
+    'ls'  => [ 1024, log(1024), [ "", map { " $_" } qw/K M G T/ ] ],
+    'iec' => [ 1024, log(1024), [ "", map { " $_" } qw/KiB MiB GiB TiB/ ] ],
+    'si'  => [ 1000, log(1000), [ "", map { " $_" } qw/kB MB GB TB/ ] ],
+);
+
+sub _formats { return $formats{$_[0]} }
+
+sub size_human {
+    my $self     = shift;
+    my $args     = _get_args( shift, qw/format/ );
+    my $format   = defined $args->{format} ? $args->{format} : "ls";
+    my $fmt_opts = $formats{$format}
+      or Carp::croak("Invalid format '$format' for size_human()");
+    my $size = -s $self->[PATH];
+    return defined $size ? _human_size( $size, @$fmt_opts ) : "";
+}
+
+sub _ceil {
+    return $_[0] == int($_[0]) ? $_[0] : int($_[0]+1);
+}
+
+sub _human_size {
+    my ( $size, $base, $log_base, $suffixes ) = @_;
+    return "0" if $size == 0;
+
+    my $mag = int( log($size) / $log_base );
+    $size /= $base**$mag;
+    $size =
+        $mag == 0               ? $size
+      : length( int($size) ) == 1 ? _ceil( $size * 10 ) / 10
+      :                             _ceil($size);
+    if ( $size >= $base ) {
+        $size /= $base;
+        $mag++;
+    }
+
+    my $fmt = ( $mag == 0 || length( int($size) ) > 1 ) ? "%.0f%s" : "%.1f%s";
+    return sprintf( $fmt, $size, $suffixes->[$mag] );
+}
+
 =method slurp, slurp_raw, slurp_utf8
 
     $data = path("foo.txt")->slurp;
