@@ -361,7 +361,7 @@ temporary file/directory, setting the C<DIR> option in File::Temp.
     my $target_dir = path('/to/destination');
     my $tempfile = $target_dir->tempfile('foobarXXXXXX');
     $tempfile->spew('A lot of data...');  # not atomic
-    $tempfile->rename($target_dir->child('foobar')); # hopefully atomic
+    $tempfile->move($target_dir->child('foobar')); # hopefully atomic
 
 In this case, any value set for option C<DIR> is ignored.
 
