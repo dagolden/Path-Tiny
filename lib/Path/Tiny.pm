@@ -949,9 +949,16 @@ Current API available since 0.077.
 =cut
 
 sub edit_lines {
+    $_[2] ||= {};
+    $_[2]->{edit}++;
+    goto &_iterate_lines;
+}
+
+# Used to power edit_lines and its variants and for_lines.
+sub _iterate_lines {
     my $self = shift;
     my $cb   = shift;
-    my $args = _get_args( shift, qw/binmode/ );
+    my $args = _get_args( shift, qw/binmode edit/ );
     Carp::croak("Callback for edit_lines() must be a code reference")
       unless defined($cb) && ref($cb) eq 'CODE';
 
@@ -964,19 +971,30 @@ sub edit_lines {
     my $resolved_path = $self->_resolve_symlinks;
     my $temp          = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
 
-    my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
+    my $temp_fh;
+    if ($args->{edit}) {
+        $temp_fh = $temp->filehandle(
+            { exclusive => 1, locked => 1 }, ">", $binmode
+        );
+    }
     my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
 
     local $_;
     while (<$in_fh>) {
         $cb->();
-        $temp_fh->print($_);
+        if ($args->{edit}) {
+            $temp_fh->print($_);
+        }
     }
 
-    close $temp_fh or $self->_throw( 'close', $temp );
     close $in_fh or $self->_throw('close');
 
-    return $temp->move($resolved_path);
+    if ($args->{edit}) {
+        close $temp_fh or $self->_throw( 'close', $temp );
+        return $temp->move($resolved_path);
+    } else {
+        return 1;
+    }
 }
 
 sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
@@ -984,6 +1002,19 @@ sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
 sub edit_lines_utf8 {
     $_[2] = { binmode => ":raw:encoding(UTF-8)" };
     goto &edit_lines;
+}
+
+
+=method for_lines
+
+Similar to L<edit_lines>, takes a coderef which is called once for each
+line of the file, receiving the line as its argument, but whose return value
+is ignored, and no changes are made to the file.
+
+=cut
+
+sub for_lines {
+    goto &_iterate_lines;
 }
 
 =method exists, is_file, is_dir

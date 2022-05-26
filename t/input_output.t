@@ -551,6 +551,14 @@ subtest "edit_lines" => sub {
         "edit_lines", );
 };
 
+subtest "for_lines" => sub {
+    my $file = Path::Tiny->tempfile;
+    $file->spew_raw("One\nTwo\nThree\nFour\nFive");
+    my $callback_called = 0;
+    $file->for_lines(sub { $callback_called++; });
+    is ($callback_called, 5, "Callback called by for_lines");
+};
+
 done_testing;
 
 1;
