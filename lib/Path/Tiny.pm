@@ -1534,19 +1534,33 @@ sub mkpath {
 
     path("foo.txt")->move("bar.txt");
 
-Move the current path to the given destination path using Perl's
-built-in L<rename|perlfunc/rename> function. Returns the result
-of the C<rename> function (except it throws an exception if it fails).
+Moves the current path to the given destination using L<File::Copy>'s
+C<move> function. Upon success, returns the C<Path::Tiny> object for the
+newly moved file.
 
-Current API available since 0.001.
+If the destination already exists and is a directory, and the source is not a
+directory, then the source file will be renamed into the directory
+specified by the destination.
+
+If possible, move() will simply rename the file. Otherwise, it
+copies the file to the new location and deletes the original. If an
+error occurs during this copy-and-delete process, you may be left
+with a (possibly partial) copy of the file under the destination
+name.
+
+Current API available since 0.124. Prior versions used Perl's
+-built-in (and less robust) L<rename|perlfunc/rename> function
+and did not return an object.
 
 =cut
 
 sub move {
-    my ( $self, $dst ) = @_;
+    my ( $self, $dest ) = @_;
+    require File::Copy;
+    File::Copy::move( $self->[PATH], $dest )
+      or $self->_throw( 'move', $self->[PATH] . "' -> '$dest" );
 
-    return rename( $self->[PATH], $dst )
-      || $self->_throw( 'rename', $self->[PATH] . "' -> '$dst" );
+    return -d $dest ? _path( $dest, $self->basename ) : _path($dest);
 }
 
 =method openr, openw, openrw, opena

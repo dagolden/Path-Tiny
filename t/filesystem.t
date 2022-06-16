@@ -289,6 +289,69 @@ my $tmpdir = Path::Tiny->tempdir;
     is( $@, '', "no error from realpath on non-existent last component" );
 }
 
+subtest "move()" => sub {
+    subtest "dest is a file (and does not exist)" => sub {
+        my $file = $tmpdir->child("mv-foo.txt");
+        $file->spew("Hello World\n");
+
+        my $moveto = $tmpdir->child("mv-bar.txt");
+        ok !-e $moveto, "destination does not exist before";
+        my $result = $file->move("$moveto");
+
+        is "$result" => "$moveto", "returned the right file";
+        is $moveto->slurp, "Hello World\n", "target exists and matches orig";
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest is a dir" => sub {
+        my $file = $tmpdir->child("mv-dir.txt");
+        $file->spew("Hello World\n");
+
+        my $anothertmpdir = Path::Tiny->tempdir;
+        my $result        = $file->move($anothertmpdir);
+
+        is "$result" => "$anothertmpdir/mv-dir.txt", "returned the right file";
+        is $result->slurp, "Hello World\n", "target exists and matches orig";
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest file already exists" => sub {
+        my $file = $tmpdir->child("mv-non.txt");
+        $file->spew("Hello World\n");
+
+        my $anothertmpdir = Path::Tiny->tempdir;
+        my $dest = $anothertmpdir->child( "move-it.there");
+        $dest->spew( "Original Content\n" );
+
+        ok -f $dest, "destination file exists";
+
+        my $result;
+        {
+            local ( $!, $@ );
+            $result        = $file->move("$dest");
+            is $@, undef, q[$@ - no errors leaked on success];
+            is $!, "", q[$! - no errors leaked on success];
+        }
+
+        is "$result" => $dest, "returned the right file";
+        is $result->slurp, "Hello World\n", "target exists and matches orig";
+
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest parent dir does not exist" => sub {
+        my $file = $tmpdir->child("mv-noparent.txt");
+        $file->spew("Hello World\n");
+
+        my $anothertmpdir = Path::Tiny->tempdir;
+        my $result = eval { $file->move("$anothertmpdir/rutroh/yo.txt") };
+
+        ok !$result, "does not return true";
+        like "$@", qr/move/, "throws error";
+        ok $file->exists, "orig still exists";
+    }
+};
+
 subtest "copy()" => sub {
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
@@ -303,7 +366,7 @@ subtest "copy()" => sub {
     };
 
     subtest "dest is a dir" => sub {
-        # new tempdir nto to clobber the original foo.txt
+        # new tempdir not to clobber the original foo.txt
         my $tmpdir = Path::Tiny->tempdir;
         my $result = $file->copy($tmpdir);
 
