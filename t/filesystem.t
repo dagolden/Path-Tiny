@@ -289,6 +289,60 @@ my $tmpdir = Path::Tiny->tempdir;
     is( $@, '', "no error from realpath on non-existent last component" );
 }
 
+subtest "move()" => sub {
+    subtest "dest is a file" => sub {
+        my $file = $tmpdir->child("mv-foo.txt");
+        $file->spew("Hello World\n");
+
+        my $moveto = $tmpdir->child("mv-bar.txt");
+        my $result = $file->move($moveto);
+
+        is "$result" => "$moveto", "returned the right file";
+        is $moveto->slurp, "Hello World\n", "target exists and matches orig";
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest is a dir" => sub {
+        my $file = $tmpdir->child("mv-dir.txt");
+        $file->spew("Hello World\n");
+
+        # new tempdir not to clobber the original $file
+
+        my $tmpdir = Path::Tiny->tempdir;
+        my $result = $file->move($tmpdir);
+
+        is "$result" => "$tmpdir/mv-dir.txt", "returned the right file";
+        is $result->slurp, "Hello World\n", "target exists and matches orig";
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest file does not exist" => sub {
+        my $file = $tmpdir->child("mv-non.txt");
+        $file->spew("Hello World\n");
+
+        # new tempdir not to clobber the original $file
+        my $tmpdir = Path::Tiny->tempdir;
+        my $result = $file->move("$tmpdir/yo.txt");
+
+        is "$result" => "$tmpdir/yo.txt", "returned the right file";
+        is $result->slurp, "Hello World\n", "target exists and matches orig";
+        ok !$file->exists, "orig no longer exists";
+    };
+
+    subtest "dest parent dir does not exist" => sub {
+        my $file = $tmpdir->child("mv-noparent.txt");
+        $file->spew("Hello World\n");
+
+        # new tempdir not to clobber the original $file
+        my $tmpdir = Path::Tiny->tempdir;
+        my $result = eval { $file->move("$tmpdir/rutroh/yo.txt") };
+
+        ok !$result, "does not return true";
+        like "$@", qr/move/, "throws error";
+        ok $file->exists, "orig still exists";
+    }
+};
+
 subtest "copy()" => sub {
     my $file = $tmpdir->child("foo.txt");
     $file->spew("Hello World\n");
