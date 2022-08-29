@@ -1351,6 +1351,9 @@ is passed through to C<make_path>.  Errors will be trapped and an exception
 thrown.  Returns the list of directories created or an empty list if
 the directories already exist, just like C<make_path>.
 
+See also L</touchpath> as a chainable alternative to create a writeable file path
+(though without options).
+
 Current API available since 0.001.
 
 =cut

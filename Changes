@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Documentation]
+
+    - Added link to `touchpath` in the `mkpath` docs.
+
 0.122     2022-01-16 10:05:08-05:00 America/New_York
 
     - No changes from 0.121-TRIAL.
