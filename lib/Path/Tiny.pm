@@ -2242,40 +2242,40 @@ IS_WIN32 FREEZE THAW TO_JSON abs2rel
 
   use Path::Tiny;
 
-  # creating Path::Tiny objects
+  # Creating Path::Tiny objects
 
-  $dir = path("/tmp");
-  $foo = path("foo.txt");
+  my $dir = path("/tmp");
+  my $foo = path("foo.txt");
 
-  $subdir = $dir->child("foo");
-  $bar = $subdir->child("bar.txt");
+  my $subdir = $dir->child("foo");
+  my $bar = $subdir->child("bar.txt");
 
-  # stringifies as cleaned up path
+  # Stringifies as cleaned up path
 
-  $file = path("./foo.txt");
+  my $file = path("./foo.txt");
   print $file; # "foo.txt"
 
-  # reading files
+  # Reading files
 
-  $guts = $file->slurp;
-  $guts = $file->slurp_utf8;
+  my $guts = $file->slurp;
+  my $guts = $file->slurp_utf8;
 
-  @lines = $file->lines;
-  @lines = $file->lines_utf8;
+  my @lines = $file->lines;
+  my @lines = $file->lines_utf8;
 
-  ($head) = $file->lines( {count => 1} );
-  ($tail) = $file->lines( {count => -1} );
+  my ($head) = $file->lines( {count => 1} );
+  my ($tail) = $file->lines( {count => -1} );
 
-  # writing files
+  # Writing files
 
-  $bar->spew( @data );
-  $bar->spew_utf8( @data );
+  my $bar->spew( @data );
+  my $bar->spew_utf8( @data );
 
-  # reading directories
+  # Reading directories
 
   for ( $dir->children ) { ... }
 
-  $iter = $dir->iterator;
+  my $iter = $dir->iterator;
   while ( my $next = $iter->() ) { ... }
 
 =head1 DESCRIPTION
