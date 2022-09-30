@@ -14,7 +14,7 @@ plan skip_all => "No symlink support" unless has_symlinks();
 subtest "relative symlinks with updir" => sub {
     my $temp = Path::Tiny->tempdir;
     my $td   = $temp->realpath;
-    $td->child(qw/tmp tmp2/)->mkpath;
+    $td->child(qw/tmp tmp2/)->mkdir;
 
     my $foo = $td->child(qw/tmp foo/)->touch;
     my $bar = $td->child(qw/tmp tmp2 bar/);

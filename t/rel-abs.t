@@ -107,7 +107,7 @@ subtest "relative on absolute paths with symlinks" => sub {
     my $wd   = tempd;
     my $cwd  = path(".")->realpath;
     my $deep = $cwd->child("foo/bar/baz/bam/bim/buz/wiz/was/woz");
-    $deep->mkpath();
+    $deep->mkdir();
 
     plan skip_all => "No symlink support"
       unless has_symlinks();
@@ -118,44 +118,44 @@ subtest "relative on absolute paths with symlinks" => sub {
     #
     #   A_BCD->rel(A_BEF) - common point A_BC - result: ../../C/D
     #
-    $cwd->child("A")->mkpath;
+    $cwd->child("A")->mkdir;
     symlink $deep, "A/B" or die "$!";
     $path = $cwd->child("A/B/C/D");
-    $path->mkpath;
+    $path->mkdir;
     is( $path->relative( $cwd->child("A/B/E/F") ), "../../C/D", "A_BCD->rel(A_BEF)" );
     $cwd->child("A")->remove_tree;
     $deep->remove_tree;
-    $deep->mkpath;
+    $deep->mkdir;
 
     # (b) symlink in path from common to original path
     #
     #   ABC_DE->rel(ABFG) - common point AB - result: ../../C/D/E
     #
-    $cwd->child("A/B/C")->mkpath;
+    $cwd->child("A/B/C")->mkdir;
     symlink $deep, "A/B/C/D" or die "$!";
     $path = $cwd->child("A/B/C/D/E");
-    $path->mkpath;
+    $path->mkdir;
     is( $path->relative( $cwd->child("A/B/F/G") ), "../../C/D/E",
         "ABC_DE->rel(ABC_FG)" );
     $cwd->child("A")->remove_tree;
     $deep->remove_tree;
-    $deep->mkpath;
+    $deep->mkdir;
 
     # (c) symlink in path from common to new base; all path exist
     #
     #   ABCD->rel(ABE_FG) - common point AB -  result depends on E_F resolution
     #
     $path = $cwd->child("A/B/C/D");
-    $path->mkpath;
-    $cwd->child("A/B/E")->mkpath;
+    $path->mkdir;
+    $cwd->child("A/B/E")->mkdir;
     symlink $deep, "A/B/E/F" or die $!;
     $base = $cwd->child("A/B/E/F/G");
-    $base->mkpath;
+    $base->mkdir;
     $expect = $path->relative( $deep->child("G") );
     is( $path->relative($base), $expect, "ABCD->rel(ABE_FG) [real paths]" );
     $cwd->child("A")->remove_tree;
     $deep->remove_tree;
-    $deep->mkpath;
+    $deep->mkdir;
 
     # (d) symlink in path from common to new base; paths after symlink
     # don't exist
@@ -163,41 +163,41 @@ subtest "relative on absolute paths with symlinks" => sub {
     #   ABCD->rel(ABE_FGH) - common point AB -  result depends on E_F resolution
     #
     $path = $cwd->child("A/B/C/D");
-    $path->mkpath;
-    $cwd->child("A/B/E")->mkpath;
+    $path->mkdir;
+    $cwd->child("A/B/E")->mkdir;
     symlink $deep, "A/B/E/F" or die $!;
     $base   = $cwd->child("A/B/E/F/G/H");
     $expect = $path->relative( $deep->child("G/H") );
     is( $path->relative($base), $expect, "ABCD->rel(ABE_FGH) [unreal paths]" );
     $cwd->child("A")->remove_tree;
     $deep->remove_tree;
-    $deep->mkpath;
+    $deep->mkdir;
 
     # (e) symlink at end of common, with updir at start of new base
     #
     #   AB_CDE->rel(AB_C..FG) - common point really AB - result depends on
     #   symlink resolution
     #
-    $cwd->child("A/B")->mkpath;
+    $cwd->child("A/B")->mkdir;
     symlink $deep, "A/B/C" or die "$!";
     $path = $cwd->child("A/B/C/D/E");
-    $path->mkpath;
+    $path->mkdir;
     $base = $cwd->child("A/B/C/../F/G");
-    $base->mkpath;
+    $base->mkdir;
     $expect = $path->relative( $deep->parent->child("F/G")->realpath );
     is( $path->relative($base), $expect, "AB_CDE->rel(AB_C..FG)" );
     $cwd->child("A")->remove_tree;
     $deep->remove_tree;
-    $deep->mkpath;
+    $deep->mkdir;
 
     # (f) updirs in new base [files exist]
     #
     #   ABCDE->rel(ABF..GH) - common point AB - result ../../C/D/E
     #
     $path = $cwd->child("A/B/C/D/E");
-    $path->mkpath;
-    $cwd->child("A/B/F")->mkpath;
-    $cwd->child("A/B/G/H")->mkpath;
+    $path->mkdir;
+    $cwd->child("A/B/F")->mkdir;
+    $cwd->child("A/B/G/H")->mkdir;
     $base   = $cwd->child("A/B/F/../G/H");
     $expect = "../../C/D/E";
     is( $path->relative($base), $expect, "ABCDE->rel(ABF..GH) [real paths]" );

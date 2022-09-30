@@ -83,7 +83,7 @@ subtest "tempdir w/ leading template as instance method" => sub {
     my $basedir = Path::Tiny->cwd;
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
-    $repodir->mkpath;
+    $repodir->mkdir;
     my $tempdir = $repodir->tempdir("helloXXXXX");
     like( $tempdir, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
@@ -97,7 +97,7 @@ subtest "tempdir w/ leading template as instance method" => sub {
     my $basedir = Path::Tiny->cwd;
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
-    $repodir->mkpath;
+    $repodir->mkdir;
     my $tempdir = $repodir->tempdir("helloXXXXX");
     like( $tempdir, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
@@ -111,7 +111,7 @@ subtest "tempfile w/out leading template as instance method" => sub {
     my $basedir = Path::Tiny->cwd;
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
-    $repodir->mkpath;
+    $repodir->mkdir;
     my $tempfile = $repodir->tempfile( TEMPLATE => "helloXXXXX" );
     like( $tempfile, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
@@ -125,7 +125,7 @@ subtest "tempfile w/out leading template as instance method" => sub {
     my $basedir = Path::Tiny->cwd;
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
-    $repodir->mkpath;
+    $repodir->mkdir;
     my $tempfile = $repodir->tempfile( TEMPLATE => "helloXXXXX");
     like( $tempfile, qr/hello/, "found template" );
     ok( scalar($repodir->children) > 0, 'something was created' );
@@ -139,7 +139,7 @@ subtest "tempfile, instance method, overridden DIR" => sub {
     my $basedir = Path::Tiny->cwd;
     my $repodir = $basedir->child('whatever');
     $repodir->remove_tree if $repodir->exists;
-    $repodir->mkpath;
+    $repodir->mkdir;
     my $bd = $basedir->stringify;
     my $tempfile = $repodir->tempfile("helloXXXXX", DIR => $bd);
     ok( $tempfile->parent ne $bd ), "DIR is overridden";

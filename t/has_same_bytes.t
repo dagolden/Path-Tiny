@@ -23,7 +23,7 @@ $file2->spew("goodbye world");
 
 # a directory, instead of a file
 my $subdir = $dir->child("subdir");
-$subdir->mkpath;
+$subdir->mkdir;
 
 subtest "only files" => sub  {
     ok( $file1a->has_same_bytes($file1a), "same file");

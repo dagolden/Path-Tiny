@@ -1389,20 +1389,53 @@ sub lines_utf8 {
     }
 }
 
-=method mkpath
+=method mkdir
 
-    path("foo/bar/baz")->mkpath;
-    path("foo/bar/baz")->mkpath( \%options );
+    path("foo/bar/baz")->mkdir;
+    path("foo/bar/baz")->mkdir( \%options );
 
 Like calling C<make_path> from L<File::Path>.  An optional hash reference
 is passed through to C<make_path>.  Errors will be trapped and an exception
-thrown.  Returns the list of directories created or an empty list if
+thrown.  Returns the the path object to facilitate chaining.
+
+B<NOTE>: unlike Perl's builtin C<mkdir>, this will create intermediate paths
+similar to the Unix C<mkdir -p> command.
+
+Current API available since 0.125.
+
+=cut
+
+sub mkdir {
+    my ( $self, $args ) = @_;
+    $args = {} unless ref $args eq 'HASH';
+    my $err;
+    $args->{error} = \$err unless defined $args->{error};
+    require File::Path;
+    my @dirs;
+    my $ok = eval {
+        @dirs = File::Path::make_path( $self->[PATH], $args );
+        1;
+    };
+    if (!$ok) {
+        $self->_throw('mkdir', $self->[PATH], "error creating path: $@");
+    }
+    if ( $err && @$err ) {
+        my ( $file, $message ) = %{ $err->[0] };
+        $self->_throw('mkdir', $file, $message);
+    }
+    if (!@dirs) {
+        $self->_throw('mkdir', $self->[PATH], "directories not created: reason unknown");
+    }
+
+    return $self;
+}
+
+=method mkpath (deprecated)
+
+Like calling C<mkdir>, but returns the list of directories created or an empty list if
 the directories already exist, just like C<make_path>.
 
-See also L</touchpath> as a chainable alternative to create a writeable file path
-(though without options).
-
-Current API available since 0.001.
+Deprecated in 0.125.
 
 =cut
 
@@ -2167,8 +2200,12 @@ sub touch {
 
     path("bar/baz/foo.txt")->touchpath;
 
-Combines C<mkpath> and C<touch>.  Creates the parent directory if it doesn't exist,
+Combines C<mkdir> and C<touch>.  Creates the parent directory if it doesn't exist,
 before touching the file.  Returns the path object like C<touch> does.
+
+If you need to pass options, use C<mkdir> and C<touch> separately:
+
+    path("bar/baz")->mkdir( \%options )->child("foo.txt")->touch($epoch_secs);
 
 Current API available since 0.022.
 
@@ -2177,7 +2214,7 @@ Current API available since 0.022.
 sub touchpath {
     my ($self) = @_;
     my $parent = $self->parent;
-    $parent->mkpath unless $parent->exists;
+    $parent->mkdir unless $parent->exists;
     $self->touch;
 }
 

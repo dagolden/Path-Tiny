@@ -93,7 +93,7 @@ my $tmpdir = Path::Tiny->tempdir;
     $dir = path( $tmpdir, 'foo', 'bar' );
     $dir->parent->remove_tree if -e $dir->parent;
 
-    ok $dir->mkpath, "Created $dir";
+    ok $dir->mkdir, "Created $dir";
     ok -d $dir, "$dir is a directory";
 
     $dir = $dir->parent;
@@ -103,8 +103,8 @@ my $tmpdir = Path::Tiny->tempdir;
 
 {
     $dir = path( $tmpdir, 'foo' );
-    ok $dir->mkpath;
-    ok $dir->child('dir')->mkpath;
+    ok $dir->mkdir;
+    ok $dir->child('dir')->mkdir;
     ok -d $dir->child('dir');
 
     ok $dir->child('file.x')->touch;
@@ -159,10 +159,10 @@ my $tmpdir = Path::Tiny->tempdir;
     # Try again with directory called '0', in curdir
     my $orig = Path::Tiny->cwd;
 
-    ok $dir->mkpath;
+    ok $dir->mkdir;
     ok chdir($dir);
     my $dir2 = path(".");
-    ok $dir2->child('0')->mkpath;
+    ok $dir2->child('0')->mkdir;
     ok -d $dir2->child('0');
 
     subtest 'iterator' => sub {
@@ -207,7 +207,7 @@ my $tmpdir = Path::Tiny->tempdir;
     ok !$file->remove, "removing file again returns false";
 
     my $subdir = $tmpdir->child('subdir');
-    ok $subdir->mkpath;
+    ok $subdir->mkdir;
     ok exception { $subdir->remove }, "calling 'remove' on a directory throws";
     ok rmdir $subdir;
 
@@ -362,7 +362,7 @@ SKIP: {
 
     my $dir = $newtmp->child('foo');
     $link = $newtmp->child("bar");
-    ok $dir->mkpath;
+    ok $dir->mkdir;
     ok -d $dir;
     $file = $dir->child("baz.txt");
     $file->spew("Hello World\n");
@@ -373,7 +373,7 @@ SKIP: {
 
     $dir  = $newtmp->child('foo');
     $link = $newtmp->child("bar");
-    ok $dir->mkpath;
+    ok $dir->mkdir;
     ok -d $dir;
     $file = $dir->child("baz.txt");
     $file->spew("Hello World\n");
@@ -407,7 +407,7 @@ SKIP: {
 ##  ok  $t->subsumes($foo_bar), "t subsumes t/foo/bar";
 ##  ok !$t->contains($foo_bar), "t doesn't contain t/foo/bar";
 ##
-##  $foo_bar->mkpath;
+##  $foo_bar->mkdir;
 ##  ok  $t->subsumes($foo_bar), "t still subsumes t/foo/bar";
 ##  ok  $t->contains($foo_bar), "t now contains t/foo/bar";
 ##
