@@ -6,6 +6,10 @@ Revision history for Path-Tiny
 
     - Added `has_same_bytes` to efficiently compare the contents of two files.
 
+    [Documentation]
+
+    - Edited SYNOPSIS
+
 0.124     2022-09-02 11:06:12-04:00 America/New_York
 
     - No changes from 0.123-TRIAL.
