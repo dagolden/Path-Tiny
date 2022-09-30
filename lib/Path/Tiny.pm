@@ -1113,6 +1113,52 @@ sub filehandle {
     return $fh;
 }
 
+=method has_same_bytes
+
+    if ( path("foo.txt")->has_same_bytes("bar.txt") ) {
+       # ...
+    }
+
+This method returns true if both the invocant and the argument can be opened as
+file handles and the handles contain the same bytes.  It returns false if their
+contents differ.  If either can't be opened as a file (e.g. a directory or
+non-existent file), the method throws an exception.  If both can be opened and
+both have the same C<realpath>, the method returns true without scanning any
+data.
+
+=cut
+
+sub has_same_bytes {
+    my ($self, $other_path) = @_;
+    my $other = path($other_path);
+
+    my $fh1 = $self->openr_raw({ locked => 1 });
+    my $fh2 = $other->openr_raw({ locked => 1 });
+
+    # check for directories
+    if (-d $fh1) {
+        $self->_throw('has_same_bytes', $self->[PATH], "directory not allowed");
+    }
+    if (-d $fh2) {
+        $self->_throw('has_same_bytes', $other->[PATH], "directory not allowed");
+    }
+
+    # Now that handles are open, we know the inputs are readable files that
+    # exist, so it's safe to compare via realpath
+    if ($self->realpath eq $other->realpath) {
+        return 1
+    }
+
+    # result is 0 for equal, 1 for unequal, -1 for error
+    require File::Compare;
+    my $res = File::Compare::compare($fh1, $fh2, 65536);
+    if ($res < 0) {
+        $self->_throw('has_same_bytes')
+    }
+
+    return $res == 0;
+}
+
 =method is_absolute, is_relative
 
     if ( path("/tmp")->is_absolute ) { ... }
