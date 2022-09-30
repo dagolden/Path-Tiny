@@ -1126,6 +1126,8 @@ non-existent file), the method throws an exception.  If both can be opened and
 both have the same C<realpath>, the method returns true without scanning any
 data.
 
+Current API available since 0.125.
+
 =cut
 
 sub has_same_bytes {
