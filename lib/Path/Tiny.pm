@@ -5,7 +5,7 @@ use warnings;
 package Path::Tiny;
 # ABSTRACT: File path utility
 
-our $VERSION = '0.126';
+our $VERSION = '0.127';
 
 # Dependencies
 use Config;
@@ -478,8 +478,8 @@ sub _resolve_symlinks {
 
 =method absolute
 
-    $abs = path("foo/bar")->absolute;
-    $abs = path("foo/bar")->absolute("/tmp");
+    my $abs = path("foo/bar")->absolute;
+    my $abs = path("foo/bar")->absolute("/tmp");
 
 Returns a new C<Path::Tiny> object with an absolute path (or itself if already
 absolute).  If no argument is given, the current directory is used as the
@@ -599,7 +599,7 @@ sub append_utf8 {
 
 =method assert
 
-    $path = path("foo.txt")->assert( sub { $_->exists } );
+    my $path = path("foo.txt")->assert( sub { $_->exists } );
 
 Returns the invocant after asserting that a code reference argument returns
 true.  When the assertion code reference runs, it will have the invocant
@@ -628,10 +628,10 @@ sub assert {
 
 =method basename
 
-    $name = path("foo/bar.txt")->basename;        # bar.txt
-    $name = path("foo.txt")->basename('.txt');    # foo
-    $name = path("foo.txt")->basename(qr/.txt/);  # foo
-    $name = path("foo.txt")->basename(@suffixes);
+    my $name = path("foo/bar.txt")->basename;        # bar.txt
+    my $name = path("foo.txt")->basename('.txt');    # foo
+    my $name = path("foo.txt")->basename(qr/.txt/);  # foo
+    my $name = path("foo.txt")->basename(@suffixes);
 
 Returns the file portion or last directory portion of a path.
 
@@ -656,7 +656,7 @@ sub basename {
 
 =method canonpath
 
-    $canonical = path("foo/bar")->canonpath; # foo\bar on Windows
+    my $canonical = path("foo/bar")->canonpath; # foo\bar on Windows
 
 Returns a string with the canonical format of the path name for
 the platform.  In particular, this means directory separators
@@ -691,8 +691,8 @@ sub cached_temp {
 
 =method child
 
-    $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
-    $file = path("/tmp")->child(@parts);
+    my $file = path("/tmp")->child("foo.txt"); # "/tmp/foo.txt"
+    my $file = path("/tmp")->child(@parts);
 
 Returns a new C<Path::Tiny> object relative to the original.  Works
 like C<catfile> or C<catdir> from File::Spec, but without caring about
@@ -714,8 +714,8 @@ sub child {
 
 =method children
 
-    @paths = path("/tmp")->children;
-    @paths = path("/tmp")->children( qr/\.txt\z/ );
+    my @paths = path("/tmp")->children;
+    my @paths = path("/tmp")->children( qr/\.txt\z/ );
 
 Returns a list of C<Path::Tiny> objects for all files and directories
 within a directory.  Excludes "." and ".." automatically.
@@ -724,7 +724,7 @@ If an optional C<qr//> argument is provided, it only returns objects for child
 names that match the given regular expression.  Only the base name is used
 for matching:
 
-    @paths = path("/tmp")->children( qr/^foo/ );
+    my @paths = path("/tmp")->children( qr/^foo/ );
     # matches children like the glob foo*
 
 Current API available since 0.028.
@@ -815,9 +815,9 @@ sub copy {
 
 =method digest
 
-    $obj = path("/tmp/foo.txt")->digest;        # SHA-256
-    $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
-    $obj = path("/tmp/foo.txt")->digest( { chunk_size => 1e6 }, "MD5" );
+    my $obj = path("/tmp/foo.txt")->digest;        # SHA-256
+    my $obj = path("/tmp/foo.txt")->digest("MD5"); # user-selected
+    my $obj = path("/tmp/foo.txt")->digest( { chunk_size => 1e6 }, "MD5" );
 
 Returns a hexadecimal digest for a file.  An optional hash reference of options may
 be given.  The only option is C<chunk_size>.  If C<chunk_size> is given, that many
@@ -851,7 +851,7 @@ sub digest {
 
 =method dirname (deprecated)
 
-    $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
+    my $name = path("/tmp/foo.txt")->dirname; # "/tmp/"
 
 Returns the directory portion you would get from calling
 C<< File::Spec->splitpath( $path->stringify ) >> or C<"."> for a path without a
@@ -1013,9 +1013,9 @@ sub is_dir { -d $_[0]->[PATH] }
 
 =method filehandle
 
-    $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
-    $fh = path("/tmp/foo.txt")->filehandle({ locked => 1 }, $mode, $binmode);
-    $fh = path("/tmp/foo.txt")->filehandle({ exclusive => 1  }, $mode, $binmode);
+    my $fh = path("/tmp/foo.txt")->filehandle($mode, $binmode);
+    my $fh = path("/tmp/foo.txt")->filehandle({ locked => 1 }, $mode, $binmode);
+    my $fh = path("/tmp/foo.txt")->filehandle({ exclusive => 1  }, $mode, $binmode);
 
 Returns an open file handle.  The C<$mode> argument must be a Perl-style
 read/write mode string ("<" ,">", ">>", etc.).  If a C<$binmode>
@@ -1203,12 +1203,12 @@ sub is_rootdir {
 
 =method iterator
 
-    $iter = path("/tmp")->iterator( \%options );
+    my $iter = path("/tmp")->iterator( \%options );
 
 Returns a code reference that walks a directory lazily.  Each invocation
 returns a C<Path::Tiny> object or undef when the iterator is exhausted.
 
-    $iter = path("/tmp")->iterator;
+    my $iter = path("/tmp")->iterator;
     while ( $path = $iter->() ) {
         ...
     }
@@ -1284,12 +1284,12 @@ sub iterator {
 
 =method lines, lines_raw, lines_utf8
 
-    @contents = path("/tmp/foo.txt")->lines;
-    @contents = path("/tmp/foo.txt")->lines(\%options);
-    @contents = path("/tmp/foo.txt")->lines_raw;
-    @contents = path("/tmp/foo.txt")->lines_utf8;
+    my @contents = path("/tmp/foo.txt")->lines;
+    my @contents = path("/tmp/foo.txt")->lines(\%options);
+    my @contents = path("/tmp/foo.txt")->lines_raw;
+    my @contents = path("/tmp/foo.txt")->lines_utf8;
 
-    @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
+    my @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
 options.  Valid options are C<binmode>, C<count> and C<chomp>.
@@ -1474,21 +1474,21 @@ sub move {
 
 =method openr, openw, openrw, opena
 
-    $fh = path("foo.txt")->openr($binmode);  # read
-    $fh = path("foo.txt")->openr_raw;
-    $fh = path("foo.txt")->openr_utf8;
+    my $fh = path("foo.txt")->openr($binmode);  # read
+    my $fh = path("foo.txt")->openr_raw;
+    my $fh = path("foo.txt")->openr_utf8;
 
-    $fh = path("foo.txt")->openw($binmode);  # write
-    $fh = path("foo.txt")->openw_raw;
-    $fh = path("foo.txt")->openw_utf8;
+    my $fh = path("foo.txt")->openw($binmode);  # write
+    my $fh = path("foo.txt")->openw_raw;
+    my $fh = path("foo.txt")->openw_utf8;
 
-    $fh = path("foo.txt")->opena($binmode);  # append
-    $fh = path("foo.txt")->opena_raw;
-    $fh = path("foo.txt")->opena_utf8;
+    my $fh = path("foo.txt")->opena($binmode);  # append
+    my $fh = path("foo.txt")->opena_raw;
+    my $fh = path("foo.txt")->opena_utf8;
 
-    $fh = path("foo.txt")->openrw($binmode); # read/write
-    $fh = path("foo.txt")->openrw_raw;
-    $fh = path("foo.txt")->openrw_utf8;
+    my $fh = path("foo.txt")->openrw($binmode); # read/write
+    my $fh = path("foo.txt")->openrw_raw;
+    my $fh = path("foo.txt")->openrw_utf8;
 
 Returns a file handle opened in the specified mode.  The C<openr> style methods
 take a single C<binmode> argument.  All of the C<open*> methods have
@@ -1543,10 +1543,10 @@ while ( my ( $k, $v ) = each %opens ) {
 
 =method parent
 
-    $parent = path("foo/bar/baz")->parent; # foo/bar
-    $parent = path("foo/wibble.txt")->parent; # foo
+    my $parent = path("foo/bar/baz")->parent; # foo/bar
+    my $parent = path("foo/wibble.txt")->parent; # foo
 
-    $parent = path("foo/bar/baz")->parent(2); # foo
+    my $parent = path("foo/bar/baz")->parent(2); # foo
 
 Returns a C<Path::Tiny> object corresponding to the parent directory of the
 original directory or file. An optional positive integer argument is the number
@@ -1596,8 +1596,8 @@ sub _non_empty {
 
 =method realpath
 
-    $real = path("/baz/foo/../bar")->realpath;
-    $real = path("foo/../bar")->realpath;
+    my $real = path("/baz/foo/../bar")->realpath;
+    my $real = path("foo/../bar")->realpath;
 
 Returns a new C<Path::Tiny> object with all symbolic links and upward directory
 parts resolved using L<Cwd>'s C<realpath>.  Compared to C<absolute>, this is
@@ -1644,7 +1644,7 @@ sub realpath {
 
 =method relative
 
-    $rel = path("/tmp/foo/bar")->relative("/tmp"); # foo/bar
+    my $rel = path("/tmp/foo/bar")->relative("/tmp"); # foo/bar
 
 Returns a C<Path::Tiny> object with a path relative to a new base path
 given as an argument.  If no argument is given, the current directory will
@@ -1840,9 +1840,9 @@ sub remove_tree {
 
 =method sibling
 
-    $foo = path("/tmp/foo.txt");
-    $sib = $foo->sibling("bar.txt");        # /tmp/bar.txt
-    $sib = $foo->sibling("baz", "bam.txt"); # /tmp/baz/bam.txt
+    my $foo = path("/tmp/foo.txt");
+    my $sib = $foo->sibling("bar.txt");        # /tmp/bar.txt
+    my $sib = $foo->sibling("baz", "bam.txt"); # /tmp/baz/bam.txt
 
 Returns a new C<Path::Tiny> object relative to the parent of the original.
 This is slightly more efficient than C<< $path->parent->child(...) >>.
@@ -1927,10 +1927,10 @@ sub _human_size {
 
 =method slurp, slurp_raw, slurp_utf8
 
-    $data = path("foo.txt")->slurp;
-    $data = path("foo.txt")->slurp( {binmode => ":raw"} );
-    $data = path("foo.txt")->slurp_raw;
-    $data = path("foo.txt")->slurp_utf8;
+    my $data = path("foo.txt")->slurp;
+    my $data = path("foo.txt")->slurp( {binmode => ":raw"} );
+    my $data = path("foo.txt")->slurp_raw;
+    my $data = path("foo.txt")->slurp_utf8;
 
 Reads file contents into a scalar.  Takes an optional hash reference which may
 be used to pass options.  The only available option is C<binmode>, which is
@@ -2065,8 +2065,8 @@ sub spew_utf8 {
 
 =method stat, lstat
 
-    $stat = path("foo.txt")->stat;
-    $stat = path("/some/symlink")->lstat;
+    my $stat = path("foo.txt")->stat;
+    my $stat = path("/some/symlink")->lstat;
 
 Like calling C<stat> or C<lstat> from L<File::stat>.
 
@@ -2089,7 +2089,7 @@ sub lstat {
 
 =method stringify
 
-    $path = path("foo.txt");
+    my $path = path("foo.txt");
     say $path->stringify; # same as "$path"
 
 Returns a string representation of the path.  Unlike C<canonpath>, this method
@@ -2285,8 +2285,8 @@ sub visit {
 
 =method volume
 
-    $vol = path("/tmp/foo.txt")->volume;   # ""
-    $vol = path("C:/tmp/foo.txt")->volume; # "C:"
+    my $vol = path("/tmp/foo.txt")->volume;   # ""
+    my $vol = path("C:/tmp/foo.txt")->volume; # "C:"
 
 Returns the volume portion of the path.  This is equivalent
 to what L<File::Spec> would give from C<splitpath> and thus
