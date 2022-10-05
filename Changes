@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Fixed has_same_bytes test for Windows.
+
 0.125     2022-09-30 17:08:36-04:00 America/New_York (TRIAL RELEASE)
 
     [*** DEPRECATIONS ***]
