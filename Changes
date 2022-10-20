@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.130     2022-10-20 07:08:01-04:00 America/New_York
+
     [Bug fixes]
 
     - mkdir no longer fails when applied to an existing directory.
