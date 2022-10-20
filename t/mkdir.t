@@ -16,6 +16,7 @@ my $path = path($tempdir)->child("foo");
 ok( !-e $path,     "target directory not created yet" );
 ok( $path->mkdir, "mkdir on directory returned true" );
 ok( -d $path,      "target directory created" );
+ok( $path->mkdir, "mkdir on existing directory returned true" );
 
 if ( $^O ne 'MSWin32' ) {
     my $path2 = path($tempdir)->child("bar");

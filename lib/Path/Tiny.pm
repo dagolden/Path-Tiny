@@ -1399,7 +1399,8 @@ is passed through to C<make_path>.  Errors will be trapped and an exception
 thrown.  Returns the the path object to facilitate chaining.
 
 B<NOTE>: unlike Perl's builtin C<mkdir>, this will create intermediate paths
-similar to the Unix C<mkdir -p> command.
+similar to the Unix C<mkdir -p> command.  It will not error if applied to an
+existing directory.
 
 Current API available since 0.125.
 
@@ -1413,7 +1414,7 @@ sub mkdir {
     require File::Path;
     my @dirs;
     my $ok = eval {
-        @dirs = File::Path::make_path( $self->[PATH], $args );
+        File::Path::make_path( $self->[PATH], $args );
         1;
     };
     if (!$ok) {
@@ -1423,10 +1424,6 @@ sub mkdir {
         my ( $file, $message ) = %{ $err->[0] };
         $self->_throw('mkdir', $file, $message);
     }
-    if (!@dirs) {
-        $self->_throw('mkdir', $self->[PATH], "directories not created: reason unknown");
-    }
-
     return $self;
 }
 
