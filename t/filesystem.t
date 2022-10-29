@@ -338,6 +338,15 @@ subtest "copy()" => sub {
     );
 }
 
+{
+    # Only run if a 255 length filename is allowed. Test checks that the temp
+    # file created doesn't exceed 255 characters.
+    my $file = $tmpdir->child("A" x 255);
+    if ( eval { $file->touch; 1 } ) {;
+        ok( path($file)->spew("Hello"), "spew to long filename" );
+    }
+}
+
 SKIP: {
     my $newtmp = Path::Tiny->tempdir;
     my $file   = $newtmp->child("foo.txt");

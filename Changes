@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Bug fixes]
+
+    - Fixed spew/edit to a long filename approaching the filesystem length
+      limit.
+
 0.130     2022-10-20 07:08:01-04:00 America/New_York
 
     [Bug fixes]

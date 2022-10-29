@@ -472,6 +472,21 @@ sub _resolve_symlinks {
     return $new;
 }
 
+sub _replacment_path {
+    my ($self) = @_;
+
+    my $unique_suffix = $$ . int( rand( 2**31 ) );
+    my $temp          = path( $self . $unique_suffix );
+
+    # If filename with process+random suffix is too long, use a shorter
+    # version that doesn't preserve the basename.
+    if ( length $temp->basename > 255 ) {
+        $temp = $self->sibling( "temp" . $unique_suffix );
+    }
+
+    return $temp;
+}
+
 #--------------------------------------------------------------------------#
 # Public methods
 #--------------------------------------------------------------------------#
@@ -959,10 +974,10 @@ sub edit_lines {
     # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
 
-    # writing need to follow the link and create the tempfile in the same
+    # writing needs to follow the link and create the tempfile in the same
     # dir for later atomic rename
     my $resolved_path = $self->_resolve_symlinks;
-    my $temp          = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
+    my $temp          = $resolved_path->_replacment_path;
 
     my $temp_fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
     my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
@@ -2018,7 +2033,6 @@ Current API available since 0.011.
 
 =cut
 
-# XXX add "unsafe" option to disable flocking and atomic?  Check benchmarks on append() first.
 sub spew {
     my ( $self, @data ) = @_;
     my $args = ( @data && ref $data[0] eq 'HASH' ) ? shift @data : {};
@@ -2027,12 +2041,12 @@ sub spew {
     # get default binmode from caller's lexical scope (see "perldoc open")
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
 
-    # spewing need to follow the link
-    # and create the tempfile in the same dir
+    # writing needs to follow the link and create the tempfile in the same
+    # dir for later atomic rename
     my $resolved_path = $self->_resolve_symlinks;
+    my $temp          = $resolved_path->_replacment_path;
 
-    my $temp = path( $resolved_path . $$ . int( rand( 2**31 ) ) );
-    my $fh = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
+    my $fh   = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
     print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
