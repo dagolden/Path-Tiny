@@ -328,8 +328,11 @@ sub rootdir { path( File::Spec->rootdir ) }
     $temp = tempfile( @options ); # optional export
     $temp = tempdir( @options );  # optional export
 
-C<tempfile> passes the options to C<< File::Temp->new >> and returns a C<Path::Tiny>
-object with the file name.  The C<TMPDIR> option is enabled by default.
+C<tempfile> passes the options to C<< File::Temp->new >> and returns a
+C<Path::Tiny> object with the file name.  The C<TMPDIR> option will be enabled
+by default, but you can override that by passing C<< TMPDIR => 0 >> along with
+the options.  (If you use an absolute C<TEMPLATE> option, you will want to
+disable C<TMPDIR>.)
 
 The resulting C<File::Temp> object is cached. When the C<Path::Tiny> object is
 destroyed, the C<File::Temp> object will be as well.

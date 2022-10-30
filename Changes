@@ -25,6 +25,8 @@ Revision history for Path-Tiny
 
     - Fixed SYNOPSIS syntax.
 
+    - Documented how to disable TMPDIR when making temp files/dirs.
+
 0.130     2022-10-20 07:08:01-04:00 America/New_York
 
     [Bug fixes]
