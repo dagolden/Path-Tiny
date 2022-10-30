@@ -860,7 +860,11 @@ sub digest {
     if ( $args->{chunk_size} ) {
         my $fh = $self->filehandle( { locked => 1 }, "<", ":unix" );
         my $buf;
-        $digest->add($buf) while read $fh, $buf, $args->{chunk_size};
+        while (!eof($fh)) {
+            my $rc = read $fh, $buf, $args->{chunk_size};
+            $self->_throw('read') unless defined $rc;
+            $digest->add($buf);
+        }
     }
     else {
         $digest->add( $self->slurp_raw );
@@ -991,7 +995,8 @@ sub edit_lines {
     my $in_fh = $self->filehandle( { locked => 1 }, '<', $binmode );
 
     local $_;
-    while (<$in_fh>) {
+    while (! eof($in_fh) ) {
+        defined( $_ = readline($in_fh) ) or $self->_throw('readline');
         $cb->();
         $temp_fh->print($_) or self->_throw('print', $temp);
     }
@@ -1361,7 +1366,10 @@ sub lines {
     # XXX more efficient to read @lines then chomp(@lines) vs map?
     if ( $args->{count} ) {
         my ( $counter, $mod, @result ) = ( 0, abs( $args->{count} ) );
-        while ( my $line = <$fh> ) {
+        my $line;
+        while ( !eof($fh) ) {
+            defined( $line = readline($fh) ) or $self->_throw('readline');
+
             $line =~ s/(?:\x{0d}?\x{0a}|\x{0d})\z// if $chomp;
             $result[ $counter++ ] = $line;
             # for positive count, terminate after right number of lines
@@ -1375,10 +1383,23 @@ sub lines {
         return @result;
     }
     elsif ($chomp) {
-        return map { s/(?:\x{0d}?\x{0a}|\x{0d})\z//; $_ } <$fh>; ## no critic
+        local $!;
+        my @lines = map { s/(?:\x{0d}?\x{0a}|\x{0d})\z//; $_ } <$fh>; ## no critic
+        $self->_throw('readline') if $!;
+        return @lines;
     }
     else {
-        return wantarray ? <$fh> : ( my $count =()= <$fh> );
+        if ( wantarray ) {
+            local $!;
+            my @lines = <$fh>;
+            $self->_throw('readline') if $!;
+            return @lines;
+        } else {
+            local $!;
+            my $count =()= <$fh>;
+            $self->_throw('readline') if $!;
+            return $count;
+        }
     }
 }
 
@@ -2000,12 +2021,15 @@ sub slurp {
         and my $size = -s $fh )
     {
         my $buf;
-        read $fh, $buf, $size; # File::Slurp in a nutshell
+        my $rc = read $fh, $buf, $size; # File::Slurp in a nutshell
+        $self->_throw('read') unless defined $rc;
         return $buf;
     }
     else {
         local $/;
-        return scalar <$fh>;
+        my $buf = scalar <$fh>;
+        $self->_throw('read') unless defined $buf;
+        return $buf;
     }
 }
 
