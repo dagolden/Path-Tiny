@@ -586,7 +586,7 @@ sub append {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $mode = $args->{truncate} ? ">" : ">>";
     my $fh = $self->filehandle( { locked => 1 }, $mode, $binmode );
-    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
+    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data ) or self->_throw('print');
     close $fh or $self->_throw('close');
 }
 
@@ -993,7 +993,7 @@ sub edit_lines {
     local $_;
     while (<$in_fh>) {
         $cb->();
-        $temp_fh->print($_);
+        $temp_fh->print($_) or self->_throw('print', $temp);
     }
 
     close $temp_fh or $self->_throw( 'close', $temp );
@@ -2070,7 +2070,7 @@ sub spew {
     my $temp          = $resolved_path->_replacment_path;
 
     my $fh   = $temp->filehandle( { exclusive => 1, locked => 1 }, ">", $binmode );
-    print {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data;
+    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data) or self->_throw('print', $temp->[PATH]);
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
     return $temp->move($resolved_path);

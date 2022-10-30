@@ -7,6 +7,8 @@ Revision history for Path-Tiny
     - Fixed spew/edit to a long filename approaching the filesystem length
       limit.
 
+    - Internal calls to `print` are checked for possible errors.
+
     [Changes]
 
     - edit_lines_raw now uses a buffered raw I/O layer. edit_lines_utf8 now
