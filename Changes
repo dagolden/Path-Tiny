@@ -23,6 +23,8 @@ Revision history for Path-Tiny
     - Changed all raw/UTF-8 layer descriptions in method documentation to match
       the code.
 
+    - Fixed SYNOPSIS syntax.
+
 0.130     2022-10-20 07:08:01-04:00 America/New_York
 
     [Bug fixes]

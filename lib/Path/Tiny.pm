@@ -2374,18 +2374,18 @@ IS_WIN32 FREEZE THAW TO_JSON abs2rel
   # Reading files
 
   my $guts = $file->slurp;
-  my $guts = $file->slurp_utf8;
+     $guts = $file->slurp_utf8;
 
   my @lines = $file->lines;
-  my @lines = $file->lines_utf8;
+     @lines = $file->lines_utf8;
 
   my ($head) = $file->lines( {count => 1} );
   my ($tail) = $file->lines( {count => -1} );
 
   # Writing files
 
-  my $bar->spew( @data );
-  my $bar->spew_utf8( @data );
+  $bar->spew( @data );
+  $bar->spew_utf8( @data );
 
   # Reading directories
 
