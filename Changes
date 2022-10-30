@@ -7,6 +7,22 @@ Revision history for Path-Tiny
     - Fixed spew/edit to a long filename approaching the filesystem length
       limit.
 
+    [Changes]
+
+    - edit_lines_raw now uses a buffered raw I/O layer. edit_lines_utf8 now
+      prefers PerlIO::utf8_strict, if available.
+
+    - lines_utf8 now consistently uses a buffered I/O layer.
+
+    - open*_utf8 now prefers PerlIO::utf8_strict, if available.
+
+    - slurp_utf8 now consistently uses an unbuffered I/O layer.
+
+    [Documented]
+
+    - Changed all raw/UTF-8 layer descriptions in method documentation to match
+      the code.
+
 0.130     2022-10-20 07:08:01-04:00 America/New_York
 
     [Bug fixes]

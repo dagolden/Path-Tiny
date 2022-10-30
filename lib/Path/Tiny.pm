@@ -562,13 +562,14 @@ The C<truncate> option is a way to replace the contents of a file
 B<in place>, unlike L</spew> which writes to a temporary file and then
 replaces the original (if it exists).
 
-C<append_raw> is like C<append> with a C<binmode> of C<:unix> for fast,
+C<append_raw> is like C<append> with a C<binmode> of C<:unix> for a fast,
 unbuffered, raw write.
 
-C<append_utf8> is like C<append> with a C<binmode> of
-C<:unix:encoding(UTF-8)> (or L<PerlIO::utf8_strict>).  If L<Unicode::UTF8>
-0.58+ is installed, a raw append will be done instead on the data encoded
-with C<Unicode::UTF8>.
+C<append_utf8> is like C<append> with an unbuffered C<binmode>
+C<:unix:encoding(UTF-8)> (or C<:unix:utf8_strict> with
+L<PerlIO::utf8_strict>).  If L<Unicode::UTF8> 0.58+ is installed, an
+unbuffered, raw append will be done instead on the data encoded with
+C<Unicode::UTF8>.
 
 Current API available since 0.060.
 
@@ -956,8 +957,12 @@ An optional hash reference may be used to pass options.  The only option is
 C<binmode>, which is passed to the method that open handles for reading and
 writing.
 
-C<edit_lines_utf8> and C<edit_lines_raw> act like their respective
-C<slurp_*> and C<spew_*> methods.
+C<edit_lines_raw> is like C<edit_lines> with a buffered C<binmode> of
+C<:raw>.
+
+C<edit_lines_utf8> is like C<edit_lines> with a buffered C<binmode>
+C<:raw:encoding(UTF-8)> (or C<:raw:utf8_strict> with
+L<PerlIO::utf8_strict>).
 
 Current API available since 0.077.
 
@@ -994,10 +999,15 @@ sub edit_lines {
     return $temp->move($resolved_path);
 }
 
-sub edit_lines_raw { $_[2] = { binmode => ":unix" }; goto &edit_lines }
+sub edit_lines_raw { $_[2] = { binmode => ":raw" }; goto &edit_lines }
 
 sub edit_lines_utf8 {
-    $_[2] = { binmode => ":raw:encoding(UTF-8)" };
+    if ( defined($HAS_PU) ? $HAS_PU : ( $HAS_PU = _check_PU() ) ) {
+        $_[2] = { binmode => ":raw:utf8_strict" };
+    }
+    else {
+        $_[2] = { binmode => ":raw:encoding(UTF-8)" };
+    }
     goto &edit_lines;
 }
 
@@ -1328,11 +1338,11 @@ C<lines_raw> is like C<lines> with a C<binmode> of C<:raw>.  We use C<:raw>
 instead of C<:unix> so PerlIO buffering can manage reading by line.
 
 C<lines_utf8> is like C<lines> with a C<binmode> of C<:raw:encoding(UTF-8)>
-(or L<PerlIO::utf8_strict>).  If L<Unicode::UTF8> 0.58+ is installed, a raw
-UTF-8 slurp will be done and then the lines will be split.  This is
-actually faster than relying on C<:encoding(UTF-8)>, though a bit memory
-intensive.  If memory use is a concern, consider C<openr_utf8> and
-iterating directly on the handle.
+(or C<:raw:utf8_strict> with L<PerlIO::utf8_strict>).  If L<Unicode::UTF8>
+0.58+ is installed, a raw, unbuffered UTF-8 slurp will be done and then the
+lines will be split.  This is actually faster than relying on
+IO layers, though a bit memory intensive.  If memory use is a
+concern, consider C<openr_utf8> and iterating directly on the handle.
 
 Current API available since 0.065.
 
@@ -1395,7 +1405,7 @@ sub lines_utf8 {
         return split $CRLF, $slurp, -1; ## no critic
     }
     elsif ( defined($HAS_PU) ? $HAS_PU : ( $HAS_PU = _check_PU() ) ) {
-        $args->{binmode} = ":unix:utf8_strict";
+        $args->{binmode} = ":raw:utf8_strict";
         return lines( $self, $args );
     }
     else {
@@ -1504,8 +1514,9 @@ sub move {
 
 Returns a file handle opened in the specified mode.  The C<openr> style methods
 take a single C<binmode> argument.  All of the C<open*> methods have
-C<open*_raw> and C<open*_utf8> equivalents that use C<:raw> and
-C<:raw:encoding(UTF-8)>, respectively.
+C<open*_raw> and C<open*_utf8> equivalents that use buffered I/O layers C<:raw>
+and C<:raw:encoding(UTF-8)> (or C<:raw:utf8_strict> with
+L<PerlIO::utf8_strict>).
 
 An optional hash reference may be used to pass options.  The only option is
 C<locked>.  If true, handles opened for writing, appending or read-write are
@@ -1549,7 +1560,14 @@ while ( my ( $k, $v ) = each %opens ) {
         my ( $self, @args ) = @_;
         my $args = ( @args && ref $args[0] eq 'HASH' ) ? shift @args : {};
         $args = _get_args( $args, qw/locked/ );
-        $self->filehandle( $args, $v, ":raw:encoding(UTF-8)" );
+        my $layer;
+        if ( defined($HAS_PU) ? $HAS_PU : ( $HAS_PU = _check_PU() ) ) {
+            $layer = ":raw:utf8_strict";
+        }
+        else {
+            $layer = ":raw:encoding(UTF-8)";
+        }
+        $self->filehandle( $args, $v, $layer );
     };
 }
 
@@ -1952,9 +1970,10 @@ C<slurp_raw> is like C<slurp> with a C<binmode> of C<:unix> for
 a fast, unbuffered, raw read.
 
 C<slurp_utf8> is like C<slurp> with a C<binmode> of
-C<:unix:encoding(UTF-8)> (or L<PerlIO::utf8_strict>).  If L<Unicode::UTF8>
-0.58+ is installed, a raw slurp will be done instead and the result decoded
-with C<Unicode::UTF8>.  This is just as strict and is roughly an order of
+C<:unix:encoding(UTF-8)> (or C<:unix:utf8_strict> with
+L<PerlIO::utf8_strict>).  If L<Unicode::UTF8> 0.58+ is installed, a
+unbuffered, raw slurp will be done instead and the result decoded with
+C<Unicode::UTF8>. This is just as strict and is roughly an order of
 magnitude faster than using C<:encoding(UTF-8)>.
 
 B<Note>: C<slurp> and friends lock the filehandle before slurping.  If
@@ -1998,7 +2017,7 @@ sub slurp_utf8 {
         goto &slurp;
     }
     else {
-        $_[1] = { binmode => ":raw:encoding(UTF-8)" };
+        $_[1] = { binmode => ":unix:encoding(UTF-8)" };
         goto &slurp;
     }
 }
@@ -2020,8 +2039,9 @@ C<spew_raw> is like C<spew> with a C<binmode> of C<:unix> for a fast,
 unbuffered, raw write.
 
 C<spew_utf8> is like C<spew> with a C<binmode> of C<:unix:encoding(UTF-8)>
-(or L<PerlIO::utf8_strict>).  If L<Unicode::UTF8> 0.58+ is installed, a raw
-spew will be done instead on the data encoded with C<Unicode::UTF8>.
+(or C<:unix:utf8_strict> with L<PerlIO::utf8_strict>).  If L<Unicode::UTF8>
+0.58+ is installed, a raw, unbuffered spew will be done instead on the data
+encoded with C<Unicode::UTF8>.
 
 B<NOTE>: because the file is written to a temporary file and then renamed, the
 new file will wind up with permissions based on your current umask.  This is a
@@ -2471,9 +2491,10 @@ permission, no lock will be used.
 =head2 utf8 vs UTF-8
 
 All the C<*_utf8> methods by default use C<:encoding(UTF-8)> -- either as
-C<:unix:encoding(UTF-8)> (unbuffered) or C<:raw:encoding(UTF-8)> (buffered) --
-which is strict against the Unicode spec and disallows illegal Unicode
-codepoints or UTF-8 sequences.
+C<:unix:encoding(UTF-8)> (unbuffered, for whole file operations) or
+C<:raw:encoding(UTF-8)> (buffered, for line-by-line operations). These are
+strict against the Unicode spec and disallows illegal Unicode codepoints or
+UTF-8 sequences.
 
 Unfortunately, C<:encoding(UTF-8)> is very, very slow.  If you install
 L<Unicode::UTF8> 0.58 or later, that module will be used by some C<*_utf8>
@@ -2498,7 +2519,8 @@ If you have Perl 5.10 or later, file input/output methods (C<slurp>, C<spew>,
 etc.) and high-level handle opening methods ( C<filehandle>, C<openr>,
 C<openw>, etc. ) respect default encodings set by the C<-C> switch or lexical
 L<open> settings of the caller.  For UTF-8, this is almost certainly slower
-than using the dedicated C<_utf8> methods if you have L<Unicode::UTF8>.
+than using the dedicated C<_utf8> methods if you have L<Unicode::UTF8> or
+L<PerlIP::utf8_strict>.
 
 =head1 TYPE CONSTRAINTS AND COERCION
 
