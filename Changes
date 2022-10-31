@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Changes]
+
+    - `move` now uses File::Copy::move internally instead of the built-in `rename`,
+      allowing it to work across filesystems.  It also returns an object for the
+      moved location, allowing chaining.
+
 0.131     2022-10-31 10:42:46-04:00 America/New_York (TRIAL RELEASE)
 
     [*** DEPRECATIONS ***]
