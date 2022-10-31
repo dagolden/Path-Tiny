@@ -2528,7 +2528,7 @@ C<path>.
     path( "~/foo.txt" )->copy( path( "~/bar.txt" ) );
 
 If you need a literal leading tilde, use C<path("./~whatever")> so that the
-arguement to C<path> doesn't start with a tilde, but the path still resolves to
+argument to C<path> doesn't start with a tilde, but the path still resolves to
 the current directory.
 
 Behaviour of tilde expansion with a username for non-existent users depends on
