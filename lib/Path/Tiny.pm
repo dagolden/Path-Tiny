@@ -244,7 +244,7 @@ sub path {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
-    my ($tilde) = $path =~ m{^(~[^/]*).*};
+    my ($tilde) = $path =~ m{^(~[^/]*)};
 
     # canonicalize, but with unix slashes and put back trailing volume slash
     my $cpath = $path = File::Spec->canonpath($path);
