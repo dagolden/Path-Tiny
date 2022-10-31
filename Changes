@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Bug fixes]
+
+    - Path stringification now adds "./" in front of paths starting with literal tilde
+      so they will round-trip.  FREEZE updated to use this stringification rule as well.
+
     [Changes]
 
     - `move` now uses File::Copy::move internally instead of the built-in `rename`,
