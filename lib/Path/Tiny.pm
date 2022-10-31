@@ -233,6 +233,44 @@ sub path {
     # stringify objects
     $path = "$path";
 
+    # do any tilde expansions
+    my ($tilde) = $path =~ m{^(~[^/]*)};
+    if ( defined $tilde ) {
+        # Escape File::Glob metacharacters
+        $tilde =~ s/([\[\{\*\?\\])/\\$1/g;
+        require File::Glob;
+        my ($homedir) = File::Glob::bsd_glob($tilde);
+        $homedir =~ tr[\\][/] if IS_WIN32();
+        $path =~ s{^\Q$tilde\E}{$homedir};
+    }
+
+    unshift @_, $path;
+    goto &_pathify;
+}
+
+# _path is like path but without tilde expansion
+sub _path {
+    my $path = shift;
+    Carp::croak("Path::Tiny paths require defined, positive-length parts")
+      unless 1 + @_ == grep { defined && length } $path, @_;
+
+    # non-temp Path::Tiny objects are effectively immutable and can be reused
+    if ( !@_ && ref($path) eq __PACKAGE__ && !$path->[TEMP] ) {
+        return $path;
+    }
+
+    # stringify objects
+    $path = "$path";
+
+    unshift @_, $path;
+    goto &_pathify;
+}
+
+# _pathify expects one or more string arguments, then joins and canonicalizes
+# them into an object.
+sub _pathify {
+    my $path = shift;
+
     # expand relative volume paths on windows; put trailing slash on UNC root
     if ( IS_WIN32() ) {
         $path = _win32_vol( $path, $1 ) if $path =~ m{^($DRV_VOL)(?:$NOTSLASH|\z)};
@@ -244,7 +282,6 @@ sub path {
         $path .= ( _is_root($path) ? "" : "/" ) . join( "/", @_ );
     }
 
-    my ($tilde) = $path =~ m{^(~[^/]*).*};
 
     # canonicalize, but with unix slashes and put back trailing volume slash
     my $cpath = $path = File::Spec->canonpath($path);
@@ -258,19 +295,6 @@ sub path {
     }
     else {
         $path =~ s{/\z}{};
-    }
-
-    # do any tilde expansions
-    if ( defined $tilde ) {
-        # Escape File::Glob metacharacters
-        $tilde =~ s/([\[\{\*\?\\])/\\$1/g;
-        require File::Glob;
-        my ($homedir) = File::Glob::bsd_glob($tilde);
-        $homedir =~ tr[\\][/] if IS_WIN32();
-        $path =~ s{^\Q$tilde\E}{$homedir};
-    }
-    else {
-        $path =~ s{^~}{./~};
     }
 
     bless [ $path, $cpath ], __PACKAGE__;
@@ -306,7 +330,7 @@ Current API available since 0.018.
 
 sub cwd {
     require Cwd;
-    return path( Cwd::getcwd() );
+    return _path( Cwd::getcwd() );
 }
 
 =construct rootdir
@@ -324,7 +348,7 @@ Current API available since 0.018.
 
 =cut
 
-sub rootdir { path( File::Spec->rootdir ) }
+sub rootdir { _path( File::Spec->rootdir ) }
 
 =construct tempfile, tempdir
 
@@ -409,7 +433,7 @@ sub tempfile {
     require File::Temp;
     my $temp = File::Temp->new( TMPDIR => 1, %$args );
     close $temp;
-    my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
+    my $self = $opts->{realpath} ? _path($temp)->realpath : _path($temp)->absolute;
     $self->[TEMP] = $temp;                # keep object alive while we are
     return $self;
 }
@@ -420,7 +444,7 @@ sub tempdir {
 
     require File::Temp;
     my $temp = File::Temp->newdir( @$maybe_template, TMPDIR => 1, %$args );
-    my $self = $opts->{realpath} ? path($temp)->realpath : path($temp)->absolute;
+    my $self = $opts->{realpath} ? _path($temp)->realpath : _path($temp)->absolute;
     $self->[TEMP] = $temp;                # keep object alive while we are
     # Some ActiveState Perls for Windows break Cwd in ways that lead
     # File::Temp to get confused about what path to remove; this
@@ -476,7 +500,7 @@ sub _resolve_symlinks {
             $self->_throw( 'readlink', $self->[PATH], "maximum symlink depth exceeded" );
         }
         my $resolved = readlink $new->[PATH] or $new->_throw( 'readlink', $new->[PATH] );
-        $resolved = path($resolved);
+        $resolved = _path($resolved);
         $new = $resolved->is_absolute ? $resolved : $new->sibling($resolved);
     }
     return $new;
@@ -486,7 +510,7 @@ sub _replacment_path {
     my ($self) = @_;
 
     my $unique_suffix = $$ . int( rand( 2**31 ) );
-    my $temp          = path( $self . $unique_suffix );
+    my $temp          = _path( $self . $unique_suffix );
 
     # If filename with process+random suffix is too long, use a shorter
     # version that doesn't preserve the basename.
@@ -534,7 +558,7 @@ sub absolute {
             # use Win32::GetCwd not Cwd::getdcwd because we're sure
             # to have the former but not necessarily the latter
             my ($drv) = Win32::GetCwd() =~ /^($DRV_VOL | $UNC_VOL)/x;
-            return path( $drv . $self->[PATH] );
+            return _path( $drv . $self->[PATH] );
         }
     }
     else {
@@ -543,13 +567,13 @@ sub absolute {
 
     # no base means use current directory as base
     require Cwd;
-    return path( Cwd::getcwd(), $_[0]->[PATH] ) unless defined $base;
+    return _path( Cwd::getcwd(), $_[0]->[PATH] ) unless defined $base;
 
     # relative base should be made absolute; we check is_absolute rather
     # than unconditionally make base absolute so that "/foo" doesn't become
     # "C:/foo" on Windows.
-    $base = path($base);
-    return path( ( $base->is_absolute ? $base : $base->absolute ), $_[0]->[PATH] );
+    $base = _path($base);
+    return _path( ( $base->is_absolute ? $base : $base->absolute ), $_[0]->[PATH] );
 }
 
 =method append, append_raw, append_utf8
@@ -735,7 +759,7 @@ Current API available since 0.001.
 
 sub child {
     my ( $self, @parts ) = @_;
-    return path( $self->[PATH], @parts );
+    return _path( $self->[PATH], @parts );
 }
 
 =method children
@@ -774,7 +798,7 @@ sub children {
         Carp::croak("Invalid argument '$filter' for children()");
     }
 
-    return map { path( $self->[PATH], $_ ) } @children;
+    return map { _path( $self->[PATH], $_ ) } @children;
 }
 
 =method chmod
@@ -836,7 +860,7 @@ sub copy {
     File::Copy::copy( $self->[PATH], $dest )
       or Carp::croak("copy failed for $self to $dest: $!");
 
-    return -d $dest ? path( $dest, $self->basename ) : path($dest);
+    return -d $dest ? _path( $dest, $self->basename ) : _path($dest);
 }
 
 =method digest
@@ -1172,7 +1196,7 @@ Current API available since 0.125.
 
 sub has_same_bytes {
     my ($self, $other_path) = @_;
-    my $other = path($other_path);
+    my $other = _path($other_path);
 
     my $fh1 = $self->openr_raw({ locked => 1 });
     my $fh2 = $other->openr_raw({ locked => 1 });
@@ -1627,25 +1651,25 @@ sub parent {
     my $parent;
     if ( length $self->[FILE] ) {
         if ( $self->[FILE] eq '.' || $self->[FILE] eq ".." ) {
-            $parent = path( $self->[PATH] . "/.." );
+            $parent = _path( $self->[PATH] . "/.." );
         }
         else {
-            $parent = path( _non_empty( $self->[VOL] . $self->[DIR] ) );
+            $parent = _path( _non_empty( $self->[VOL] . $self->[DIR] ) );
         }
     }
     elsif ( length $self->[DIR] ) {
         # because of symlinks, any internal updir requires us to
         # just add more updirs at the end
         if ( $self->[DIR] =~ m{(?:^\.\./|/\.\./|/\.\.\z)} ) {
-            $parent = path( $self->[VOL] . $self->[DIR] . "/.." );
+            $parent = _path( $self->[VOL] . $self->[DIR] . "/.." );
         }
         else {
             ( my $dir = $self->[DIR] ) =~ s{/[^\/]+/\z}{/};
-            $parent = path( $self->[VOL] . $dir );
+            $parent = _path( $self->[VOL] . $dir );
         }
     }
     else {
-        $parent = path( _non_empty( $self->[VOL] ) );
+        $parent = _path( _non_empty( $self->[VOL] ) );
     }
     return $level == 1 ? $parent : $parent->parent( $level - 1 );
 }
@@ -1700,7 +1724,7 @@ sub realpath {
     # parent realpath must exist; not all Cwd::realpath will error if it doesn't
     $self->_throw("resolving realpath")
       unless defined $realpath && length $realpath && -e $realpath;
-    return ( $check_parent ? path( $realpath, $self->[FILE] ) : path($realpath) );
+    return ( $check_parent ? _path( $realpath, $self->[FILE] ) : _path($realpath) );
 }
 
 =method relative
@@ -1748,7 +1772,7 @@ symlinks) available since 0.079.
 
 sub relative {
     my ( $self, $base ) = @_;
-    $base = path( defined $base && length $base ? $base : '.' );
+    $base = _path( defined $base && length $base ? $base : '.' );
 
     # relative paths must be converted to absolute first
     $self = $self->absolute if $self->is_relative;
@@ -1764,14 +1788,14 @@ sub relative {
     }
 
     # if same absolute path, relative is current directory
-    return path(".") if _same( $self->[PATH], $base->[PATH] );
+    return _path(".") if _same( $self->[PATH], $base->[PATH] );
 
     # if base is a prefix of self, chop prefix off self
     if ( $base->subsumes($self) ) {
         $base = "" if $base->is_rootdir;
         my $relative = "$self";
         $relative =~ s{\A\Q$base/}{};
-        return path($relative);
+        return _path(".", $relative);
     }
 
     # base is not a prefix, so must find a common prefix (even if root)
@@ -1805,7 +1829,7 @@ sub relative {
     # otherwise, symlinks in common or from common to A don't matter as
     # those don't involve updirs
     my @new_path = ( ("..") x ( 0+ @base_parts ), @self_parts );
-    return path(@new_path);
+    return _path(@new_path);
 }
 
 sub _just_filepath {
@@ -1827,7 +1851,7 @@ sub _resolve_between {
         if ( $p eq '..' ) {
             $changed = 1;
             if ( -e $path ) {
-                $path = path($path)->realpath->[PATH];
+                $path = _path($path)->realpath->[PATH];
             }
             else {
                 $path =~ s{/[^/]+/..\z}{/};
@@ -1835,10 +1859,10 @@ sub _resolve_between {
         }
         if ( -l $path ) {
             $changed = 1;
-            $path    = path($path)->realpath->[PATH];
+            $path    = _path($path)->realpath->[PATH];
         }
     }
-    return $changed ? path($path) : undef;
+    return $changed ? _path($path) : undef;
 }
 
 =method remove
@@ -1914,7 +1938,7 @@ Current API available since 0.058.
 
 sub sibling {
     my $self = shift;
-    return path( $self->parent->[PATH], @_ );
+    return _path( $self->parent->[PATH], @_ );
 }
 
 =method size, size_human
@@ -2193,7 +2217,7 @@ sub subsumes {
     my $self = shift;
     Carp::croak("subsumes() requires a defined, positive-length argument")
       unless defined $_[0];
-    my $other = path(shift);
+    my $other = _path(shift);
 
     # normalize absolute vs relative
     if ( $self->is_absolute && !$other->is_absolute ) {
