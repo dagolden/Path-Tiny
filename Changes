@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.131     2022-10-31 10:42:46-04:00 America/New_York (TRIAL RELEASE)
+
     [*** DEPRECATIONS ***]
 
     - Tilde expansion is deprecated due to inconsistent and bug-prone behavior.
