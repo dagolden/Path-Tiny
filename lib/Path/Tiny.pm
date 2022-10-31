@@ -237,9 +237,9 @@ sub path {
     my ($tilde) = $path =~ m{^(~[^/]*)};
     if ( defined $tilde ) {
         # Escape File::Glob metacharacters
-        $tilde =~ s/([\[\{\*\?\\])/\\$1/g;
+        (my $escaped = $tilde) =~ s/([\[\{\*\?\\])/\\$1/g;
         require File::Glob;
-        my ($homedir) = File::Glob::bsd_glob($tilde);
+        my ($homedir) = File::Glob::bsd_glob($escaped);
         $homedir =~ tr[\\][/] if IS_WIN32();
         $path =~ s{^\Q$tilde\E}{$homedir};
     }
