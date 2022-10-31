@@ -182,7 +182,6 @@ sub _get_args {
     $path = path("foo/bar");
     $path = path("/tmp", "file.txt"); # list
     $path = path(".");                # cwd
-    $path = path("~user/file.txt");   # tilde processing
 
 Constructs a C<Path::Tiny> object.  It doesn't matter if you give a file or
 directory path.  It's still up to you to call directory-like methods only on
@@ -193,11 +192,12 @@ The first argument must be defined and have non-zero length or an exception
 will be thrown.  This prevents subtle, dangerous errors with code like
 C<< path( maybe_undef() )->remove_tree >>.
 
-If the first component of the path is a tilde ('~') then the component will be
-replaced with the output of C<glob('~')>.  If the first component of the path
-is a tilde followed by a user name then the component will be replaced with
-output of C<glob('~username')>.  Behaviour for non-existent users depends on
-the output of C<glob> on the system.
+B<DEPRECATED>: If and only if the B<first> character of the B<first> argument
+to C<path> is a tilde ('~'), then tilde replacement will be applied to the
+first path segment. A single tilde will be replaced with C<glob('~')> and a
+tilde followed by a username will be replaced with output of
+C<glob('~username')>. B<No other method does tilde expansion on its arguments>.
+See L</Tilde expansion (deprecated)> for more.
 
 On Windows, if the path consists of a drive identifier without a path component
 (C<C:> or C<D:>), it will be expanded to the absolute path of the current
@@ -2512,6 +2512,27 @@ recommended).
 For speed, this class is implemented as an array based object and uses many
 direct function calls internally.  You must not subclass it and expect
 things to work properly.
+
+=head2 Tilde expansion (deprecated)
+
+Tilde expansion was a nice idea, but it can't easily be applied consistently
+across the entire API.  This was a source of bugs and confusion for users.
+Therefore, it is B<deprecated> and its use is discouraged.  Limitations to the
+existing, legacy behavior follow.
+
+Tilde expansion will only occur if the B<first> argument to C<path> begins with
+a tilde. B<No other method does tilde expansion on its arguments>.  If you want
+tilde expansion on arguments, you must explicitly wrap them in a call to
+C<path>.
+
+    path( "~/foo.txt" )->copy( path( "~/bar.txt" ) );
+
+If you need a literal leading tilde, use C<path("./~whatever")> so that the
+arguement to C<path> doesn't start with a tilde, but the path still resolves to
+the current directory.
+
+Behaviour of tilde expansion with a username for non-existent users depends on
+the output of C<glob> on the system.
 
 =head2 File locking
 

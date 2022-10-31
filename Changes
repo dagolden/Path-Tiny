@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [*** DEPRECATIONS ***]
+
+    - Tilde expansion is deprecated due to inconsistent and bug-prone behavior.
+
     [Bug fixes]
 
     - Fixed spew/edit to a long filename approaching the filesystem length
@@ -11,7 +15,9 @@ Revision history for Path-Tiny
 
     - Internal read calls are checked for errors.
 
-    - Prevent expansion of tildes that are not the very first character (e.g. "./~foo")
+    - Prevent expansion of tildes that are not the very first character (e.g.
+      "./~foo"). Prevent unintentional tilde expansion during internal path
+      processing. Escape non-tilde glob characters before tilde expansion.
 
     [Changes]
 
