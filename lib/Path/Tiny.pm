@@ -27,13 +27,13 @@ use constant {
 };
 
 use overload (
-    q{""}    => sub    { $_[0]->[PATH] },
+    q{""}    => 'stringify',
     bool     => sub () { 1 },
     fallback => 1,
 );
 
 # FREEZE/THAW per Sereal/CBOR/Types::Serialiser protocol
-sub FREEZE { return $_[0]->[PATH] }
+*FREEZE = \&stringify;
 sub THAW   { return path( $_[2] ) }
 { no warnings 'once'; *TO_JSON = *FREEZE };
 
@@ -2188,7 +2188,7 @@ Current API available since 0.001.
 
 =cut
 
-sub stringify { $_[0]->[PATH] }
+sub stringify { $_[0]->[PATH] =~ /^~/ ? './' . $_[0]->[PATH] : $_[0]->[PATH] }
 
 =method subsumes
 
