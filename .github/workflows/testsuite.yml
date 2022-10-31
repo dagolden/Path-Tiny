@@ -1,0 +1,106 @@
+name: testsuite
+
+on:
+  push:
+    branches:
+      - "*"
+    tags-ignore:
+      - "*"
+  pull_request:
+
+jobs:
+  ubuntu:
+    env:
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 1
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 1
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: perl -V
+      - name: Install dependencies
+        uses: perl-actions/install-with-cpm@stable
+        with:
+          install: |
+               Digest
+               Digest::SHA
+               Encode
+               Exporter
+               Fcntl
+               File::Compare
+               File::Copy
+               File::Glob
+               File::Path
+               File::Spec
+               File::Temp
+               File::stat
+      - run: perl Makefile.PL
+      - run: make
+      - run: make test
+      - run: sudo make install
+
+  # ------------------------------------------------------------------------
+
+  linux:
+    name: "linux ${{ matrix.perl-version }}"
+    needs: [ubuntu]
+    env:
+      PERL_USE_UNSAFE_INC: 0
+      AUTHOR_TESTING: 1
+      AUTOMATED_TESTING: 1
+      RELEASE_TESTING: 1
+
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        perl-version:
+          [
+            "5.36",
+            "5.34",
+            "5.32",
+            "5.30",
+            "5.28",
+            "5.26",
+            "5.24",
+            "5.22",
+            "5.20",
+            "5.18",
+            "5.16",
+            "5.14",
+            "5.12",
+            "5.10",
+            "5.8",
+          ]
+
+    container:
+      image: perldocker/perl-tester:${{ matrix.perl-version }}
+
+    steps:
+      - uses: actions/checkout@v3
+      - run: perl -V
+      - name: Install dependencies
+        uses: perl-actions/install-with-cpm@stable        
+        with:
+          sudo: false
+          install: |
+               Digest
+               Digest::SHA
+               Encode
+               Exporter
+               Fcntl
+               File::Compare
+               File::Copy
+               File::Glob
+               File::Path
+               File::Spec
+               File::Temp
+               File::stat
+      - run: perl Makefile.PL
+      - run: make
+      - run: make test
+      - run: make install
