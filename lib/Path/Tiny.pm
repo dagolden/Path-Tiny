@@ -33,9 +33,8 @@ use overload (
 );
 
 # FREEZE/THAW per Sereal/CBOR/Types::Serialiser protocol
-*FREEZE = \&stringify;
 sub THAW   { return path( $_[2] ) }
-{ no warnings 'once'; *TO_JSON = *FREEZE };
+{ no warnings 'once'; *TO_JSON = *FREEZE = \&stringify };
 
 my $HAS_UU; # has Unicode::UTF8; lazily populated
 
