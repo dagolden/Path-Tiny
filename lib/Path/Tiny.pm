@@ -501,7 +501,8 @@ sub _resolve_symlinks {
         if ( ++$count > 100 ) {
             $self->_throw( 'readlink', $self->[PATH], "maximum symlink depth exceeded" );
         }
-        my $resolved = readlink $new->[PATH] or $new->_throw( 'readlink', $new->[PATH] );
+        my $resolved = readlink $new->[PATH];
+        $new->_throw( 'readlink', $new->[PATH] ) unless defined $resolved;
         $resolved = _path($resolved);
         $new = $resolved->is_absolute ? $resolved : $new->sibling($resolved);
     }
