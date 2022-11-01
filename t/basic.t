@@ -166,13 +166,17 @@ is $file->parent,  '/foo/baz';
     for my $test (@tests) {
         my $path = path($test->[0]);
         my $internal_path = $path->[0]; # Avoid stringification adding a "./" prefix
-        is($internal_path, defined $test->[1] ? $test->[1] : $test->[0], $test->[2]);
+        my $expected = defined $test->[1] ? $test->[1] : $test->[0];
+        is($internal_path, $expected, $test->[2]);
+        is($path, $expected =~ /^~/ ? "./$expected" : $expected, '... and its stringification');
     }
 
-    is(path('.')->child('~')->[0], '~', 'Test indirect forms of literal tilde under current directory');
+    is(path('.')->child('~')->[0], '~', 'Test indirect form of literal tilde under current directory');
+    is(path('.')->child('~'), './~', '... and its stringification');
 
     $file = path('/tmp/foo/~root');
     is $file->relative('/tmp/foo')->[0], '~root', 'relative path begins with tilde';
+    is $file->relative('/tmp/foo'), "./~root", '... and its stringification is escaped';
 }
 
 # freeze/thaw
