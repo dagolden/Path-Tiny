@@ -41,7 +41,7 @@ like $@, qr/Invalid argument '\Q$arrayref\E' for children()/,
 
 my $raw_tilde = path(".", "~");
 my $tilde_child = $raw_tilde->child("rhubarb");
-is( $tilde_child->[0], "~/rhubarb", "child of literal tilde" );
+is( $tilde_child, "./~/rhubarb", "child of literal tilde" );
 
 done_testing;
 # COPYRIGHT
