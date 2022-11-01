@@ -156,9 +156,12 @@ is $file->parent,  '/foo/baz';
         ['~idontthinkso[123]',    undef,                    'Test File::Glob metacharacter ['],
         ['~idontthinkso*',        undef,                    'Test File::Glob metacharacter *'],
         ['~idontthinkso?',        undef,                    'Test File::Glob metacharacter ?'],
-        ['~idontthinkso\\x',      undef,                    'Test File::Glob metacharacter \\'],
         ['~idontthinkso{a}',      undef,                    'Test File::Glob metacharacter {'],
     );
+
+    if (! $IS_WIN32 ) {
+        push @tests, ['~idontthinkso\\x',      undef,                    'Test File::Glob metacharacter \\'];
+    }
 
     for my $test (@tests) {
         my $path = path($test->[0]);

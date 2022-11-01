@@ -13,6 +13,10 @@ Revision history for Path-Tiny
       allowing it to work across filesystems.  It also returns an object for the
       moved location, allowing chaining.
 
+    [Testing]
+
+    - Fixed tilde expansion tests on Windows.
+
 0.131     2022-10-31 10:42:46-04:00 America/New_York (TRIAL RELEASE)
 
     [*** DEPRECATIONS ***]

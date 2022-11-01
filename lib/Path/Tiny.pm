@@ -240,8 +240,10 @@ sub path {
         (my $escaped = $tilde) =~ s/([\[\{\*\?\\])/\\$1/g;
         require File::Glob;
         my ($homedir) = File::Glob::bsd_glob($escaped);
-        $homedir =~ tr[\\][/] if IS_WIN32();
-        $path =~ s{^\Q$tilde\E}{$homedir};
+        if (defined $homedir && ! $File::Glob::ERROR) {
+            $homedir =~ tr[\\][/] if IS_WIN32();
+            $path =~ s{^\Q$tilde\E}{$homedir};
+        }
     }
 
     unshift @_, $path;
