@@ -3,6 +3,7 @@ use strict;
 use warnings;
 use Test::More 0.96;
 use File::Spec;
+use File::Glob;
 use Path::Tiny;
 use Cwd;
 
@@ -126,11 +127,15 @@ is $file->parent,  '/foo/baz';
 
 # tilde processing
 {
-    my ($homedir) = glob('~');
-    $homedir =~ tr[\\][/] if $IS_WIN32;
+    # Construct expected paths manually with glob, but normalize with Path::Tiny
+    # to work around windows slashes and drive case issues.  Extract the interior
+    # paths with ->[0] rather than relying on stringification, which will escape
+    # leading tildes.
+
+    my $homedir = path(glob('~'))->[0];
     my $username = path($homedir)->basename;
-    my ($root_homedir) = glob('~root');
-    my ($missing_homedir) = glob('~idontthinkso');
+    my $root_homedir = path(glob('~root'))->[0];
+    my $missing_homedir = path(glob('~idontthinkso'))->[0];
 
     my @tests = (
       # [arg for path(), expected string (undef if eq arg for path()), test string]
