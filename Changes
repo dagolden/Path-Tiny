@@ -2,6 +2,11 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Fixed additional issues with tilde expansion tests on Windows for testers
+      with lowercase drive letters in their userprofile.
+
 0.133     2022-10-31 23:55:01-04:00 America/New_York (TRIAL RELEASE)
 
     [Bug fixes]
