@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Add additional tilde stringification testing.
+
 0.135     2022-11-01 22:27:21-04:00 America/New_York (TRIAL RELEASE)
 
     [Testing]
