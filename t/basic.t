@@ -8,6 +8,7 @@ use Path::Tiny;
 use Cwd;
 
 my $IS_WIN32 = $^O eq 'MSWin32';
+my $IS_CYGWIN = $^O eq 'cygwin';
 
 use lib 't/lib';
 use TestUtils qw/exception/;
@@ -164,7 +165,7 @@ is $file->parent,  '/foo/baz';
         ['~idontthinkso{a}',      undef,                    'Test File::Glob metacharacter {'],
     );
 
-    if (! $IS_WIN32 ) {
+    if (! $IS_WIN32 && ! $IS_CYGWIN ) {
         push @tests, ['~idontthinkso\\x',      undef,                    'Test File::Glob metacharacter \\'];
     }
 

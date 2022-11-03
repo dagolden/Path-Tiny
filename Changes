@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Skip a problematic test case on cygwin
+
 0.137     2022-11-02 09:50:26-04:00 America/New_York (TRIAL RELEASE)
 
     [Testing]
