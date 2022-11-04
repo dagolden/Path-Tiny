@@ -183,6 +183,28 @@ is $file->parent,  '/foo/baz';
     $file = path('/tmp/foo/~root');
     is $file->relative('/tmp/foo')->[0], '~root', 'relative path begins with tilde';
     is $file->relative('/tmp/foo'), "./~root", '... and its stringification is escaped';
+
+    # successful tilde expansion of account names with glob metacharacters is
+    # actually untested so far because it would require such accounts to exist
+    # so instead we wrap File::Glob::bsd_glob to mock up certain responses:
+    my %mock = (
+        '~i?dont*think*so?' => '/home/i?dont*think*so?',
+        '~i[dont]{think}so' => '/home/i[dont]{think}so',
+        '~idont{think}so'   => '/home/idont{think}so',
+        '~i{dont,think}so'  => '/home/i{dont,think}so',
+    );
+    my $orig_bsd_glob = \&File::Glob::bsd_glob;
+    my $do_brace_expansion_only = do { package File::Glob; GLOB_NOCHECK() | GLOB_BRACE() | GLOB_QUOTE() };
+    sub mock_bsd_glob {
+        my $dequoted = $orig_bsd_glob->( $_[0], $do_brace_expansion_only );
+        $mock{ $dequoted } || goto &$orig_bsd_glob;
+    }
+    no warnings 'redefine'; local *File::Glob::bsd_glob = \&mock_bsd_glob;
+    is(File::Glob::bsd_glob('{root}'), 'root', 'double-check of mock_bsd_glob dequoting');
+    is(File::Glob::bsd_glob('~root'), $root_homedir, 'double-check of mock_bsd_glob fallback');
+    for my $test (sort keys %mock) {
+        is(path($test), $mock{ $test }, "tilde expansion with glob metacharacters in account name: $test");
+    }
 }
 
 # freeze/thaw
