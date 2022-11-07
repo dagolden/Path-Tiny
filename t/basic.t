@@ -188,11 +188,13 @@ is $file->parent,  '/foo/baz';
     # actually untested so far because it would require such accounts to exist
     # so instead we wrap File::Glob::bsd_glob to mock up certain responses:
     my %mock = (
-        '~i?dont*think*so?' => '/home/i?dont*think*so?',
         '~i[dont]{think}so' => '/home/i[dont]{think}so',
         '~idont{think}so'   => '/home/idont{think}so',
         '~i{dont,think}so'  => '/home/i{dont,think}so',
     );
+    if ( ! $IS_WIN32 && ! $IS_CYGWIN ) {
+        $mock{'~i?dont*think*so?'} = '/home/i?dont*think*so?';
+    }
     my $orig_bsd_glob = \&File::Glob::bsd_glob;
     my $do_brace_expansion_only = do { package File::Glob; GLOB_NOCHECK() | GLOB_BRACE() | GLOB_QUOTE() };
     sub mock_bsd_glob {
