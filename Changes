@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Testing]
+
+    - Add additional tilde expansion tests
+
 0.139     2022-11-03 15:44:46-04:00 America/New_York (TRIAL RELEASE)
 
     [Testing]
