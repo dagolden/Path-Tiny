@@ -417,7 +417,12 @@ SKIP: {
     $file->spew("Hello World\n");
     skip "symlink unavailable", 1 unless has_symlinks();
     eval { symlink $file => $link };
-    ok( $link->lstat->size, "lstat" );
+    if ($^O eq "MSWin32") {
+        ok( $link->lstat->size == 0, "lstat->size returns zero on Windows" );
+    }
+    else {
+        ok( $link->lstat->size, "lstat->size returns nonzero" );
+    }
     SKIP: {
         skip "realpath of symlink not working correctly on Windows for perl <= 5.37.5"
            if $^O eq "MSWin32" and "$]" <= 5.037005;
