@@ -173,6 +173,12 @@ is $file->parent,  '/foo/baz';
         my $path = path($test->[0]);
         my $internal_path = $path->[0]; # Avoid stringification adding a "./" prefix
         my $expected = defined $test->[1] ? $test->[1] : $test->[0];
+
+        # If a tilde expansion gives just "/", then if the expected path in
+        # $test has additional path components it will start with "//".  That
+        # needs to be normalized back to a single "/".
+        $expected =~ s{^//}{/};
+
         is($internal_path, $expected, $test->[2]);
         is($path, $expected =~ /^~/ ? "./$expected" : $expected, '... and its stringification');
     }
