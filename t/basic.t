@@ -138,16 +138,20 @@ is $file->parent,  '/foo/baz';
     my $root_homedir = path(glob('~root'))->[0];
     my $missing_homedir = path(glob('~idontthinkso'))->[0];
 
+    # remove one trailing slash from a path string, if present
+    # so the result of concatenating a path that starts with a slash will be correct
+    sub S ($) { ( my $p = $_[0] ) =~ s!/\z!!; $p }
+
     my @tests = (
       # [arg for path(), expected string (undef if eq arg for path()), test string]
         ['~',                        $homedir,                   'Test my homedir' ],
         ['~/',                       $homedir,                   'Test my homedir with trailing "/"' ],
-        ['~/foo/bar',                $homedir.'/foo/bar',        'Test my homedir with longer path' ],
-        ['~/foo/bar/',               $homedir.'/foo/bar',        'Test my homedir, longer path and trailing "/"' ],
+        ['~/foo/bar',              S($homedir).'/foo/bar',       'Test my homedir with longer path' ],
+        ['~/foo/bar/',             S($homedir).'/foo/bar',       'Test my homedir, longer path and trailing "/"' ],
         ['~root',                    $root_homedir,              'Test root homedir' ],
         ['~root/',                   $root_homedir,              'Test root homedir with trailing /' ],
-        ['~root/foo/bar',            $root_homedir.'/foo/bar',   'Test root homedir with longer path' ],
-        ['~root/foo/bar/',           $root_homedir.'/foo/bar',   'Test root homedir, longer path and trailing "/"'],
+        ['~root/foo/bar',          S($root_homedir).'/foo/bar',  'Test root homedir with longer path' ],
+        ['~root/foo/bar/',         S($root_homedir).'/foo/bar',  'Test root homedir, longer path and trailing "/"'],
         ['~idontthinkso',            undef,                      'Test homedir of nonexistant user' ],
         ['~idontthinkso',            $missing_homedir,           'Test homedir of nonexistant user (via glob)' ],
         ['~blah blah',               undef,                      'Test space' ],
