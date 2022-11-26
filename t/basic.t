@@ -138,31 +138,35 @@ is $file->parent,  '/foo/baz';
     my $root_homedir = path(glob('~root'))->[0];
     my $missing_homedir = path(glob('~idontthinkso'))->[0];
 
+    # remove one trailing slash from a path string, if present
+    # so the result of concatenating a path that starts with a slash will be correct
+    sub S ($) { ( my $p = $_[0] ) =~ s!/\z!!; $p }
+
     my @tests = (
       # [arg for path(), expected string (undef if eq arg for path()), test string]
-        ['~',                     $homedir,                 'Test my homedir' ],
-        ['~/',                    $homedir,                 'Test my homedir with trailing "/"' ],
-        ['~/foo/bar',             $homedir.'/foo/bar',      'Test my homedir with longer path' ],
-        ['~/foo/bar/',            $homedir.'/foo/bar',      'Test my homedir, longer path and trailing "/"' ],
-        ['~root',                 $root_homedir,            'Test root homedir' ],
-        ['~root/',                $root_homedir,            'Test root homedir with trailing /' ],
-        ['~root/foo/bar',         $root_homedir.'/foo/bar', 'Test root homedir with longer path' ],
-        ['~root/foo/bar/',        $root_homedir.'/foo/bar', 'Test root homedir, longer path and trailing "/"'],
-        ['~idontthinkso',         undef,                    'Test homedir of nonexistant user' ],
-        ['~idontthinkso',         $missing_homedir,         'Test homedir of nonexistant user (via glob)' ],
-        ['~blah blah',            undef,                    'Test space' ],
-        ['~this is fun',          undef,                    'Test multiple spaces' ],
-        ['~yikes \' apostrophe!', undef,                    'Test spaces and embedded apostrophe' ],
-        ['~hum " quote',          undef,                    'Test spaces and embedded quote' ],
-        ['~hello ~there',         undef,                    'Test space-separated tildes' ],
-        ["~fun\ttimes",           undef,                    'Test tab' ],
-        ["~new\nline",            undef,                    'Test newline' ],
-        ['~'.$username.' file',   undef,                    'Test \'~$username file\'' ],
-        ['./~',                   "~",                      'Test literal tilde under current directory' ],
-        ['~idontthinkso[123]',    undef,                    'Test File::Glob metacharacter ['],
-        ['~idontthinkso*',        undef,                    'Test File::Glob metacharacter *'],
-        ['~idontthinkso?',        undef,                    'Test File::Glob metacharacter ?'],
-        ['~idontthinkso{a}',      undef,                    'Test File::Glob metacharacter {'],
+        ['~',                        $homedir,                   'Test my homedir' ],
+        ['~/',                       $homedir,                   'Test my homedir with trailing "/"' ],
+        ['~/foo/bar',              S($homedir).'/foo/bar',       'Test my homedir with longer path' ],
+        ['~/foo/bar/',             S($homedir).'/foo/bar',       'Test my homedir, longer path and trailing "/"' ],
+        ['~root',                    $root_homedir,              'Test root homedir' ],
+        ['~root/',                   $root_homedir,              'Test root homedir with trailing /' ],
+        ['~root/foo/bar',          S($root_homedir).'/foo/bar',  'Test root homedir with longer path' ],
+        ['~root/foo/bar/',         S($root_homedir).'/foo/bar',  'Test root homedir, longer path and trailing "/"'],
+        ['~idontthinkso',            undef,                      'Test homedir of nonexistant user' ],
+        ['~idontthinkso',            $missing_homedir,           'Test homedir of nonexistant user (via glob)' ],
+        ['~blah blah',               undef,                      'Test space' ],
+        ['~this is fun',             undef,                      'Test multiple spaces' ],
+        ['~yikes \' apostrophe!',    undef,                      'Test spaces and embedded apostrophe' ],
+        ['~hum " quote',             undef,                      'Test spaces and embedded quote' ],
+        ['~hello ~there',            undef,                      'Test space-separated tildes' ],
+        ["~fun\ttimes",              undef,                      'Test tab' ],
+        ["~new\nline",               undef,                      'Test newline' ],
+        ['~'.$username.' file',      undef,                      'Test \'~$username file\'' ],
+        ['./~',                      '~',                        'Test literal tilde under current directory' ],
+        ['~idontthinkso[123]',       undef,                      'Test File::Glob metacharacter ['],
+        ['~idontthinkso*',           undef,                      'Test File::Glob metacharacter *'],
+        ['~idontthinkso?',           undef,                      'Test File::Glob metacharacter ?'],
+        ['~idontthinkso{a}',         undef,                      'Test File::Glob metacharacter {'],
     );
 
     if (! $IS_WIN32 && ! $IS_CYGWIN ) {
