@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.143     2022-11-26 17:46:59-05:00 America/New_York (TRIAL RELEASE)
+
     [Testing]
 
     - Fixed tilde expansion tests where ~root expands to '/'.
