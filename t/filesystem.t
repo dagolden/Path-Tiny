@@ -418,9 +418,11 @@ SKIP: {
     skip "symlink unavailable", 1 unless has_symlinks();
     eval { symlink $file => $link };
     ok( $link->lstat->size, "lstat" );
-
-    is( $link->realpath, $file->realpath, "realpath resolves symlinks" );
-
+    SKIP: {
+        skip "realpath of symlink not working correctly on Windows for perl <= 5.37.5"
+           if $^O eq "MSWin32" and "$]" <= 5.037005;
+        is( $link->realpath, $file->realpath, "realpath resolves symlinks" );
+    }
     ok $link->remove, 'remove symbolic link';
     ok $file->remove;
 
