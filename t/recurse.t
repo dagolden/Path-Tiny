@@ -107,7 +107,13 @@ subtest 'with symlinks' => sub {
 
     path($_)->touchpath for @tree;
 
-    symlink path( 'cccc', 'eeee' ), path('pppp');
+    if ($^O eq "MSWin32") {
+      # need to use backward slashes in relative symlink target on MSWin32
+      symlink 'cccc\eeee', path('pppp');
+    }
+    else {
+      symlink path( 'cccc', 'eeee' ), path('pppp');
+    }
     symlink path('aaaa.txt'), path('qqqq.txt');
 
     subtest 'no follow' => sub {

@@ -111,7 +111,8 @@ subtest "relative on absolute paths with symlinks" => sub {
 
     plan skip_all => "No symlink support"
       unless has_symlinks();
-
+    plan skip_all => "Absolute paths in symlink directory targets not working on MSWin32 for perl<5.38"
+      if $^O eq "MSWin32" and "$]" < 5.038000;
     my ( $path, $base, $expect );
 
     # (a) symlink in common path

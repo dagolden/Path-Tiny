@@ -19,12 +19,16 @@ subtest "relative symlinks with updir" => sub {
     my $foo = $td->child(qw/tmp foo/)->touch;
     my $bar = $td->child(qw/tmp tmp2 bar/);
 
-    symlink "../foo", $bar or die "Failed to symlink: $!\n";
+    my $relpath = "../foo";
+    # Account for a bug in Win32 API, see https://github.com/Perl/perl5/issues/20506
+    #  for more information
+    $relpath = "..\\foo" if $^O eq "MSWin32";
+    symlink $relpath, $bar or die "Failed to symlink: $!\n";
 
     ok -f $foo, "it's a file";
     ok -l $bar, "it's a link";
 
-    is readlink $bar, "../foo", "the link seems right";
+    is readlink $bar, $relpath, "the link seems right";
     is abs_path($bar), $foo, "abs_path gets's it right";
 
     is $bar->realpath, $foo, "realpath get's it right";
