@@ -5,7 +5,7 @@ use warnings;
 package Path::Tiny;
 # ABSTRACT: File path utility
 
-our $VERSION = '0.145';
+our $VERSION = '0.145lbe';
 
 # Dependencies
 use Config;
@@ -239,6 +239,7 @@ sub path {
         (my $escaped = $tilde) =~ s/([\[\{\*\?\\])/\\$1/g;
         require File::Glob;
         my ($homedir) = File::Glob::bsd_glob($escaped);
+        no warnings 'once';
         if (defined $homedir && ! $File::Glob::ERROR) {
             $homedir =~ tr[\\][/] if IS_WIN32();
             $path =~ s{^\Q$tilde\E}{$homedir};
@@ -523,6 +524,48 @@ sub _replacment_path {
     return $temp;
 }
 
+## start of copy from Path::Iterator::Rule
+sub _regexify {
+    my ( $re, $add ) = @_;
+    $add ||= '';
+    my $new = ref($re) eq 'Regexp' ? $re : Text::Glob::glob_to_regex($re);
+    return $new unless $add;
+    my ( $pattern, $flags ) = _split_re($new);
+    my $new_flags = $add ? _reflag( $flags, $add ) : "";
+    return qr/$new_flags$pattern/;
+}
+ 
+sub _split_re {
+    my $value = shift;
+    if ( $] ge 5.010 ) {
+        return re::regexp_pattern($value);
+    }
+    else {
+        $value =~ s/^\(\?\^?//;
+        $value =~ s/\)$//;
+        my ( $opt, $re ) = split( /:/, $value, 2 );
+        $opt =~ s/\-\w+$//;
+        return ( $re, $opt );
+    }
+}
+ 
+sub _reflag {
+    my ( $orig, $add ) = @_;
+    $orig ||= "";
+ 
+    if ( $] >= 5.014 ) {
+        return "(?^$orig$add)";
+    }
+    else {
+        my ( $pos, $neg ) = split /-/, $orig;
+        $pos ||= "";
+        $neg ||= "";
+        $neg =~ s/i//;
+        $neg = "-$neg" if length $neg;
+        return "(?$add$pos$neg)";
+    }
+}
+## end of copy from Path::Iterator::Rule
 #--------------------------------------------------------------------------#
 # Public methods
 #--------------------------------------------------------------------------#
@@ -1355,10 +1398,11 @@ sub iterator {
     @contents = path("/tmp/foo.txt")->lines_raw;
     @contents = path("/tmp/foo.txt")->lines_utf8;
 
-    @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4 } );
+    @contents = path("/tmp/foo.txt")->lines( { chomp => 1, count => 4, 
+                                               pattern => qr/foo/i } );
 
 Returns a list of lines from a file.  Optionally takes a hash-reference of
-options.  Valid options are C<binmode>, C<count> and C<chomp>.
+options.  Valid options are C<binmode>, C<count> and C<chomp> and C<pattern>.
 
 If C<binmode> is provided, it will be set on the handle prior to reading.
 
@@ -1369,6 +1413,9 @@ exceeds the number of lines in the file, all lines will be returned.
 
 If C<chomp> is set, any end-of-line character sequences (C<CR>, C<CRLF>, or
 C<LF>) will be removed from the lines returned.
+
+If C<pattern> is set to a C<qr//> value, only lines the matching the given regular
+expression. If C<count> is provided, C<pattern> will be applied to the lines returned.
 
 Because the return is a list, C<lines> in scalar context will return the number
 of lines (and throw away the data).
@@ -1385,13 +1432,13 @@ lines will be split.  This is actually faster than relying on
 IO layers, though a bit memory intensive.  If memory use is a
 concern, consider C<openr_utf8> and iterating directly on the handle.
 
-Current API available since 0.065.
+Current API available since 0.065 <= Will need to be updated if Pull Request is accepted - lbe.
 
 =cut
 
 sub lines {
     my $self    = shift;
-    my $args    = _get_args( shift, qw/binmode chomp count/ );
+    my $args    = _get_args( shift, qw/binmode chomp count pattern/ );
     my $binmode = $args->{binmode};
     $binmode = ( ( caller(0) )[10] || {} )->{'open<'} unless defined $binmode;
     my $fh = $self->filehandle( { locked => 1 }, "<", $binmode );
@@ -1413,12 +1460,20 @@ sub lines {
         # reorder results if full and wrapped somewhere in the middle
         splice( @result, 0, 0, splice( @result, $counter ) )
           if @result == $mod && $counter % $mod;
+        if ( $args->{pattern} ) {
+            my $re = _regexify( $args->{pattern} );
+            @result = grep { m/$re/} @result;
+        }
         return @result;
     }
     elsif ($chomp) {
         local $!;
         my @lines = map { s/(?:\x{0d}?\x{0a}|\x{0d})\z//; $_ } <$fh>; ## no critic
         $self->_throw('readline') if $!;
+        if ( $args->{pattern} ) {
+            my $re = _regexify( $args->{pattern} );
+            @lines = grep { m/$re/ } @lines;
+        }
         return @lines;
     }
     else {
@@ -1426,11 +1481,24 @@ sub lines {
             local $!;
             my @lines = <$fh>;
             $self->_throw('readline') if $!;
+            if ( $args->{pattern} ) {
+                my $re = _regexify( $args->{pattern} );
+                @lines = grep { m/$re/ } @lines;
+            }
             return @lines;
         } else {
             local $!;
-            my $count =()= <$fh>;
-            $self->_throw('readline') if $!;
+            my $count;
+            if ( $args->{pattern} ) {
+                my @lines = <$fh>;
+                $self->_throw('readline') if $!;
+                my $re = _regexify( $args->{pattern} );
+                $count  = grep { m/$re/ } @lines;
+            }
+            else {
+                $count = () = <$fh>;
+                $self->_throw('readline') if $!;
+            }
             return $count;
         }
     }
@@ -1438,9 +1506,11 @@ sub lines {
 
 sub lines_raw {
     my $self = shift;
-    my $args = _get_args( shift, qw/binmode chomp count/ );
+    my $args = _get_args( shift, qw/binmode chomp count pattern/ );
     if ( $args->{chomp} && !$args->{count} ) {
-        return split /\n/, slurp_raw($self);                    ## no critic
+        return $args->{pattern}
+        ? grep { _regexify( $args->{pattern} ) } split /\n/, slurp_raw($self)  
+        : split /\n/, slurp_raw($self);                    ## no critic
     }
     else {
         $args->{binmode} = ":raw";
@@ -1452,14 +1522,16 @@ my $CRLF = qr/(?:\x{0d}?\x{0a}|\x{0d})/;
 
 sub lines_utf8 {
     my $self = shift;
-    my $args = _get_args( shift, qw/binmode chomp count/ );
+    my $args = _get_args( shift, qw/binmode chomp count pattern/ );
     if (   ( defined($HAS_UU) ? $HAS_UU : ( $HAS_UU = _check_UU() ) )
         && $args->{chomp}
         && !$args->{count} )
     {
         my $slurp = slurp_utf8($self);
-        $slurp =~ s/$CRLF\z//; # like chomp, but full CR?LF|CR
-        return split $CRLF, $slurp, -1; ## no critic
+        $slurp =~ s/$CRLF\z//;                  # like chomp, but full CR?LF|CR
+        return $args->{pattern}
+            ? grep { _regexify( $args->{pattern} ) } split $CRLF, $slurp - 1
+            : split $CRLF, $slurp, -1;          ## no critic
     }
     elsif ( defined($HAS_PU) ? $HAS_PU : ( $HAS_PU = _check_PU() ) ) {
         $args->{binmode} = ":raw:utf8_strict";
@@ -1610,7 +1682,7 @@ my %opens = (
 );
 
 while ( my ( $k, $v ) = each %opens ) {
-    no strict 'refs';
+    no strict 'refs'; ## no critic (Strict)
     # must check for lexical IO mode hint
     *{$k} = sub {
         my ( $self, @args ) = @_;

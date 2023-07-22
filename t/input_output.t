@@ -28,6 +28,18 @@ sub _utf8_no_end_of_newline_lines {
     return ( _utf8_lines(), "No end of newline" );
 }
 
+sub _re1 {
+    return ( qr/Line1/ );
+}
+
+sub _re2 {
+    return ( qr/Line2/ );
+}
+
+sub _re3 {
+    return ( qr/No end of newlin/ );
+}
+
 subtest "spew -> slurp" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
@@ -91,6 +103,15 @@ subtest "spew -> lines" => sub {
     is( scalar $file->lines, my $cnt =()= _lines, "lines (scalar)" );
 };
 
+subtest "spew -> lines (pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my $re1 = _re1;
+    is( join( '', $file->lines( { pattern => _re1 } ) ),
+        join( '', grep { m/$re1/ } _lines ), "lines" );
+    is( scalar $file->lines, my $cnt = () = _lines, "lines (scalar)" );
+};
+
 subtest "spew -> lines (open hint)" => sub {
     plan skip_all => "Needs 5.10" unless $] >= 5.010;
     use open IO => ":utf8";
@@ -98,6 +119,17 @@ subtest "spew -> lines (open hint)" => sub {
     ok( $file->spew(_utf8_lines), "spew" );
     my $got = join( '', $file->lines() );
     is( $got, join( '', _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
+};
+
+subtest "spew -> lines (open hint pattern)" => sub {
+    plan skip_all => "Needs 5.10" unless $] >= 5.010;
+    use open IO => ":utf8";
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_utf8_lines), "spew" );
+    my $re1 = _re1;
+    my $got = join( '', $file->lines( { pattern => _re1 } ) );
+    is( $got, join( '', grep { m/$re1/ } _utf8_lines ), "slurp" );
     ok( utf8::is_utf8($got), "is UTF8" );
 };
 
@@ -110,10 +142,32 @@ subtest "spew -> lines (UTF-8)" => sub {
     is( scalar $file->lines, my $cnt =()= _utf8_lines, "lines (scalar)" );
 };
 
+subtest "spew -> lines (UTF-8 pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my $re1 = _re1;
+    my $got = join( '', $file->lines_utf8( { pattern => _re1 } ) );
+    is( $got, join( '', grep { m/$re1/ } _utf8_lines ), "slurp" );
+    ok( utf8::is_utf8($got), "is UTF8" );
+    is(
+        scalar $file->lines( { pattern => _re1 } ),
+        my $cnt = () = grep { m/$re1/ } _utf8_lines,
+        "lines (scalar)"
+    );
+};
+
 subtest "spew -> lines (raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_lines), "spew" );
     is( join( '', $file->lines_raw ), join( '', _lines ), "lines" );
+};
+
+subtest "spew -> lines (raw pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    my $re1  = _re1;
+    ok( $file->spew_raw(_lines), "spew" );
+    is( join( '', $file->lines_raw( { pattern => _re1 } ) ),
+        join( '', grep { m/$re1/ } _lines ), "lines" );
 };
 
 subtest "spew -> lines (count)" => sub {
@@ -126,6 +180,17 @@ subtest "spew -> lines (count)" => sub {
         join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
 
+subtest "spew -> lines (count)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _lines;
+    is( join( '', $file->lines( { count => 2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines( { count => -2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, less than)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
@@ -134,12 +199,35 @@ subtest "spew -> lines (count, less than)" => sub {
     is( join( '', $file->lines( { count => -1 } ) ), $exp[1], "lines" );
 };
 
+subtest "spew -> lines (count, less than, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my $re1 = _re1;
+    my $re2 = _re2;
+    my @exp = _lines;
+    is( join( '', $file->lines( { count => 1, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines( { count => -1, pattern => $re2 } ) ),
+        join( '', grep { m/$re2/ } @exp[ 0 .. 1 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, more than)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_lines), "spew" );
     my @exp = _lines;
     is( join( '|', $file->lines( { count => 3 } ) ),  join( "|", @exp ), "lines" );
     is( join( '|', $file->lines( { count => -3 } ) ), join( "|", @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, more than, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _lines;
+    is( join( '|', $file->lines( { count => 3, pattern => $re1 } ) ),
+        join( "|", grep { m/$re1/ } @exp ), "lines" );
+    is( join( '|', $file->lines( { count => -3, pattern => $re1 } ) ),
+        join( "|", grep { m/$re1/ } @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp)" => sub {
@@ -152,6 +240,17 @@ subtest "spew -> lines (count, chomp)" => sub {
         join( '', @exp[ 0 .. 1 ] ), "lines" );
 };
 
+subtest "spew -> lines (count, chomp, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = map { s/[\r\n]+//; $_ } _lines;
+    is( join( '', $file->lines( { chomp => 1, count => 2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines( { chomp => 1, count => -2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, no end of newline)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_no_end_of_newline_lines), "spew" );
@@ -162,6 +261,18 @@ subtest "spew -> lines (count, no end of newline)" => sub {
         join( '', @exp[ 0 .. 2 ] ), "lines" );
 };
 
+subtest "spew -> lines (count, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my $re3 = _re3;
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines( { count => 3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 2 ] ), "lines" );
+    is( join( '', $file->lines( { count => -3, pattern => $re3 } ) ),
+        join( '', grep { m/$re3/ } @exp[ 0 .. 2 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, less than, no end of newline)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_no_end_of_newline_lines), "spew" );
@@ -170,12 +281,36 @@ subtest "spew -> lines (count, less than, no end of newline)" => sub {
     is( join( '', $file->lines( { count => -1 } ) ), $exp[2], "lines" );
 };
 
+subtest "spew -> lines (count, less than, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my $re3 = _re3;
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines( { count => 1, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } ( $exp[0] ) ), "lines" );
+    is( join( '', $file->lines( { count => -1, pattern => $re3 } ) ),
+        join( '', grep { m/$re3/ } ( $exp[2] ) ), "lines" );
+};
+
 subtest "spew -> lines (count, more than, no end of newline)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew(_no_end_of_newline_lines), "spew" );
     my @exp = _no_end_of_newline_lines;
     is( join( '|', $file->lines( { count => 4 } ) ),  join( "|", @exp ), "lines" );
     is( join( '|', $file->lines( { count => -4 } ) ), join( "|", @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, more than, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my $re3 = _re3;
+    my @exp = _no_end_of_newline_lines;
+    is( join( '|', $file->lines( { count => 4, pattern => $re1 } ) ),
+        join( "|", grep { m/$re1/ } @exp ), "lines" );
+    is( join( '|', $file->lines( { count => -4, pattern => $re3 } ) ),
+        join( "|", grep { m/$re3/ } @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp, no end of newline)" => sub {
@@ -188,12 +323,35 @@ subtest "spew -> lines (count, chomp, no end of newline)" => sub {
         join( '', @exp[ 0 .. 2 ] ), "lines" );
 };
 
+subtest "spew -> lines (count, chomp, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew(_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my $re3 = _re3;
+    my @exp = map { s/[\r\n]+//; $_ } _no_end_of_newline_lines;
+    is( join( '', $file->lines( { chomp => 1, count => 3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 2 ] ), "lines" );
+    is( join( '', $file->lines( { chomp => 1, count => -3, pattern => $re3 } ) ),
+        join( '', grep { m/$re3/ } @exp[ 0 .. 2 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_lines), "spew" );
     my @exp = _utf8_lines;
     is( join( '', $file->lines_utf8( { count => 3 } ) ),  join( '', @exp ), "lines" );
     is( join( '', $file->lines_utf8( { count => -3 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, UTF-8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _utf8_lines;
+    is( join( '', $file->lines_utf8( { count => 3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { count => -3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp, UTF-8)" => sub {
@@ -206,12 +364,25 @@ subtest "spew -> lines (count, chomp, UTF-8)" => sub {
         join( '', @exp[ 1 .. 2 ] ), "lines" );
 };
 
+subtest "spew -> lines (count, chomp, UTF-8)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my $re2 = _re2;
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1, count => 2, pattern => $re2 } ) ),
+        join( '', grep { m/$re2/ } @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines_utf8( { chomp => 1, count => -2, pattern => $re2 } ) ),
+        join( '', grep { m/$re2/ } @exp[ 1 .. 2 ] ), "lines" );
+};
+
 subtest "spew -> lines (chomp, only newlines)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew( "\n" x 5 ), "spew" );
     my @exp = ('') x 5;
     is( join( '|', $file->lines_utf8( { chomp => 1 } ) ), join( '|', @exp ), "lines" );
 };
+
+# not needed "spew -> lines (chomp, only newlines, pattern)"  
 
 subtest "spew -> lines (chomp, UTF-8)" => sub {
     my $file = Path::Tiny->tempfile;
@@ -220,12 +391,32 @@ subtest "spew -> lines (chomp, UTF-8)" => sub {
     is( join( '', $file->lines_utf8( { chomp => 1 } ) ), join( '', @exp ), "lines" );
 };
 
+subtest "spew -> lines (chomp, UTF-8, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+};
+
 subtest "spew -> lines (count, UTF-8, no end of newline)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_utf8(_utf8_no_end_of_newline_lines), "spew" );
     my @exp = _utf8_no_end_of_newline_lines;
     is( join( '', $file->lines_utf8( { count => 4 } ) ),  join( '', @exp ), "lines" );
     is( join( '', $file->lines_utf8( { count => -4 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, UTF-8, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _utf8_no_end_of_newline_lines;
+    is( join( '', $file->lines_utf8( { count => 4, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+    is( join( '', $file->lines_utf8( { count => -4, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
 };
 
 subtest "spew -> lines (count, chomp, UTF-8, no end of newline)" => sub {
@@ -238,6 +429,18 @@ subtest "spew -> lines (count, chomp, UTF-8, no end of newline)" => sub {
         join( '', @exp[ 2 .. 3 ] ), "lines" );
 };
 
+subtest "spew -> lines (count, chomp, UTF-8, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_utf8(_utf8_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my $re3 = _re3;
+    my @exp = map { s/[\r\n]+//; $_ } _utf8_no_end_of_newline_lines;
+    is( join( '', $file->lines_utf8( { chomp => 1, count => 2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp[ 0 .. 1 ] ), "lines" );
+    is( join( '', $file->lines_utf8( { chomp => 1, count => -2, pattern => $re3 } ) ),
+        join( '', grep { m/$re3/ } @exp[ 2 .. 3 ] ), "lines" );
+};
+
 subtest "spew -> lines (count, raw)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_lines), "spew" );
@@ -246,12 +449,34 @@ subtest "spew -> lines (count, raw)" => sub {
     is( join( '', $file->lines_raw( { count => -2 } ) ), join( '', @exp ), "lines" );
 };
 
+subtest "spew -> lines (count, raw, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _lines;
+    is( join( '', $file->lines_raw( { count => 2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+    is( join( '', $file->lines_raw( { count => -2, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+};
+
 subtest "spew -> lines (count, raw, no end of newline)" => sub {
     my $file = Path::Tiny->tempfile;
     ok( $file->spew_raw(_no_end_of_newline_lines), "spew" );
     my @exp = _no_end_of_newline_lines;
     is( join( '', $file->lines_raw( { count => 3 } ) ),  join( '', @exp ), "lines" );
     is( join( '', $file->lines_raw( { count => -3 } ) ), join( '', @exp ), "lines" );
+};
+
+subtest "spew -> lines (count, raw, no end of newline, pattern)" => sub {
+    my $file = Path::Tiny->tempfile;
+    ok( $file->spew_raw(_no_end_of_newline_lines), "spew" );
+    my $re1 = _re1;
+    my @exp = _no_end_of_newline_lines;
+    is( join( '', $file->lines_raw( { count => 3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
+    is( join( '', $file->lines_raw( { count => -3, pattern => $re1 } ) ),
+        join( '', grep { m/$re1/ } @exp ), "lines" );
 };
 
 subtest "append -> slurp" => sub {
