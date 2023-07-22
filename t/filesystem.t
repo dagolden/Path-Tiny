@@ -31,7 +31,7 @@ if ( -e "/dev/null" ) {
 }
 
 my ( $volume, $dirname, $basename ) =
-  map { s{\\}{/}; $_ } File::Spec->splitpath($file);
+  map { s{\\}{/}; $_ } File::Spec->splitpath($file); ## no critic
 is( $file->volume,   $volume,   "volume correct" );
 is( $file->volume,   $volume,   "volume cached " );  # for coverage
 is( $file->dirname,  $dirname,  "dirname correct" );
@@ -201,6 +201,12 @@ my $tmpdir = Path::Tiny->tempdir;
 
     @content = $file->lines( { chomp => 1 } );
     is_deeply \@content, [ "Line1", "Line2" ];
+
+    @content = $file->lines( { pattern => qr/Line1/ } );
+    is_deeply \@content, [ "Line1\n" ];
+
+    @content = $file->lines( { chomp => 1, pattern => qr/Line1/ } );
+    is_deeply \@content, [ "Line1" ];
 
     ok( $file->remove, "removing file" );
     ok !-e $file, "file is gone";
