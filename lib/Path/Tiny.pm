@@ -243,7 +243,6 @@ sub path {
         my @frame;
         while(@frame=caller($i++)){
             last if $frame[1] ne __FILE__;
-            @frame=caller $i++;
         }
         
         my $p;

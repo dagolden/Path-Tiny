@@ -7,16 +7,17 @@ use File::Glob;
 use Path::Tiny;
 use Cwd;
 
-my $IS_WIN32 = $^O eq 'MSWin32';
-my $IS_CYGWIN = $^O eq 'cygwin';
-
 use lib 't/lib';
 use TestUtils qw/exception/;
-
 
 my $file1 = path(\'foo.txt');
 isa_ok( $file1, "Path::Tiny" );
 
 ok "$file1" eq "t/foo.txt", "Caller relative via ref";
+
+my $file2 =Path::Tiny->new(\'foo.txt');
+isa_ok( $file2, "Path::Tiny" );
+
+ok "$file2" eq "t/foo.txt", "Caller relative via ref (from constructor)";
 
 done_testing();
