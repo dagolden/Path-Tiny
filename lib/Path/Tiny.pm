@@ -181,6 +181,7 @@ sub _get_args {
     $path = path("foo/bar");
     $path = path("/tmp", "file.txt"); # list
     $path = path(".");                # cwd
+    $path = path(\"file.txt");        # relative to caller
 
 Constructs a C<Path::Tiny> object.  It doesn't matter if you give a file or
 directory path.  It's still up to you to call directory-like methods only on
@@ -190,6 +191,12 @@ automatically by default.
 The first argument must be defined and have non-zero length or an exception
 will be thrown.  This prevents subtle, dangerous errors with code like
 C<< path( maybe_undef() )->remove_tree >>.
+
+If the first argument is a reference to a scalar, the dereferenced value is
+used as a string and relative path from the C<calling> file. It is converted
+into to a C<cwd> relative  path before continuing processing as usual. This
+allows referencing resources relative to a pm or script is a very concise
+fashion.
 
 B<DEPRECATED>: If and only if the B<first> character of the B<first> argument
 to C<path> is a tilde ('~'), then tilde replacement will be applied to the
@@ -229,6 +236,31 @@ sub path {
         return $path;
     }
 
+    if(ref($path) eq "SCALAR"){
+        # Treat the path as relative to the directory of the calling __FILE__.
+        # Go back to first caller which is NOT in this file.
+        my $i=0;
+        my @frame;
+        while(@frame=caller($i++)){
+            last if $frame[1] ne __FILE__;
+            @frame=caller $i++;
+        }
+        
+        my $p;
+        if(-f $frame[1]){
+            #Make the "caller relative" path relative to cwd
+            $p=path($frame[1])->parent;
+        }
+        else{
+            # If the file doesn't exists (i.e. -e or  -E or eval), assume
+            # current working dir 
+            $p="." 
+        }
+
+        $path=path($p,$$path);
+
+
+    }
     # stringify objects
     $path = "$path";
 
