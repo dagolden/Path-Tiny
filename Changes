@@ -2,6 +2,8 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+0.145     2024-05-01 22:26:26-04:00 America/New_York (TRIAL RELEASE)
+
     [Changes]
 
     - Improved error message spewing to a file in a non-existent directory.
