@@ -330,7 +330,7 @@ Revision history for Path-Tiny
     - The 'absolute' method now always returns an absolute path, even if a
       user provided a relative path for the base path.  The old, odd
       behavior was documented, but people often don't read docs.  The new
-      behavior avoids suprises.
+      behavior avoids surprises.
 
     [Additions]
 
@@ -1074,7 +1074,7 @@ Revision history for Path-Tiny
 
     [CHANGED]
 
-    - slurp/spew/etc and openr/openw/etc now repect default layers
+    - slurp/spew/etc and openr/openw/etc now respect default layers
       set by -C or the open pragma
 
     - spew and append can now be given array references to output
