@@ -2422,13 +2422,11 @@ sub volume {
 
 Changes the extension of a path.
 
-The argument is the new extension (with or without a leading period).
-Specify undef to remove an existing extension from the path.
+Returns a new Path::Tiny object with a different extension. The argument is a
+string representing the new extension or undef to remove an extension.
 
-Returns a Path::Tiny object.
-
-If extension is C<undef>, the returned string contains the specified path with its extension removed.
 If path has no extension, and extension is not C<undef>, the returned path string contains extension appended to the end of path.
+If the last part of a path has a leading period (e.g. C<~/.bashrc>), it is not considered an extension.
 
 Current API available since 0.148.
 
