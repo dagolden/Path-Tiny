@@ -2449,10 +2449,8 @@ sub change_extension {
         $new_extension = '.' . $new_extension;
     }
     
-    $path_str .= $new_extension;  # Add new extension
-    
-    # Construct the new path
-    my $new_path = path($path_str);
+    # Add extension and construct the new path
+    my $new_path = path($path_str . $new_extension);
     
     return $new_path;
 }
