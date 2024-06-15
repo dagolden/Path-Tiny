@@ -34,14 +34,14 @@ use Path::Tiny;
 }
 
 {
-    my $dir1 = path("C:/mydir/lookslikedorectory")->change_extension(undef);
-    ok($dir1->stringify eq 'C:/mydir/lookslikedorectory', 'directory names without period are kept when removing suffix');
+    my $path_wo_extension1 = path("C:/mydir/pathwithoutextension")->change_extension(undef);
+    ok($path_wo_extension1->stringify eq 'C:/mydir/pathwithoutextension', 'paths without period are kept as is when removing suffix');
     
-    my $dir2 = path("C:/mydir/lookslikedirectory")->change_extension(".exten");
-    ok($dir2->stringify eq 'C:/mydir/lookslikedirectory.exten', 'directory names are extended when adding suffix');
+    my $path_wo_extension2 = path("C:/mydir/pathwithoutextension")->change_extension(".exten");
+    ok($path_wo_extension2->stringify eq 'C:/mydir/pathwithoutextension.exten', 'paths are extended when adding suffix');
     
-    my $dir3 = path("C:/mydir/lookslikedirectory")->change_extension("exten");
-    ok($dir3->stringify eq 'C:/mydir/lookslikedirectory.exten', 'directory names are extended when adding suffix');
+    my $path_wo_extension3 = path("C:/mydir/pathwithoutextension")->change_extension("exten");
+    ok($path_wo_extension3->stringify eq 'C:/mydir/pathwithoutextension.exten', 'paths are extended when adding suffix');
 }
 
 done_testing;
