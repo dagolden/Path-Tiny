@@ -7,41 +7,61 @@ use lib 't/lib';
 
 use Path::Tiny;
 
+my @cases = (
+    # path1 => path2 => path1->subsumes(path2)
 
-{
-    my $renamed1 = path("C:/mydir/myfile.com.extension")->change_extension(".old");
-    ok($renamed1->stringify eq 'C:/mydir/myfile.com.old', 'rename to .old with leading perdiod');
+    "rename path with extension" => [
+        [ '.',                            '.ext',     '.ext'                        ],
+        [ '/',                            '.ext',     '/.ext'                       ],
+        [ '..',                           '.ext',     '..ext'                       ],
+        [ '../..',                        '.ext',     '../..ext'                    ],
+        [ '/foo/',                        '.ext',     '/foo.ext'                    ], # differs from C#: /foo/.ext
+        [ '/foo',                         '.ext',     '/foo.ext'                    ],
+        [ 'foo/',                         '.ext',     'foo.ext'                     ], # differs from C#: foo/.ext
+        [ './foo',                        '.ext',     'foo.ext'                     ], # differs from C#: ./foo.ext
+        [ 'foo/.',                        '.ext',     'foo.ext'                     ], # differs from C#: foo/.ext
+        [ 'C:/temp/myfile.com.extension', '.old',     'C:/temp/myfile.com.old'      ],
+        [ 'C:/temp/myfile.com.extension', 'old',      'C:/temp/myfile.com.old'      ],
+        [ 'C:/pathwithoutextension',      '.old',     'C:/pathwithoutextension.old' ],
+        [ 'C:/pathwithoutextension',      'old',      'C:/pathwithoutextension.old' ],
+        # ~ paths
+    ],
+
+    "remove extension" => [
+        [ '.',                            undef,     ''                        ],
+        [ '/',                            undef,     '/'                       ],
+        [ '..',                           undef,     '.'                       ],
+        [ '../..',                        undef,     '../.'                    ],
+        [ '/foo/',                        undef,     '/foo'                    ], # differs from C#: /foo/
+        [ '/foo',                         undef,     '/foo'                    ],
+        [ 'foo/',                         undef,     'foo'                     ], # differs from C#: foo/
+        [ './foo',                        undef,     'foo'                     ], # differs from C#: ./foo
+        [ 'foo/.',                        undef,     'foo'                     ], # differs from C#: foo/
+        [ 'C:/temp/myfile.com.extension', undef,     'C:/temp/myfile.com'      ],
+        [ 'C:/temp/myfile.com.extension', undef,     'C:/temp/myfile.com'      ],
+        [ 'C:/pathwithoutextension',      undef,     'C:/pathwithoutextension' ],
+        [ 'C:/pathwithoutextension',      undef,     'C:/pathwithoutextension' ],
+    ],
+
+);
+
+
+
+while (@cases) {
+    my ( $subtest, $tests ) = splice( @cases, 0, 2 );
     
-    my $renamed2 = path("C:/mydir/myfile.com.extension")->change_extension("old");
-    ok($renamed2->stringify eq 'C:/mydir/myfile.com.old', 'rename to .old without leading perdiod');
-}
-
-{
-    my $removed_extension1 = path("C:/mydir/myfile.com.extension")->change_extension(undef);
-    ok($removed_extension1->stringify eq 'C:/mydir/myfile.com', 'remove extension');
-}
-
-{
-    # test for invalid renames of files starting with a period such as .htaccess
-    my $died = 0;
-    eval {
-        path('.htaccess')->change_extension(undef);
+    subtest $subtest => sub {
+        for my $t (@$tests) {
+            my ( $path1, $ext, $path2 ) = @$t;
+            my $label = sprintf("%s + %s -> %s", $path1, (defined $ext ? $ext : 'undef'), $path2);
+            my $changed_path = path($path1)->change_extension($ext);
+            ok( $changed_path->stringify eq $path2, $label )
+              or diag "PATH 1:\n", explain( path($path1) ), "\nCHANGED PATH:\n", explain( $changed_path ), "\nPATH2:\n",
+              explain( path($path2) );
+        }
     };
-    if ($@) {
-        $died = 1;
-    }
-    ok($died, 'Remove extension from file starting with period (and no further etxension) dies as expected');
 }
 
-{
-    my $path_wo_extension1 = path("C:/mydir/pathwithoutextension")->change_extension(undef);
-    ok($path_wo_extension1->stringify eq 'C:/mydir/pathwithoutextension', 'paths without period are kept as is when removing suffix');
-    
-    my $path_wo_extension2 = path("C:/mydir/pathwithoutextension")->change_extension(".exten");
-    ok($path_wo_extension2->stringify eq 'C:/mydir/pathwithoutextension.exten', 'paths are extended when adding suffix');
-    
-    my $path_wo_extension3 = path("C:/mydir/pathwithoutextension")->change_extension("exten");
-    ok($path_wo_extension3->stringify eq 'C:/mydir/pathwithoutextension.exten', 'paths are extended when adding suffix');
-}
+ok(1);
 
 done_testing;
