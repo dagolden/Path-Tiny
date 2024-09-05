@@ -337,7 +337,7 @@ sub cwd {
 =construct rootdir
 
     $path = Path::Tiny->rootdir; # /
-    $path = rootdir;             # optional export 
+    $path = rootdir;             # optional export
 
 Gives you C<< File::Spec->rootdir >> as a C<Path::Tiny> object if you're too
 picky for C<path("/")>.
@@ -2414,6 +2414,132 @@ sub volume {
     $self->_splitpath unless defined $self->[VOL];
     return $self->[VOL];
 }
+
+=method permissions
+
+    my $p = path("foo.txt"); # with 0764 permissions
+
+    $p->permissions('user')  # 7
+    $p->permissions('group') # 6
+    $p->permissions('other') # 4
+    $p->permissions('bogus') # undef
+
+Returns the permissions for a given selector of a file.
+
+Current API available since 0.147.
+
+=cut
+
+sub permissions {
+    my ($self,$selector) = @_;
+
+    # Fetch the raw stats and pull out permissions
+    my @stat  = CORE::stat($self);
+    my $perms = $stat[2];
+
+    # Extract the permissions we're looking for
+    # Permissions are bits in groups of three: UUUGGGWWW
+    if ($selector && $selector eq 'user') {
+        $perms = ($perms & 0700) >> 6;
+    } elsif ($selector && $selector eq 'group') {
+        $perms = ($perms & 0070) >> 3;
+    } elsif ($selector && $selector eq 'other') {
+        $perms = ($perms & 0007);
+    } elsif ($selector) {
+        return undef;
+    }
+
+    #print "$self | $perms | $selector\n";
+
+    return $perms;
+}
+
+=method is_readable
+
+    my $p = path("foo.txt"); # with 0754 permissions
+
+    $p->is_readable('user')  # 1
+    $p->is_readable('group') # 1
+    $p->is_readable('other') # 1
+    $p->is_readable('bogus') # undef
+
+Returns if a given class can read the file. Returns 1 or 0.
+
+Current API available since 0.147.
+
+=cut
+
+sub is_readable {
+    my ($self, $selector) = @_;
+
+    my $perms = $self->permissions($selector);
+
+    if (!defined($perms)) { return undef; }
+
+    my $ret = $perms & 4;    # Read = 4
+    $ret    = int($ret > 0); # Convert to bool 1/0
+
+    return $ret;
+}
+
+=method is_writeable
+
+    my $p = path("foo.txt"); # with 0764 permissions
+
+    $p->is_writeable('user')  # 1
+    $p->is_writeable('group') # 1
+    $p->is_writeable('other') # 0
+    $p->is_writeable('bogus') # undef
+
+Returns if a given class can write the file. Returns 1 or 0.
+
+Current API available since 0.147.
+
+=cut
+
+sub is_writeable {
+    my ($self, $selector) = @_;
+
+    my $perms = $self->permissions($selector);
+
+    if (!defined($perms)) { return undef; }
+
+    my $ret = $perms & 2;    # Write = 2
+    $ret    = int($ret > 0); # Convert to bool 1/0
+
+    return $ret;
+}
+
+=method is_executable
+
+    my $p = path("foo.txt"); # with 0764 permissions
+
+    $p->is_executable('user')  # 1
+    $p->is_executable('group') # 0
+    $p->is_executable('other') # 0
+    $p->is_executable('bogus') # undef
+
+Returns if a given class can execute the file. Returns 1 or 0.
+
+Current API available since 0.147.
+
+=cut
+
+sub is_executable {
+    my ($self, $selector) = @_;
+
+    my $perms = $self->permissions($selector);
+
+    if (!defined($perms)) { return undef; }
+
+    my $ret = $perms & 1;    # Exec = 1
+    $ret    = int($ret > 0); # Convert to bool 1/0
+
+    return $ret;
+}
+
+#############################################################################
+#############################################################################
 
 package Path::Tiny::Error;
 
