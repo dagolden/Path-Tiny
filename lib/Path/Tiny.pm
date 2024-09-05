@@ -2422,6 +2422,7 @@ sub volume {
     $p->permissions('user')  # 7
     $p->permissions('group') # 6
     $p->permissions('other') # 4
+    $p->permissions('octal') # "764"
     $p->permissions('bogus') # undef
 
 Returns the permissions for a given selector of a file.
@@ -2445,6 +2446,9 @@ sub permissions {
         $perms = ($perms & 0070) >> 3;
     } elsif ($selector && $selector eq 'other') {
         $perms = ($perms & 0007);
+    } elsif ($selector && $selector eq 'octal') {
+        $perms = $perms & 0777;
+        $perms = sprintf("%o", $perms);
     } elsif ($selector) {
         return undef;
     }
