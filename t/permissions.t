@@ -23,6 +23,7 @@ is($path->permissions('user') , 7    , 'Get permissions user');
 is($path->permissions('group'), 6    , 'Get permissions group');
 is($path->permissions('other'), 4    , 'Get permissions other');
 is($path->permissions('bogus'), undef, 'Get permissions bogus');
+is($path->permissions('octal'), '764', 'Get permissions octal');
 
 ##################################
 # is_readable()
