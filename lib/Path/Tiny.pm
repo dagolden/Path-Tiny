@@ -1385,7 +1385,7 @@ lines will be split.  This is actually faster than relying on
 IO layers, though a bit memory intensive.  If memory use is a
 concern, consider C<openr_utf8> and iterating directly on the handle.
 
-See also L</slurp> if you want to load file as a whole chunk.
+See also L</slurp> if you want to load a file as a whole chunk.
 
 Current API available since 0.065.
 
@@ -2056,7 +2056,7 @@ close other handles or open without locking to avoid a deadlock:
     my $tempfile = File::Temp->new(EXLOCK => 0);
     my $guts = path($tempfile)->slurp;
 
-See also L</lines> if you want to slurp file into line array.
+See also L</lines> if you want to slurp a file into a line array.
 
 Current API available since 0.004.
 
