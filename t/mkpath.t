@@ -27,5 +27,21 @@ if ( $^O ne 'MSWin32' ) {
     ok( -d $path2, "target directory created" );
 }
 
+{
+    for my $weird_args (
+        ["bogus"],  # a string, somebody thought it's the child name
+        [mode=>1],  # programmer forgot to wrap pairs in {...}
+        [{}, 1 ],   # valid {} but extra argument; oops!
+        [[]],       # weird mistake, but better to die than ignore
+    ) {
+        my $error = exception { $path->mkpath(@$weird_args) };
+        like(
+          $error,
+          qr/method argument was given, but was not a hash reference/,
+          "passing a weird argument to ->mkpath throws (@$weird_args)",
+        );
+    }
+}
+
 done_testing;
 # COPYRIGHT

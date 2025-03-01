@@ -468,6 +468,20 @@ SKIP: {
       'spewing follows the link and replace the destination instead';
 }
 
+{
+    my $newtmp = Path::Tiny->tempdir;
+    my $to_delete = $newtmp->child('to-delete')->mkdir;
+
+    my $error = exception { $newtmp->remove_tree('to-delete'); };
+    like(
+      $error,
+      qr/method argument was given, but was not a hash reference/,
+      "passing a weird argument to ->remove_tree throws",
+    );
+
+    ok -d $newtmp, "we did not remove path after bad call to remove_tree";
+}
+
 # We don't have subsume so comment these out.  Keep in case we
 # implement it later
 

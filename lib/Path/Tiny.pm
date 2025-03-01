@@ -1484,14 +1484,23 @@ B<NOTE>: unlike Perl's builtin C<mkdir>, this will create intermediate paths
 similar to the Unix C<mkdir -p> command.  It will not error if applied to an
 existing directory.
 
+Passing a defined argument I<other> than a hash reference is an error, and an
+exception will be thrown.
+
 Current API available since 0.125.
 
 =cut
 
 sub mkdir {
-    my ( $self, $args ) = @_;
-    $args = {} unless ref $args eq 'HASH';
+    my ( $self, $args, @rest ) = @_;
+
+    $args = {} unless defined $args;
+    if (@rest || (defined $args && ref $args ne 'HASH')) {
+        $self->_throw('mkdir', undef, "method argument was given, but was not a hash reference");
+    }
+
     my $err;
+
     $args->{error} = \$err unless defined $args->{error};
     require File::Path;
     my @dirs;
@@ -1514,13 +1523,21 @@ sub mkdir {
 Like calling C<mkdir>, but returns the list of directories created or an empty list if
 the directories already exist, just like C<make_path>.
 
+Passing a defined argument I<other> than a hash reference is an error, and an
+exception will be thrown.
+
 Deprecated in 0.125.
 
 =cut
 
 sub mkpath {
-    my ( $self, $args ) = @_;
-    $args = {} unless ref $args eq 'HASH';
+    my ( $self, $args, @rest ) = @_;
+
+    $args = {} unless defined $args;
+    if (@rest || (defined $args && ref $args ne 'HASH')) {
+        $self->_throw('mkdir', undef, "method argument was given, but was not a hash reference");
+    }
+
     my $err;
     $args->{error} = \$err unless defined $args->{error};
     require File::Path;
@@ -1920,12 +1937,21 @@ C<rmdir> function instead.
 
 Current API available since 0.013.
 
+Passing a defined argument I<other> than a hash reference is an error, and an
+exception will be thrown.
+
 =cut
 
 sub remove_tree {
-    my ( $self, $args ) = @_;
+    my ( $self, $args, @rest ) = @_;
+
+    $args = {} unless defined $args;
+    if (@rest || (defined $args && ref $args ne 'HASH')) {
+        $self->_throw('mkdir', undef, "method argument was given, but was not a hash reference");
+    }
+
     return 0 if !-e $self->[PATH] && !-l $self->[PATH];
-    $args = {} unless ref $args eq 'HASH';
+
     my $err;
     $args->{error} = \$err unless defined $args->{error};
     $args->{safe}  = 1     unless defined $args->{safe};
