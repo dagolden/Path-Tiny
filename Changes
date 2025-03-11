@@ -2,6 +2,10 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Changes]
+
+    - Invalid arguments when hash references are expected throw exceptions.
+
 0.146     2024-05-08 08:27:52-04:00 America/New_York
 
     - No changes from 0.145-TRIAL
