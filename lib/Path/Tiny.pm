@@ -619,7 +619,7 @@ sub append {
     $binmode = ( ( caller(0) )[10] || {} )->{'open>'} unless defined $binmode;
     my $mode = $args->{truncate} ? ">" : ">>";
     my $fh = $self->filehandle( { locked => 1 }, $mode, $binmode );
-    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data ) or self->_throw('print');
+    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data ) or $self->_throw('print');
     close $fh or $self->_throw('close');
 }
 
@@ -1031,7 +1031,7 @@ sub edit_lines {
     while (! eof($in_fh) ) {
         defined( $_ = readline($in_fh) ) or $self->_throw('readline');
         $cb->();
-        $temp_fh->print($_) or self->_throw('print', $temp);
+        $temp_fh->print($_) or $self->_throw('print', $temp);
     }
 
     close $temp_fh or $self->_throw( 'close', $temp );
@@ -2174,7 +2174,7 @@ sub spew {
             : "error opening temp file for atomic write: $@";
         $self->_throw('spew', $self->[PATH], $msg);
     }
-    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data) or self->_throw('print', $temp->[PATH]);
+    print( {$fh} map { ref eq 'ARRAY' ? @$_ : $_ } @data) or $self->_throw('print', $temp->[PATH]);
     close $fh or $self->_throw( 'close', $temp->[PATH] );
 
     return $temp->move($resolved_path);
