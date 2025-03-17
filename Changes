@@ -2,6 +2,12 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Bug fixes]
+    - Fixed problems with exceptions.
+
+    [Documentation]
+    - Cross-referenced slurp and lines.
+
 0.147     2025-03-10 22:11:06-04:00 America/New_York (TRIAL RELEASE)
 
     [Changes]
