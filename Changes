@@ -2,6 +2,9 @@ Revision history for Path-Tiny
 
 {{$NEXT}}
 
+    [Other]
+    - Released with newest Dist::Zilla to avoid xattrs in the tarball.
+
 0.148     2025-03-17 07:18:28-04:00 America/New_York
 
     [Bug fixes]
