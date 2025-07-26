@@ -145,5 +145,14 @@ subtest "tempfile, instance method, overridden DIR" => sub {
     ok( $tempfile->parent ne $bd ), "DIR is overridden";
 };
 
+subtest "is_temporary" => sub {
+    my $tempdir = Path::Tiny->tempdir;
+    ok( $tempdir->is_temporary, "tempdir is temporary" );
+    my $tempfile = Path::Tiny->tempfile;
+    ok( $tempfile->is_temporary, "tempfile is temporary" );
+    my $path = path("abcdefg");
+    ok( !$path->is_temporary, "regular path is not temporary" );
+};
+
 done_testing;
 # COPYRIGHT
