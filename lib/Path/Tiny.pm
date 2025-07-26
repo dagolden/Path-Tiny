@@ -1267,6 +1267,23 @@ sub is_rootdir {
     return $self->[DIR] eq '/' && $self->[FILE] eq '';
 }
 
+=method is_temporary
+
+    my $temp = Path::Tiny->tempfile;
+    if ($temp->is_temporary) {
+        ...
+    }
+
+Returns true if the C<Path::Tiny> object was created by C<tempfile> or
+C<tempdir>.  Returns false otherwise.
+
+=cut
+
+sub is_temporary {
+    my ($self) = @_;
+    !!eval { $self->cached_temp; 1 };
+}
+
 =method iterator
 
     $iter = path("/tmp")->iterator( \%options );
