@@ -2445,6 +2445,46 @@ sub volume {
     return $self->[VOL];
 }
 
+=method change_extension
+
+    my $foo = path('C:/mydir/myfile.com.extension');
+    my $renamed_foo = $foo->change_extension('.old');
+
+Changes the extension of a path.
+
+Returns a new Path::Tiny object with a different extension. The argument is a
+string representing the new extension or undef to remove an extension.
+
+If path has no extension, and extension is not C<undef>, the returned path string contains extension appended to the end of path.
+If the last part of a path has a leading period (e.g. C<~/.bashrc>), it is not considered an extension.
+
+Current API available since 0.148.
+
+=cut
+
+sub change_extension {
+    my $self = shift;
+    my $new_extension = shift; # may be undef
+    
+    my $path_str = $self->stringify;
+    $path_str =~ s/\.[^.\/]+$//;  # Remove existing extension
+    
+    # If extension is undef, the returned string contains the specified path with its extension removed.
+    return path($path_str) unless defined $new_extension;
+    
+    if( $new_extension !~ m/^\./ ) {
+        # add leading period if there is no period
+        $new_extension = '.' . $new_extension;
+    }
+    
+    # Add extension and construct the new path
+    my $new_path = _path($path_str . $new_extension);
+    
+    return $new_path;
+}
+
+
+
 package Path::Tiny::Error;
 
 our @CARP_NOT = qw/Path::Tiny/;
