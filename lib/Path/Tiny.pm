@@ -1364,8 +1364,9 @@ If C<binmode> is provided, it will be set on the handle prior to reading.
 
 If a positive C<count> is provided, that many lines will be returned from the
 start of the file.  If a negative C<count> is provided, the entire file will be
-read, but only C<abs(count)> will be kept and returned.  If C<abs(count)>
-exceeds the number of lines in the file, all lines will be returned.
+read, but only C<abs(count)> will be kept and returned (i.e., the last C<count>
+lines of the file are returned).  If C<abs(count)> exceeds the number of lines
+in the file, all lines will be returned.
 
 If C<chomp> is set, any end-of-line character sequences (C<CR>, C<CRLF>, or
 C<LF>) will be removed from the lines returned.
